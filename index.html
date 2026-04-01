@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Courtly — Book Your Court</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#f9f7f4;--white:#fff;--dark:#141414;--green:#1e5f3f;--green-l:#2d7a53;
+  --green-p:#e6f4ec;--grey:#6b7280;--grey-l:#f4f4f2;--border:#e8e4df;
+  --gold:#d97706;--gold-p:#fef3c7;--red:#dc2626;--red-p:#fee2e2;
+  --blue:#2563eb;--blue-p:#eff6ff;--purple:#7c3aed;--purple-p:#f5f3ff;
+  --shadow:0 2px 20px rgba(0,0,0,.06);--shadow-lg:0 12px 48px rgba(0,0,0,.11);
+  --r:16px;--rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);font-size:16px;line-height:1.65}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;font-weight:600;line-height:1.15}
+h1{font-size:clamp(2rem,6vw,3.4rem)}h2{font-size:clamp(1.5rem,4vw,2.2rem)}h3{font-size:1.3rem}h4{font-size:1.05rem}
+em{font-style:italic;color:var(--green)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 22px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;border:none;transition:all .2s}
+.btn-p{background:var(--green);color:#fff}.btn-p:hover{background:var(--green-l);transform:translateY(-1px);box-shadow:0 4px 16px rgba(30,95,63,.25)}
+.btn-g{background:transparent;color:var(--dark);border:1.5px solid var(--border)}.btn-g:hover{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.btn-r{background:var(--red);color:#fff}.btn-r:hover{background:#b91c1c}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:#b45309}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1d4ed8}
+.btn-lg{padding:15px 36px;font-size:1rem}.btn-full{width:100%}.btn-sm{padding:7px 14px;font-size:.78rem}
+button:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* NAV */
+.nav{position:sticky;top:0;background:rgba(249,247,244,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:200}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 24px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--dark);cursor:pointer;letter-spacing:-.3px}
+.logo span{color:var(--green)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--grey);font-size:.85rem;cursor:pointer;transition:color .2s;padding:6px 10px;border-radius:8px}
+.nav-links a:hover,.nav-links a.active{color:var(--dark);background:var(--grey-l)}
+.hamburger{display:none;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--dark)}
+.mob-menu{display:none;flex-direction:column;padding:14px 24px 18px;gap:4px;border-top:1px solid var(--border);background:var(--cream)}
+.mob-menu.open{display:flex}
+.mob-menu a{color:var(--dark);font-size:.95rem;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--border)}
+@media(max-width:760px){.nav-links{display:none}.hamburger{display:block}}
+
+/* NOTIFICATION BELL */
+.notif-bell{position:relative;cursor:pointer;padding:8px;border-radius:50%;transition:background .2s}
+.notif-bell:hover{background:var(--grey-l)}
+.notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--cream)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:fadeUp .3s ease both}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1a3a2a 0%,#1e5f3f 60%,#2d7a53 100%);color:#fff;padding:72px 24px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-inner{max-width:1240px;margin:0 auto;position:relative}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);padding:6px 16px;border-radius:20px;font-size:.78rem;font-weight:500;margin-bottom:20px}
+.hero h1{color:#fff;margin-bottom:14px;max-width:600px}
+.hero-sub{color:rgba(255,255,255,.75);font-size:1.05rem;margin-bottom:36px;max-width:480px}
+.hero-search{background:#fff;border-radius:var(--r);padding:8px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:4px;max-width:820px;box-shadow:var(--shadow-lg);margin-bottom:36px}
+.hs-field{display:flex;flex-direction:column;padding:8px 14px;border-radius:10px;cursor:pointer;transition:background .2s}
+.hs-field:hover{background:var(--grey-l)}
+.hs-field label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--grey);margin-bottom:3px}
+.hs-field input,.hs-field select{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--dark);background:transparent;width:100%}
+.hs-divider{width:1px;background:var(--border);margin:8px 0}
+.hs-btn{background:var(--green);color:#fff;border:none;border-radius:10px;padding:14px 24px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .2s}
+.hs-btn:hover{background:var(--green-l)}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+.hero-stat strong{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#fff;display:block}
+.hero-stat span{font-size:.78rem;color:rgba(255,255,255,.65)}
+@media(max-width:700px){.hero-search{grid-template-columns:1fr;gap:2px}.hs-divider{display:none}.hero{padding:48px 24px 56px}}
+
+/* SECTION */
+.section{max-width:1240px;margin:0 auto;padding:64px 24px}
+.sec-label{font-size:.72rem;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.sec-title{margin-bottom:12px}.sec-sub{color:var(--grey);font-size:.92rem;margin-bottom:36px;max-width:500px}
+
+/* HOW */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:40px}
+.how-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:28px 24px;position:relative;overflow:hidden}
+.how-card::before{content:attr(data-num);font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:700;color:var(--green-p);position:absolute;top:-8px;right:14px;line-height:1}
+.how-card h3{margin-bottom:8px;font-size:1.1rem}.how-card p{color:var(--grey);font-size:.85rem}
+@media(max-width:680px){.how-grid{grid-template-columns:1fr}}
+
+/* COURT CARDS */
+.courts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.court-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;position:relative}
+.court-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+.court-card-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:3.2rem;background:var(--grey-l);position:relative;overflow:hidden}
+.court-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.court-card-img .court-emoji{position:relative;z-index:1}
+.court-fav-btn{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;z-index:2}
+.court-fav-btn:hover{background:#fff;transform:scale(1.1)}
+.featured-badge{position:absolute;top:10px;left:10px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:12px;z-index:2}
+.court-card-body{padding:16px}
+.court-card-body h3{margin-bottom:3px;font-size:.98rem}
+.court-sport-tag{display:inline-block;background:var(--green-p);color:var(--green);font-size:.68rem;padding:2px 10px;border-radius:12px;margin-bottom:8px;font-weight:500}
+.court-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.court-price{font-size:.88rem;color:var(--grey)}.court-price strong{color:var(--dark);font-size:.98rem}
+.court-stars{display:flex;align-items:center;gap:4px;font-size:.78rem;color:var(--grey)}
+.stars{color:var(--gold)}
+@media(max-width:760px){.courts-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.courts-grid{grid-template-columns:1fr}}
+
+/* CTA */
+.cta-band{background:var(--green);color:#fff;padding:64px 24px;text-align:center}
+.cta-band h2{color:#fff;margin-bottom:12px}.cta-band p{color:rgba(255,255,255,.75);margin-bottom:28px}
+.cta-band .btn-p{background:#fff;color:var(--green)}
+
+/* FOOTER */
+.footer{background:var(--dark);color:rgba(255,255,255,.5);padding:48px 24px 32px}
+.footer-inner{max-width:1240px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand .flogo{color:#fff;font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;display:block;margin-bottom:12px;cursor:pointer}
+.footer-brand p{font-size:.83rem;line-height:1.7;max-width:230px}
+.footer-col h4{color:#fff;font-size:.82rem;font-weight:500;margin-bottom:12px;font-family:'DM Sans',sans-serif}
+.footer-col a{display:block;font-size:.8rem;margin-bottom:8px;cursor:pointer;transition:color .2s}.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:.78rem}
+@media(max-width:680px){.footer-top{grid-template-columns:1fr 1fr}.footer-top>div:first-child{grid-column:1/-1}}
+
+/* FORMS */
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:.8rem;font-weight:500;margin-bottom:5px;color:var(--dark)}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem;background:#fff;transition:border-color .2s;color:var(--dark)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(30,95,63,.08)}
+.fg textarea{resize:vertical;min-height:78px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}}
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* PHOTO UPLOAD */
+.photo-upload-zone{border:2px dashed var(--border);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;margin-bottom:14px}
+.photo-upload-zone:hover{border-color:var(--green);background:var(--green-p)}
+.photo-upload-zone input{display:none}
+.photo-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.photo-thumb{position:relative;width:80px;height:80px}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.photo-thumb-del{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+
+/* COURT PHOTO GALLERY */
+.court-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.court-gallery-img{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:opacity .2s}
+.court-gallery-img:hover{opacity:.85}
+
+/* AUTH */
+.auth-wrap{min-height:calc(100vh - 130px);display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.auth-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:38px;width:100%;max-width:420px;box-shadow:var(--shadow-lg)}
+.auth-card h1{font-size:1.85rem;margin-bottom:5px}
+.auth-sub{color:var(--grey);margin-bottom:24px;font-size:.86rem}
+.auth-switch{text-align:center;margin-top:14px;font-size:.8rem;color:var(--grey)}
+.auth-switch a{color:var(--green);cursor:pointer}
+.auth-msg{margin-top:12px;padding:11px 14px;border-radius:var(--rs);font-size:.83rem;text-align:center;display:none}
+.auth-msg.ok{background:var(--green-p);color:var(--green)}.auth-msg.err{background:var(--red-p);color:var(--red)}
+.role-toggle{display:flex;gap:8px;margin-bottom:20px}
+.role-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;font-family:'DM Sans',sans-serif;font-size:.83rem;cursor:pointer;transition:all .2s;text-align:center}
+.role-btn.active{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
+.owner-note{background:var(--gold-p);border:1px solid #fde68a;border-radius:var(--rs);padding:11px 14px;font-size:.8rem;color:#92400e;margin-bottom:14px;display:none}
+
+/* PLAYER PROFILE */
+.profile-wrap{max-width:860px;margin:0 auto;padding:48px 24px 72px}
+.profile-header{display:flex;align-items:flex-start;gap:28px;margin-bottom:36px;flex-wrap:wrap}
+.profile-avatar-wrap{position:relative;flex-shrink:0}
+.profile-avatar{width:100px;height:100px;border-radius:50%;background:var(--green-p);color:var(--green);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:700;border:3px solid var(--white);box-shadow:var(--shadow);overflow:hidden;cursor:pointer}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-avatar-edit{position:absolute;bottom:2px;right:2px;background:var(--green);color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem}
+.profile-info h1{font-size:1.8rem;margin-bottom:4px}
+.profile-info p{color:var(--grey);font-size:.88rem}
+.profile-sports{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sport-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-p);color:var(--green);padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:500}
+.profile-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.profile-stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px;text-align:center}
+.profile-stat strong{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--green);display:block}
+.profile-stat span{font-size:.72rem;color:var(--grey)}
+@media(max-width:600px){.profile-stats-row{grid-template-columns:1fr 1fr}}
+
+/* SPORT SELECTOR */
+.sport-picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sport-pick-btn{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s}
+.sport-pick-btn:hover,.sport-pick-btn.sel{border-color:var(--green);background:var(--green-p);color:var(--green)}
+
+/* COURT DETAIL */
+.court-detail{max-width:1240px;margin:0 auto;padding:40px 24px 72px}
+.detail-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;margin-bottom:48px}
+.detail-img-wrap{border-radius:var(--r);overflow:hidden;background:var(--grey-l);border:1px solid var(--border)}
+.detail-img-main{height:280px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden}
+.detail-img-main img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.detail-img-main .emoji-fallback{position:relative;z-index:1}
+.detail-img-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px}
+.detail-img-gallery img{width:100%;height:68px;object-fit:cover;border-radius:6px;cursor:pointer;transition:opacity .2s}
+.detail-img-gallery img:hover{opacity:.8}
+.detail-info h1{margin-bottom:6px}
+.detail-meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.detail-meta span{font-size:.82rem;color:var(--grey);background:var(--grey-l);padding:5px 12px;border-radius:20px}
+.detail-price{font-size:1.5rem;font-family:'Cormorant Garamond',serif;font-weight:700;margin:14px 0 4px}
+.detail-price span{font-size:.88rem;color:var(--grey);font-family:'DM Sans',sans-serif;font-weight:400}
+.rating-row{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.rating-big{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:700;line-height:1}
+.policy-box{background:var(--gold-p);border:1px solid #fde68a;border-radius:var(--rs);padding:12px 16px;font-size:.8rem;color:#92400e;margin:10px 0}
+@media(max-width:760px){.detail-grid{grid-template-columns:1fr}}
+
+/* REVIEWS */
+.reviews-section{margin-top:48px}
+.reviews-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.rev-filters{display:flex;gap:6px;flex-wrap:wrap}
+.rfbtn{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s}
+.rfbtn:hover,.rfbtn.active{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.review-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px}
+.rev-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:10px}
+.rev-user{display:flex;align-items:center;gap:10px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--green-p);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.88rem;flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.rev-name{font-weight:500;font-size:.88rem}.rev-date{font-size:.72rem;color:var(--grey)}
+.rev-stars{color:var(--gold);font-size:.88rem}
+.rev-body{color:var(--dark);font-size:.86rem;line-height:1.7;margin-bottom:10px}
+.rev-photo{width:76px;height:76px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.owner-reply{background:var(--green-p);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;margin-top:10px;font-size:.82rem}
+.owner-reply strong{color:var(--green);display:block;margin-bottom:4px;font-size:.78rem}
+.reply-form{margin-top:10px;display:none}
+.reply-form textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.82rem;resize:vertical;min-height:60px}
+.reply-form textarea:focus{outline:none;border-color:var(--green)}
+.rev-form{background:var(--green-p);border:1px solid #b7e4c7;border-radius:var(--r);padding:22px;margin-top:22px}
+.star-input{display:flex;gap:4px;margin-bottom:14px}
+.star-btn{font-size:1.5rem;cursor:pointer;color:#d1d5db;background:none;border:none;padding:0;transition:color .15s}
+.star-btn.lit{color:var(--gold)}
+.photo-drop{border:2px dashed var(--border);border-radius:var(--rs);padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;margin-bottom:12px}
+.photo-drop:hover{border-color:var(--green);background:var(--green-p)}
+.photo-drop input{display:none}
+
+/* AVAILABILITY CAL */
+.avail-cal{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-top:24px}
+.avail-cal h3{margin-bottom:18px;font-size:1.1rem}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.cal-day-btn{border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+.cal-day-btn:hover,.cal-day-btn.active{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.cal-day-btn.today{border-color:var(--green);font-weight:600}
+.cd-date{font-size:.8rem;font-weight:600;display:block}
+.cd-slots{font-size:.65rem;color:var(--grey);display:block}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tslot{border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 4px;text-align:center;cursor:pointer;font-size:.76rem;transition:all .2s;background:#fff}
+.tslot:hover:not(.taken):not(.blocked){border-color:var(--green);background:var(--green-p)}
+.tslot.sel{border-color:var(--green);background:var(--green);color:#fff}
+.tslot.taken{background:var(--red-p);color:var(--red);cursor:not-allowed;border-color:#fca5a5}
+.tslot.blocked{background:var(--gold-p);color:var(--gold);cursor:not-allowed;border-color:#fde68a;font-size:.7rem}
+.waitlist-box{background:var(--blue-p);border:1px solid #bfdbfe;border-radius:var(--rs);padding:14px 18px;margin-top:10px;font-size:.84rem;color:var(--blue)}
+@media(max-width:480px){.time-grid{grid-template-columns:repeat(3,1fr)}.cal-days{grid-template-columns:repeat(4,1fr)}}
+
+/* BOOKING FLOW */
+.book-wrap{max-width:680px;margin:0 auto;padding:48px 24px 72px}
+.book-wrap h1{text-align:center;margin-bottom:8px}
+.book-wrap>.lead{text-align:center;color:var(--grey);margin-bottom:36px;font-size:.92rem}
+.step-ind{display:flex;align-items:center;justify-content:center;margin-bottom:36px}
+.sdot{width:34px;height:34px;border-radius:50%;background:var(--border);color:var(--grey);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:all .3s;flex-shrink:0}
+.sdot.active{background:var(--green);color:#fff;box-shadow:0 0 0 4px rgba(30,95,63,.15)}
+.sdot.done{background:var(--green-p);color:var(--green)}
+.sline{flex:1;max-width:60px;height:2px;background:var(--border)}
+.bcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:28px;box-shadow:var(--shadow)}
+.bstep{display:none}.bstep.active{display:block}.bstep>h2{margin-bottom:20px}
+.sport-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:22px}
+.sopt{border:1.5px solid var(--border);border-radius:var(--rs);padding:13px 8px;text-align:center;cursor:pointer;font-size:.8rem;font-weight:500;transition:all .2s;background:#fff}
+.sopt:hover{border-color:var(--green-l);background:var(--green-p)}.sopt.sel{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.row2{display:flex;gap:10px;justify-content:space-between;margin-top:8px}
+.sum-box{background:var(--green-p);border-radius:var(--rs);padding:16px 18px;margin-bottom:20px;font-size:.88rem;line-height:2}
+.sum-box strong{color:var(--green)}
+.fee-breakdown{background:var(--grey-l);border-radius:var(--rs);padding:14px 16px;font-size:.82rem;margin-bottom:14px}
+.fee-row{display:flex;justify-content:space-between;padding:3px 0}
+.fee-row.total{font-weight:600;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;font-size:.9rem}
+.payment-section{border:1.5px solid var(--border);border-radius:var(--rs);padding:18px;margin:18px 0}
+.payment-section h4{margin-bottom:14px;font-size:.92rem;display:flex;align-items:center;gap:8px}
+.stripe-badge{display:inline-flex;align-items:center;background:#635bff;color:#fff;padding:3px 9px;border-radius:6px;font-size:.7rem;font-weight:500;margin-left:auto}
+#card-element{padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;min-height:44px}
+#card-errors{color:var(--red);font-size:.8rem;margin-top:6px;min-height:18px}
+.secure-note{font-size:.73rem;color:var(--grey);margin-top:8px}
+.test-cards{background:var(--blue-p);border-radius:var(--rs);padding:12px 14px;margin-top:12px;font-size:.76rem;color:var(--blue)}
+.test-cards strong{display:block;margin-bottom:5px}
+.test-cards code{background:rgba(37,99,235,.12);padding:2px 6px;border-radius:4px;font-family:monospace}
+.ok-screen{text-align:center;padding:16px 0}
+.ok-icon{width:68px;height:68px;background:var(--green);color:#fff;border-radius:50%;font-size:1.8rem;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow:0 0 0 8px var(--green-p)}
+.ok-screen h2{color:var(--green);margin-bottom:10px}
+.ok-screen p{color:var(--grey);font-size:.86rem;margin-bottom:5px}
+.ok-actions{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+@media(max-width:480px){.sport-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* MY BOOKINGS */
+.my-bookings-wrap{max-width:920px;margin:0 auto;padding:48px 24px 72px}
+.booking-tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin:24px 0;flex-wrap:wrap}
+.btab{background:none;border:none;padding:10px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--grey);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.btab.active{color:var(--green);border-bottom-color:var(--green);font-weight:500}
+.booking-item{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+.booking-icon{font-size:2rem;width:52px;height:52px;background:var(--grey-l);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.booking-info h4{margin-bottom:3px;font-size:.94rem}
+.booking-info p{font-size:.8rem;color:var(--grey);margin-bottom:5px}
+.booking-actions{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+.receipt-btn{display:flex;align-items:center;gap:4px;font-size:.76rem;color:var(--green);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:opacity .2s}
+.receipt-btn:hover{opacity:.7}
+.reminder-badge{display:inline-flex;align-items:center;gap:4px;background:var(--blue-p);color:var(--blue);padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:500}
+@media(max-width:600px){.booking-item{grid-template-columns:auto 1fr}.booking-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}}
+
+/* OWNER PORTAL */
+.portal-wrap{max-width:1200px;margin:0 auto;padding:40px 24px 72px}
+.portal-hdr{margin-bottom:28px}.portal-hdr p{color:var(--grey);font-size:.88rem;margin-top:5px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green);display:block;line-height:1}
+.stat-lbl{font-size:.72rem;color:var(--grey);margin-top:4px;display:block}
+@media(max-width:680px){.stats-row{grid-template-columns:1fr 1fr}}
+
+/* PAYOUT */
+.payout-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px}
+.payout-card h3{margin-bottom:14px;font-size:1.1rem}
+.payout-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.86rem}
+.payout-row:last-child{border-bottom:none}
+.payout-status{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:500}
+.payout-status.pending{background:var(--gold-p);color:var(--gold)}
+.payout-status.paid{background:var(--green-p);color:var(--green)}
+.payout-status.rejected{background:var(--red-p);color:var(--red)}
+
+/* CHART */
+.chart-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.chart-toggle{display:flex;gap:4px}
+.ctgl{border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:5px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s}
+.ctgl.active{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{width:100%;background:var(--green-p);border-radius:4px 4px 0 0;transition:height .4s ease;min-height:4px;cursor:pointer;position:relative}
+.chart-bar:hover{background:var(--green)}
+.chart-bar-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--green);font-weight:500;white-space:nowrap;opacity:0;transition:opacity .2s}
+.chart-bar:hover .chart-bar-val{opacity:1}
+.chart-bar-lbl{font-size:.65rem;color:var(--grey);white-space:nowrap}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:22px;flex-wrap:wrap;overflow-x:auto}
+.tab{background:none;border:none;padding:10px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--grey);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+.tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:500}
+.tpane{display:none}.tpane.active{display:block}
+
+/* OWNER AVAIL */
+.avail-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:10px}
+.avail-slot{border:1.5px solid var(--border);border-radius:8px;padding:7px 4px;text-align:center;font-size:.7rem;cursor:pointer;transition:all .2s;background:#fff}
+.avail-slot.open{background:var(--green-p);border-color:var(--green);color:var(--green)}
+.avail-slot.closed{background:var(--red-p);border-color:#fca5a5;color:var(--red)}
+@media(max-width:580px){.avail-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* RECUR */
+.recur-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.recur-day{border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;font-size:.75rem;transition:all .2s;background:#fff}
+.recur-day.sel{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
+
+/* BK CALENDAR */
+.bk-cal{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.bk-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px}
+.bk-cal-hdr{text-align:center;font-size:.7rem;font-weight:600;color:var(--grey);padding:4px}
+.bk-cal-cell{border:1px solid var(--border);border-radius:8px;padding:6px 4px;min-height:52px;font-size:.7rem;cursor:pointer;transition:background .2s}
+.bk-cal-cell:hover{background:var(--grey-l)}
+.bk-cal-cell.today{border-color:var(--green);background:var(--green-p)}
+.bk-cal-cell .bcc-date{font-weight:600;margin-bottom:2px;display:block}
+.bk-cal-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin:1px}
+
+/* ADMIN */
+.admin-wrap{max-width:1240px;margin:0 auto;padding:40px 24px 72px}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1;min-width:180px;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.84rem;background:#fff}
+.toolbar input:focus{outline:none;border-color:var(--green)}
+.twrap{overflow-x:auto;border-radius:var(--rs);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:520px}
+th{background:var(--grey-l);padding:9px 12px;text-align:left;font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
+.sb{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:500}
+.sb-g{background:var(--green-p);color:var(--green)}.sb-r{background:var(--red-p);color:var(--red)}
+.sb-gold{background:var(--gold-p);color:var(--gold)}.sb-b{background:var(--blue-p);color:var(--blue)}
+.ab{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;cursor:pointer;font-size:.73rem;margin-right:3px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.ab:hover{border-color:var(--green);color:var(--green)}.ab.d:hover{border-color:var(--red);color:var(--red)}
+.ab.ok{border-color:var(--green);color:var(--green)}.ab.rej{border-color:var(--red);color:var(--red)}
+.empty-state{text-align:center;padding:44px 20px;color:var(--grey);font-size:.88rem}
+.empty-state div{font-size:2.2rem;margin-bottom:10px}
+.info-banner{background:var(--green-p);border:1px solid #b7e4c7;border-radius:var(--rs);padding:12px 16px;font-size:.84rem;color:var(--green);margin-bottom:18px}
+.warn-banner{background:var(--gold-p);border:1px solid #fde68a;border-radius:var(--rs);padding:12px 16px;font-size:.84rem;color:#92400e;margin-bottom:18px}
+.pend-banner{background:var(--gold-p);border:1px solid #fde68a;border-radius:var(--rs);padding:14px 18px;color:#92400e;margin-bottom:22px;font-size:.88rem}
+
+/* CMCARD */
+.cmcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.cmcard-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:var(--r);padding:28px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);margin:auto}
+.modal h3{margin-bottom:18px}.modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:400;display:none;align-items:center;justify-content:center;padding:20px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:100%;max-height:90vh;border-radius:8px}
+.lightbox-close{position:absolute;top:20px;right:24px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;padding:13px 18px;border-radius:var(--rs);font-size:.84rem;z-index:500;box-shadow:var(--shadow-lg);max-width:300px;transform:translateY(70px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+
+/* REMINDER NOTIFICATION */
+.reminder-panel{position:fixed;top:70px;right:20px;width:320px;z-index:190;display:flex;flex-direction:column;gap:8px}
+.reminder-notif{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-lg);display:flex;align-items:flex-start;gap:10px;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.reminder-notif .rn-icon{font-size:1.4rem;flex-shrink:0}
+.reminder-notif .rn-body strong{display:block;font-size:.84rem;margin-bottom:2px}
+.reminder-notif .rn-body span{font-size:.76rem;color:var(--grey)}
+.reminder-notif .rn-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--grey);font-size:1rem;flex-shrink:0}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:500}
+.badge-g{background:var(--green-p);color:var(--green)}.badge-r{background:var(--red-p);color:var(--red)}
+.badge-gold{background:var(--gold-p);color:var(--gold)}.badge-b{background:var(--blue-p);color:var(--blue)}
+.courts-page{max-width:1240px;margin:0 auto;padding:48px 24px 72px}
+.search-filter-bar{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:end}
+.search-filter-bar input,.search-filter-bar select{padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem;background:#fff;width:100%}
+.search-filter-bar input:focus,.search-filter-bar select:focus{outline:none;border-color:var(--green)}
+@media(max-width:600px){.search-filter-bar{grid-template-columns:1fr}}
+.sport-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.sfbtn{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s}
+.sfbtn:hover,.sfbtn.active{border-color:var(--green);background:var(--green-p);color:var(--green)}
+.results-meta{display:flex;justify-content:space-between;margin-bottom:16px;font-size:.84rem;color:var(--grey)}
+.fav-wrap{max-width:1240px;margin:0 auto;padding:48px 24px 72px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="logo" onclick="nav('home')">Court<span>ly</span></span>
+    <div class="nav-links">
+      <a onclick="nav('home')" id="nl-home" class="active">Home</a>
+      <a onclick="nav('courts')" id="nl-courts">Courts</a>
+      <a onclick="nav('book')" id="nl-book">Book</a>
+      <span id="navAuth"></span>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </div>
+  <div class="mob-menu" id="mobMenu">
+    <a onclick="nav('home');cm()">Home</a>
+    <a onclick="nav('courts');cm()">Courts</a>
+    <a onclick="nav('book');cm()">Book</a>
+    <div id="mobAuth"></div>
+  </div>
+</nav>
+
+<!-- REMINDER PANEL -->
+<div class="reminder-panel" id="reminderPanel"></div>
+
+<!-- HOME -->
+<div class="page active" id="pg-home">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">● Book. Play. Review.</div>
+      <h1>Your court,<br/><em>your schedule.</em></h1>
+      <p class="hero-sub">Find and book tennis, basketball, badminton, pickleball courts and more — confirmed instantly, paid securely.</p>
+      <div class="hero-search">
+        <div class="hs-field"><label>Where</label><input type="text" id="hsSearch" placeholder="Any location…"/></div>
+        <div class="hs-divider"></div>
+        <div class="hs-field"><label>Sport</label><select id="hsSport"><option value="">Any sport</option><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+        <div class="hs-divider"></div>
+        <div class="hs-field"><label>Date</label><input type="date" id="hsDate"/></div>
+        <button class="hs-btn" onclick="heroSearch()">Search</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong id="hSC">12</strong><span>Courts listed</span></div>
+        <div class="hero-stat"><strong id="hSB">0</strong><span>Bookings made</span></div>
+        <div class="hero-stat"><strong id="hSR">0</strong><span>Reviews posted</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sec-label">Simple Process</div><h2 class="sec-title">How Courtly works</h2>
+    <div class="how-grid">
+      <div class="how-card" data-num="01"><h3>Find your court</h3><p>Search by location, sport and date. Browse ratings and reviews from real players.</p></div>
+      <div class="how-card" data-num="02"><h3>Pick a time</h3><p>See real-time 7-day availability. Blocked slots shown instantly.</p></div>
+      <div class="how-card" data-num="03"><h3>Pay & confirm</h3><p>Pay securely via Stripe. Instant email and SMS to you and the court owner.</p></div>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0">
+    <div class="sec-label">Top Venues</div><h2 class="sec-title">Featured Courts</h2>
+    <p class="sec-sub">Highly rated courts available to book right now.</p>
+    <div class="courts-grid" id="featuredCourts"></div>
+    <div style="text-align:center;margin-top:28px"><button class="btn btn-g" onclick="nav('courts')">View All Courts →</button></div>
+  </div>
+  <div class="cta-band">
+    <h2>Own a court facility?</h2>
+    <p>List your courts, set your pricing, and receive bookings with instant payment.</p>
+    <button class="btn btn-p btn-lg" onclick="nav('register')" style="background:#fff;color:var(--green)">List Your Courts →</button>
+  </div>
+  <footer class="footer"><div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand"><span class="flogo" onclick="nav('home')">Courtly</span><p>The easiest way to find, book and pay for sports courts online.</p></div>
+      <div class="footer-col"><h4>Product</h4><a onclick="nav('courts')">Browse Courts</a><a onclick="nav('book')">Book a Court</a><a onclick="nav('register')">List Courts</a></div>
+      <div class="footer-col"><h4>Account</h4><a onclick="nav('login')">Login</a><a onclick="nav('register')">Sign Up</a><a onclick="nav('mybookings')">My Bookings</a><a onclick="nav('profile')">My Profile</a></div>
+      <div class="footer-col"><h4>Company</h4><a>About</a><a>Contact</a><a>Privacy Policy</a><a>Terms of Service</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Courtly. All rights reserved.</span><span>Payments powered by Stripe 🔒</span></div>
+  </div></footer>
+</div>
+
+<!-- COURTS -->
+<div class="page" id="pg-courts">
+  <div class="courts-page">
+    <div class="sec-label">All Venues</div><h1 style="margin-bottom:20px">Browse Courts</h1>
+    <div class="search-filter-bar">
+      <input type="text" id="csearch" placeholder="Search by name, location, surface…" oninput="renderCourts()"/>
+      <select id="csort" onchange="renderCourts()"><option value="">Sort: Default</option><option value="rating-d">Highest Rated</option><option value="rating-a">Lowest Rated</option><option value="price-a">Price ↑</option><option value="price-d">Price ↓</option><option value="featured">Featured First</option></select>
+      <select id="cdate" onchange="renderCourts()"><option value="">Any date</option></select>
+    </div>
+    <div class="sport-filter-row">
+      <button class="sfbtn active" onclick="setSF('',this)">All Sports</button>
+      <button class="sfbtn" onclick="setSF('Tennis',this)">🎾 Tennis</button>
+      <button class="sfbtn" onclick="setSF('Basketball',this)">🏀 Basketball</button>
+      <button class="sfbtn" onclick="setSF('Badminton',this)">🏸 Badminton</button>
+      <button class="sfbtn" onclick="setSF('Pickleball',this)">🏓 Pickleball</button>
+      <button class="sfbtn" onclick="setSF('Football',this)">⚽ Football</button>
+      <button class="sfbtn" onclick="setSF('Volleyball',this)">🏐 Volleyball</button>
+    </div>
+    <div class="results-meta"><span id="resultsCount"></span></div>
+    <div class="courts-grid" id="courtsGrid"></div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span><span>🔒 Stripe</span></div></div></footer>
+</div>
+
+<!-- COURT DETAIL -->
+<div class="page" id="pg-detail">
+  <div class="court-detail">
+    <button class="btn btn-g btn-sm" onclick="nav('courts')" style="margin-bottom:18px">← Back</button>
+    <div class="detail-grid">
+      <div>
+        <div class="detail-img-wrap">
+          <div class="detail-img-main" id="detailImgMain"><span class="emoji-fallback" id="detailEmoji">🏟️</span></div>
+          <div class="detail-img-gallery" id="detailGallery"></div>
+        </div>
+      </div>
+      <div class="detail-info">
+        <span class="court-sport-tag" id="detailTag"></span>
+        <h1 id="detailName"></h1>
+        <div class="rating-row" id="detailRating"></div>
+        <div class="detail-meta" id="detailMeta"></div>
+        <div class="detail-price" id="detailPrice"></div>
+        <div id="detailPolicy" class="policy-box" style="display:none"></div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="goBookFromDetail()" style="flex:1">Book This Court →</button>
+          <button class="btn btn-g btn-sm" id="favBtn" onclick="toggleFav()" style="padding:11px 14px">♡</button>
+        </div>
+      </div>
+    </div>
+    <div class="avail-cal" id="detailCal">
+      <h3>Check Availability</h3>
+      <div class="cal-days" id="calDays"></div>
+      <div id="calSlots" style="display:none">
+        <div style="font-size:.8rem;font-weight:500;margin-bottom:10px" id="calSlotTitle"></div>
+        <div class="time-grid" id="calSlotsGrid"></div>
+        <div id="waitlistBox" class="waitlist-box" style="display:none">
+          <strong>All slots taken?</strong> Join the waitlist and we'll notify you if one opens.
+          <br/><button class="btn btn-blue btn-sm" onclick="joinWaitlist()" style="margin-top:8px">Join Waitlist</button>
+        </div>
+      </div>
+    </div>
+    <div class="reviews-section">
+      <div class="reviews-top">
+        <h2>Reviews</h2>
+        <div class="rev-filters">
+          <button class="rfbtn active" onclick="filterRevs(0,this)">All</button>
+          <button class="rfbtn" onclick="filterRevs(5,this)">★ 5</button>
+          <button class="rfbtn" onclick="filterRevs(4,this)">★ 4</button>
+          <button class="rfbtn" onclick="filterRevs(3,this)">★ 3</button>
+          <button class="rfbtn" onclick="filterRevs(2,this)">★ 2</button>
+          <button class="rfbtn" onclick="filterRevs(1,this)">★ 1</button>
+        </div>
+      </div>
+      <div id="reviewsList"></div>
+      <div id="leaveReviewWrap"></div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- BOOK -->
+<div class="page" id="pg-book">
+  <div class="book-wrap">
+    <h1>Book a Court</h1><p class="lead">Choose sport, date, time — then pay securely.</p>
+    <div class="step-ind">
+      <div class="sdot active" id="d1">1</div><div class="sline"></div>
+      <div class="sdot" id="d2">2</div><div class="sline"></div>
+      <div class="sdot" id="d3">3</div><div class="sline"></div>
+      <div class="sdot" id="d4">4</div>
+    </div>
+    <div class="bcard">
+      <div class="bstep active" id="bs1">
+        <h2>Sport & Court</h2>
+        <div class="sport-grid">
+          <div class="sopt" onclick="selSport(this,'Tennis')">🎾<br/>Tennis</div>
+          <div class="sopt" onclick="selSport(this,'Basketball')">🏀<br/>Basketball</div>
+          <div class="sopt" onclick="selSport(this,'Badminton')">🏸<br/>Badminton</div>
+          <div class="sopt" onclick="selSport(this,'Pickleball')">🏓<br/>Pickleball</div>
+          <div class="sopt" onclick="selSport(this,'Football')">⚽<br/>5-a-side</div>
+          <div class="sopt" onclick="selSport(this,'Volleyball')">🏐<br/>Volleyball</div>
+        </div>
+        <div id="courtDW" style="display:none"><div class="fg"><label>Select Court</label><select id="courtDrop"></select></div></div>
+        <button class="btn btn-p btn-full" onclick="goStep(2)" id="s1n" disabled>Next →</button>
+      </div>
+      <div class="bstep" id="bs2">
+        <h2>Date & Time</h2>
+        <div class="fg"><label>Date</label><input type="date" id="bkDate" onchange="loadSlots()"/></div>
+        <div id="slotsW" style="display:none">
+          <div style="display:flex;gap:12px;font-size:.72rem;color:var(--grey);margin-bottom:8px;flex-wrap:wrap"><span>🟢 Available</span><span>🔴 Booked</span><span>🟡 Unavailable</span></div>
+          <div class="time-grid" id="slotsGrid"></div>
+        </div>
+        <div class="row2"><button class="btn btn-g" onclick="goStep(1)">← Back</button><button class="btn btn-p" onclick="goStep(3)" id="s2n" disabled>Next →</button></div>
+      </div>
+      <div class="bstep" id="bs3">
+        <h2>Your Details</h2>
+        <div class="sum-box" id="bSum"></div>
+        <div class="form-row">
+          <div class="fg"><label>First Name</label><input type="text" id="cFirst" placeholder="John"/></div>
+          <div class="fg"><label>Last Name</label><input type="text" id="cLast" placeholder="Smith"/></div>
+        </div>
+        <div class="fg"><label>Email</label><input type="email" id="cEmail" placeholder="you@email.com"/></div>
+        <div class="fg"><label>Phone (SMS confirmation & reminders)</label><input type="tel" id="cPhone" placeholder="+61 400 000 000"/></div>
+        <div id="step3Policy" class="policy-box" style="display:none"></div>
+        <div class="row2"><button class="btn btn-g" onclick="goStep(2)">← Back</button><button class="btn btn-p" onclick="goStep(4)">Next →</button></div>
+      </div>
+      <div class="bstep" id="bs4">
+        <h2>Payment</h2>
+        <div class="sum-box" id="bSum2"></div>
+        <div class="fee-breakdown" id="feeBreakdown"></div>
+        <div class="payment-section">
+          <h4>Card Details <span class="stripe-badge">🔒 Stripe</span></h4>
+          <div id="card-element"></div><div id="card-errors"></div>
+          <div class="secure-note">🔒 Encrypted & processed securely by Stripe.</div>
+          <div class="test-cards"><strong>Test Mode:</strong> Success: <code>4242 4242 4242 4242</code> · Decline: <code>4000 0000 0000 0002</code> · Any future expiry/CVC</div>
+        </div>
+        <div class="row2"><button class="btn btn-g" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="processPayment()" id="payBtn">Pay £<span id="payAmt">0</span> →</button></div>
+      </div>
+      <div class="bstep" id="bsOK">
+        <div class="ok-screen">
+          <div class="ok-icon">✓</div>
+          <h2>Booking Confirmed!</h2>
+          <p id="okMsg"></p>
+          <p>📧 Confirmation sent to your email.</p>
+          <p>📱 SMS sent to your phone.</p>
+          <p>⏰ Reminders will be sent 12 hours & 1 hour before.</p>
+          <p>🏟️ Court owner notified.</p>
+          <div class="ok-actions">
+            <button class="btn btn-g" onclick="nav('mybookings')">My Bookings</button>
+            <button class="btn btn-p" onclick="resetBook()">Book Another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span><span>🔒 Stripe</span></div></div></footer>
+</div>
+
+<!-- MY BOOKINGS -->
+<div class="page" id="pg-mybookings">
+  <div class="my-bookings-wrap">
+    <div class="sec-label">Your Account</div><h1>My Bookings</h1>
+    <div class="booking-tabs">
+      <button class="btab active" onclick="showBTab('upcoming',this)">Upcoming</button>
+      <button class="btab" onclick="showBTab('past',this)">Past</button>
+      <button class="btab" onclick="showBTab('cancelled',this)">Cancelled</button>
+    </div>
+    <div id="myBkList"></div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- PLAYER PROFILE -->
+<div class="page" id="pg-profile">
+  <div class="profile-wrap">
+    <div class="sec-label">Your Account</div>
+    <div class="profile-header">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" id="profileAvatarDisplay" onclick="document.getElementById('avatarFile').click()">
+          <input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>
+          <span id="avatarInitial">?</span>
+        </div>
+        <button class="profile-avatar-edit" onclick="document.getElementById('avatarFile').click()">✏️</button>
+      </div>
+      <div class="profile-info">
+        <h1 id="profileName">Your Name</h1>
+        <p id="profileEmail" style="color:var(--grey);font-size:.88rem"></p>
+        <div class="profile-sports" id="profileSports"></div>
+      </div>
+    </div>
+    <div class="profile-stats-row">
+      <div class="profile-stat"><strong id="pStatBk">0</strong><span>Total Bookings</span></div>
+      <div class="profile-stat"><strong id="pStatRv">0</strong><span>Reviews Written</span></div>
+      <div class="profile-stat"><strong id="pStatFav">0</strong><span>Favourites</span></div>
+      <div class="profile-stat"><strong id="pStatSpent">£0</strong><span>Total Spent</span></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showProfileTab('edit',this)">Edit Profile</button>
+      <button class="tab" onclick="showProfileTab('history',this)">Booking History</button>
+      <button class="tab" onclick="showProfileTab('reminders',this)">Reminders</button>
+    </div>
+    <div class="tpane active" id="pt-edit">
+      <div style="max-width:500px">
+        <div class="form-row">
+          <div class="fg"><label>First Name</label><input type="text" id="pFirst"/></div>
+          <div class="fg"><label>Last Name</label><input type="text" id="pLast"/></div>
+        </div>
+        <div class="fg"><label>Email</label><input type="email" id="pEmail"/></div>
+        <div class="fg"><label>Phone</label><input type="tel" id="pPhone" placeholder="+61 400 000 000"/></div>
+        <div class="fg">
+          <label>Favourite Sports</label>
+          <div class="sport-picker" id="sportPicker">
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Tennis')">🎾 Tennis</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Basketball')">🏀 Basketball</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Badminton')">🏸 Badminton</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Pickleball')">🏓 Pickleball</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Football')">⚽ Football</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Volleyball')">🏐 Volleyball</button>
+          </div>
+        </div>
+        <button class="btn btn-p" onclick="saveProfile()">Save Profile</button>
+        <div class="divider"></div>
+        <h3 style="margin-bottom:14px;font-size:1rem">Change Password</h3>
+        <div class="fg"><label>Current Password</label><input type="password" id="pCurPass" placeholder="••••••••"/></div>
+        <div class="fg"><label>New Password</label><input type="password" id="pNewPass" placeholder="Min. 6 characters"/></div>
+        <div class="fg"><label>Confirm New Password</label><input type="password" id="pConfPass" placeholder="••••••••"/></div>
+        <button class="btn btn-g" onclick="changePassword()">Update Password</button>
+        <div class="auth-msg" id="profileMsg" style="display:none"></div>
+      </div>
+    </div>
+    <div class="tpane" id="pt-history">
+      <div id="profileBkHistory"></div>
+    </div>
+    <div class="tpane" id="pt-reminders">
+      <div class="info-banner">Reminders are sent automatically 12 hours and 1 hour before your booking via email and SMS. Below are your scheduled reminders.</div>
+      <div id="profileReminders"></div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- FAVOURITES -->
+<div class="page" id="pg-favourites">
+  <div class="fav-wrap">
+    <div class="sec-label">Your Account</div><h1>Favourite Courts</h1>
+    <div style="margin-top:24px" id="favList"></div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="pg-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Welcome back</h1><p class="auth-sub">Log in to your Courtly account.</p>
+      <div class="fg"><label>Email</label><input type="email" id="lEmail" placeholder="you@email.com"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="lPass" placeholder="••••••••"/></div>
+      <button class="btn btn-p btn-full" onclick="doLogin()">Log In</button>
+      <p class="auth-switch">No account? <a onclick="nav('register')">Sign Up</a> &nbsp;·&nbsp; <a onclick="nav('reset')">Forgot password?</a></p>
+      <div class="auth-msg" id="lMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD RESET -->
+<div class="page" id="pg-reset">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Reset Password</h1><p class="auth-sub">Enter your email and we'll send you a reset link.</p>
+      <div id="resetStep1">
+        <div class="fg"><label>Email</label><input type="email" id="resetEmail" placeholder="you@email.com"/></div>
+        <button class="btn btn-p btn-full" onclick="sendResetLink()">Send Reset Link</button>
+        <p class="auth-switch"><a onclick="nav('login')">← Back to Login</a></p>
+        <div class="auth-msg" id="resetMsg1"></div>
+      </div>
+      <div id="resetStep2" style="display:none">
+        <p style="color:var(--grey);font-size:.86rem;margin-bottom:20px">Enter the 6-digit code sent to your email, then set your new password.</p>
+        <div class="fg"><label>Reset Code</label><input type="text" id="resetCode" placeholder="e.g. 847392" maxlength="6"/></div>
+        <div class="fg"><label>New Password</label><input type="password" id="resetNewPass" placeholder="Min. 6 characters"/></div>
+        <div class="fg"><label>Confirm Password</label><input type="password" id="resetConfPass" placeholder="Confirm new password"/></div>
+        <button class="btn btn-p btn-full" onclick="doReset()">Reset Password</button>
+        <div class="auth-msg" id="resetMsg2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="page" id="pg-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Create account</h1><p class="auth-sub">Join Courtly — it's free.</p>
+      <div class="role-toggle">
+        <button class="role-btn active" id="rBU" onclick="setRole('user')">🏃 Player</button>
+        <button class="role-btn" id="rBO" onclick="setRole('owner')">🏟️ Court Owner</button>
+      </div>
+      <div class="owner-note" id="ownerNote">Court owner accounts require admin approval before listing courts.</div>
+      <div class="form-row">
+        <div class="fg"><label>First Name</label><input type="text" id="rFirst" placeholder="John"/></div>
+        <div class="fg"><label>Last Name</label><input type="text" id="rLast" placeholder="Smith"/></div>
+      </div>
+      <div class="fg"><label>Email</label><input type="email" id="rEmail" placeholder="you@email.com"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="rPass" placeholder="Min. 6 characters"/></div>
+      <div id="ownerFields" style="display:none">
+        <div class="divider"></div>
+        <div class="fg"><label>Facility / Business Name</label><input type="text" id="rFacility" placeholder="e.g. Parkside Sports Centre"/></div>
+        <div class="fg"><label>Location</label><input type="text" id="rLocation" placeholder="e.g. Melbourne, VIC"/></div>
+        <div class="fg"><label>Cancellation / Refund Policy</label><textarea id="rPolicy" rows="2" placeholder="e.g. Full refund if cancelled 24hrs before."></textarea></div>
+        <div class="fg"><label>Description</label><textarea id="rDesc" rows="2" placeholder="Describe your courts…"></textarea></div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="doRegister()">Create Account</button>
+      <p class="auth-switch">Have an account? <a onclick="nav('login')">Log In</a></p>
+      <div class="auth-msg" id="rMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER PORTAL -->
+<div class="page" id="pg-owner">
+  <div class="portal-wrap">
+    <div class="portal-hdr">
+      <div class="sec-label">Owner Portal</div>
+      <h1 id="ownerTitle">My Portal</h1>
+      <p id="ownerSub">Manage your courts, bookings and availability.</p>
+    </div>
+    <div class="pend-banner" id="pendBanner" style="display:none">⏳ Your account is pending admin approval. You'll be notified once approved.</div>
+    <div id="ownerBody" style="display:none">
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-num" id="oS1">0</span><span class="stat-lbl">My Courts</span></div>
+        <div class="stat-card"><span class="stat-num" id="oS2">0</span><span class="stat-lbl">Bookings</span></div>
+        <div class="stat-card"><span class="stat-num" id="oS3">£0</span><span class="stat-lbl">Revenue (after fee)</span></div>
+        <div class="stat-card"><span class="stat-num" id="oS4">—</span><span class="stat-lbl">Avg Rating</span></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-hdr"><h3 style="font-size:1.1rem">Earnings</h3>
+          <div class="chart-toggle">
+            <button class="ctgl active" id="ctW" onclick="renderChart('week',this)">7 Days</button>
+            <button class="ctgl" id="ctM" onclick="renderChart('month',this)">30 Days</button>
+          </div>
+        </div>
+        <div class="chart-bars" id="chartBars"></div>
+      </div>
+      <div class="tabs" id="ownerTabs">
+        <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
+        <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
+        <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
+        <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
+        <button class="tab" onclick="showOwnerTab('payouts',this)">Payouts</button>
+        <button class="tab" onclick="showOwnerTab('settings',this)">Settings</button>
+      </div>
+      <div class="tpane active" id="ot-courts">
+        <div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('oAddModal')">+ Add Court</button></div>
+        <div id="ownerCourtsList"></div>
+      </div>
+      <div class="tpane" id="ot-bookings">
+        <div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th></th></tr></thead><tbody id="ownerBkBody"></tbody></table></div>
+      </div>
+      <div class="tpane" id="ot-calendar">
+        <div class="bk-cal">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <h3 style="font-size:1.1rem">Booking Calendar</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-g btn-sm" onclick="moveCalMonth(-1)">← Prev</button>
+              <span id="calMonthLabel" style="font-size:.88rem;align-self:center;font-weight:500"></span>
+              <button class="btn btn-g btn-sm" onclick="moveCalMonth(1)">Next →</button>
+            </div>
+          </div>
+          <div class="bk-cal-grid" id="ownerCalGrid"></div>
+        </div>
+      </div>
+      <div class="tpane" id="ot-avail">
+        <div class="info-banner">Set recurring weekly hours, or block specific dates.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+          <div>
+            <h4 style="margin-bottom:14px;font-size:.95rem">Recurring Weekly Hours</h4>
+            <div class="fg"><label>Court</label><select id="recurCourtSel" onchange="loadRecurring()"></select></div>
+            <div class="fg"><label>Open days</label><div class="recur-grid" id="recurDays"></div></div>
+            <div class="form-row">
+              <div class="fg"><label>From</label><input type="time" id="recurFrom" value="07:00"/></div>
+              <div class="fg"><label>Until</label><input type="time" id="recurTo" value="21:00"/></div>
+            </div>
+            <button class="btn btn-p btn-sm" onclick="saveRecurring()">Save Recurring Hours</button>
+          </div>
+          <div>
+            <h4 style="margin-bottom:14px;font-size:.95rem">Block Specific Date</h4>
+            <div class="fg"><label>Court</label><select id="availCourtSel" onchange="renderAvailGrid()"></select></div>
+            <div class="fg"><label>Date</label><input type="date" id="availDate" onchange="renderAvailGrid()"/></div>
+            <div id="availWrap" style="display:none">
+              <div class="avail-grid" id="availGrid"></div>
+              <p style="font-size:.72rem;color:var(--grey);margin-top:8px">🟢 Open &nbsp;·&nbsp; 🔴 Blocked</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tpane" id="ot-payouts">
+        <div id="payoutContent"></div>
+      </div>
+      <div class="tpane" id="ot-settings">
+        <div style="max-width:500px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+          <h3 style="margin-bottom:16px;font-size:1.1rem">Business Settings</h3>
+          <div class="fg"><label>Facility Name</label><input type="text" id="sF"/></div>
+          <div class="fg"><label>Location</label><input type="text" id="sL"/></div>
+          <div class="fg"><label>Cancellation / Refund Policy</label><textarea id="sP" rows="3"></textarea></div>
+          <button class="btn btn-p" onclick="saveSettings()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="pg-admin">
+  <div class="admin-wrap">
+    <div class="sec-label">Dashboard</div>
+    <h1 style="margin-bottom:6px">Admin Panel</h1>
+    <p style="color:var(--grey);margin-bottom:24px;font-size:.88rem">Manage everything.</p>
+    <div class="stats-row">
+      <div class="stat-card"><span class="stat-num" id="aS1">0</span><span class="stat-lbl">Bookings</span></div>
+      <div class="stat-card"><span class="stat-num" id="aS2">0</span><span class="stat-lbl">Courts</span></div>
+      <div class="stat-card"><span class="stat-num" id="aS3">0</span><span class="stat-lbl">Users</span></div>
+      <div class="stat-card"><span class="stat-num" id="aS4">0</span><span class="stat-lbl">Pending</span></div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:.88rem;font-weight:500">Platform Fee:</span>
+      <input type="number" id="feePct" min="0" max="30" step="0.5" style="width:70px;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem"/>
+      <span style="font-size:.88rem;color:var(--grey)">%</span>
+      <button class="btn btn-p btn-sm" onclick="saveFee()">Save</button>
+      <span style="font-size:.78rem;color:var(--grey)" id="feeNote"></span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showAdminTab('bk',this)">Bookings</button>
+      <button class="tab" onclick="showAdminTab('ct',this)">Courts</button>
+      <button class="tab" onclick="showAdminTab('us',this)">Users</button>
+      <button class="tab" onclick="showAdminTab('ow',this)">Approvals <span id="pendBadge" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
+      <button class="tab" onclick="showAdminTab('rv',this)">Reviews</button>
+      <button class="tab" onclick="showAdminTab('ds',this)">Disputes <span id="dispBadge" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
+      <button class="tab" onclick="showAdminTab('fe',this)">Featured</button>
+      <button class="tab" onclick="showAdminTab('po',this)">Payouts <span id="payBadge" style="background:var(--gold);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
+    </div>
+    <div class="tpane active" id="tp-bk"><div class="toolbar"><input type="text" placeholder="Search…" oninput="searchBk(this.value)"/><button class="btn btn-g btn-sm" onclick="exportBk()">Export CSV</button></div><div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Court Fee</th><th>Platform Fee</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bkBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-ct"><div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('aAddModal')">+ Add Court</button></div><div class="twrap"><table><thead><tr><th>Court</th><th>Sport</th><th>Owner</th><th>Price</th><th>Rating</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="ctBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-us"><div class="twrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Bookings</th><th>Actions</th></tr></thead><tbody id="usBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-ow"><div class="twrap"><table><thead><tr><th>Name</th><th>Facility</th><th>Location</th><th>Policy</th><th>Status</th><th>Actions</th></tr></thead><tbody id="owBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-rv"><div class="twrap"><table><thead><tr><th>Court</th><th>Reviewer</th><th>Stars</th><th>Review</th><th>Date</th><th>Actions</th></tr></thead><tbody id="rvBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-ds"><div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dsBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-fe"><p style="font-size:.88rem;color:var(--grey);margin-bottom:16px">Toggle featured status for any court.</p><div class="twrap"><table><thead><tr><th>Court</th><th>Sport</th><th>Owner</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="feBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-po"><div class="twrap"><table><thead><tr><th>ID</th><th>Owner</th><th>Facility</th><th>Amount</th><th>Period</th><th>Status</th><th>Actions</th></tr></thead><tbody id="poBody"></tbody></table></div></div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="aAddModal"><div class="modal"><h3>Add Court (Admin)</h3>
+  <div class="fg"><label>Name</label><input type="text" id="aaN"/></div>
+  <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Surface</label><input type="text" id="aaSurf"/></div>
+  <div class="fg"><label>Price/hr (£)</label><input type="number" id="aaP"/></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('aAddModal')">Cancel</button><button class="btn btn-p" onclick="addCourt(false)">Add</button></div>
+</div></div>
+
+<div class="modal-bg" id="oAddModal"><div class="modal"><h3>Add Court</h3>
+  <div class="fg"><label>Name</label><input type="text" id="oaN"/></div>
+  <div class="fg"><label>Sport</label><select id="oaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Surface</label><input type="text" id="oaSurf"/></div>
+  <div class="fg"><label>Price/hr (£)</label><input type="number" id="oaP"/></div>
+  <div class="fg"><label>Court Photos (up to 4)</label>
+    <div class="photo-upload-zone" onclick="document.getElementById('courtPhotoFile').click()">
+      <input type="file" id="courtPhotoFile" accept="image/*" multiple onchange="previewCourtPhotos(this)"/>
+      📷 Click to upload photos (up to 4)
+    </div>
+    <div class="photo-thumbs" id="courtPhotoThumbs"></div>
+  </div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('oAddModal')">Cancel</button><button class="btn btn-p" onclick="addCourt(true)">Add Court</button></div>
+</div></div>
+
+<div class="modal-bg" id="editModal"><div class="modal"><h3>Edit Court</h3>
+  <input type="hidden" id="ecId"/>
+  <div class="fg"><label>Name</label><input type="text" id="ecN"/></div>
+  <div class="fg"><label>Sport</label><select id="ecS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Surface</label><input type="text" id="ecSurf"/></div>
+  <div class="fg"><label>Price/hr (£)</label><input type="number" id="ecP"/></div>
+  <div class="fg"><label>Update Photos (up to 4)</label>
+    <div class="photo-upload-zone" onclick="document.getElementById('editPhotoFile').click()">
+      <input type="file" id="editPhotoFile" accept="image/*" multiple onchange="previewEditPhotos(this)"/>
+      📷 Click to update photos
+    </div>
+    <div class="photo-thumbs" id="editPhotoThumbs"></div>
+  </div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('editModal')">Cancel</button><button class="btn btn-p" onclick="saveCourt()">Save</button></div>
+</div></div>
+
+<div class="modal-bg" id="receiptModal"><div class="modal" style="max-width:420px"><div id="receiptContent"></div><div class="modal-btns"><button class="btn btn-g" onclick="closeModal('receiptModal')">Close</button><button class="btn btn-p" onclick="window.print()">🖨️ Print</button></div></div></div>
+
+<div class="modal-bg" id="cancelModal"><div class="modal"><h3>Cancel Booking</h3>
+  <input type="hidden" id="cancelId"/>
+  <p style="color:var(--grey);margin-bottom:14px;font-size:.88rem">Are you sure you want to cancel?</p>
+  <div id="cancelPolicy" class="policy-box"></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('cancelModal')">Keep It</button><button class="btn btn-r" onclick="doCancel()">Cancel Booking</button></div>
+</div></div>
+
+<div class="modal-bg" id="disputeModal"><div class="modal"><h3>Raise a Dispute</h3>
+  <input type="hidden" id="disputeBkId"/>
+  <div class="fg"><label>Reason</label><select id="disputeReason"><option>Court was unavailable</option><option>Booking details were wrong</option><option>Refund not processed</option><option>Other</option></select></div>
+  <div class="fg"><label>Details</label><textarea id="disputeDetail" rows="3" placeholder="Describe the issue…"></textarea></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('disputeModal')">Cancel</button><button class="btn btn-p" onclick="submitDispute()">Submit</button></div>
+</div></div>
+
+<div class="modal-bg" id="resolveModal"><div class="modal"><h3>Resolve Dispute</h3>
+  <input type="hidden" id="resolveId"/>
+  <div class="fg"><label>Resolution</label><select id="resolveAction"><option value="refunded">Approve Refund</option><option value="rejected">Reject Claim</option></select></div>
+  <div class="fg"><label>Notes</label><textarea id="resolveNotes" rows="2"></textarea></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('resolveModal')">Cancel</button><button class="btn btn-p" onclick="resolveDispute()">Resolve</button></div>
+</div></div>
+
+<div class="modal-bg" id="payoutModal"><div class="modal"><h3>Request Payout</h3>
+  <input type="hidden" id="payoutOwnerId"/>
+  <p style="color:var(--grey);font-size:.88rem;margin-bottom:16px">Enter your bank details. Admin will process your payout within 3–5 business days.</p>
+  <div class="fg"><label>Bank Name</label><input type="text" id="payoutBank" placeholder="e.g. Commonwealth Bank"/></div>
+  <div class="fg"><label>Account Name</label><input type="text" id="payoutAccName" placeholder="John Smith"/></div>
+  <div class="fg"><label>BSB</label><input type="text" id="payoutBSB" placeholder="062-000"/></div>
+  <div class="fg"><label>Account Number</label><input type="text" id="payoutAccNum" placeholder="12345678"/></div>
+  <div class="fg"><label>Amount to request (£)</label><input type="number" id="payoutAmount" placeholder="0.00"/></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('payoutModal')">Cancel</button><button class="btn btn-p" onclick="submitPayout()">Submit Request</button></div>
+</div></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA LAYER
+// ============================================================
+const SEED=[
+  {id:1,name:'Court A',sport:'Tennis',price:18,icon:'🎾',surface:'Hard court',ownerId:null,featured:false,photos:[]},
+  {id:2,name:'Court B',sport:'Tennis',price:18,icon:'🎾',surface:'Clay court',ownerId:null,featured:false,photos:[]},
+  {id:3,name:'Court 1',sport:'Basketball',price:22,icon:'🏀',surface:'Indoor hardwood',ownerId:null,featured:true,photos:[]},
+  {id:4,name:'Court 2',sport:'Basketball',price:20,icon:'🏀',surface:'Outdoor tarmac',ownerId:null,featured:false,photos:[]},
+  {id:5,name:'Hall A',sport:'Badminton',price:14,icon:'🏸',surface:'Indoor synthetic',ownerId:null,featured:false,photos:[]},
+  {id:6,name:'Hall B',sport:'Badminton',price:14,icon:'🏸',surface:'Indoor synthetic',ownerId:null,featured:false,photos:[]},
+  {id:7,name:'Court P1',sport:'Pickleball',price:12,icon:'🏓',surface:'Outdoor hard',ownerId:null,featured:false,photos:[]},
+  {id:8,name:'Court P2',sport:'Pickleball',price:12,icon:'🏓',surface:'Indoor',ownerId:null,featured:false,photos:[]},
+  {id:9,name:'Pitch 1',sport:'Football',price:30,icon:'⚽',surface:'Astroturf',ownerId:null,featured:true,photos:[]},
+  {id:10,name:'Pitch 2',sport:'Football',price:28,icon:'⚽',surface:'Indoor turf',ownerId:null,featured:false,photos:[]},
+  {id:11,name:'Court V1',sport:'Volleyball',price:16,icon:'🏐',surface:'Indoor sprung',ownerId:null,featured:false,photos:[]},
+  {id:12,name:'Beach Court',sport:'Volleyball',price:14,icon:'🏐',surface:'Sand',ownerId:null,featured:false,photos:[]},
+];
+const SLOTS=['7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM'];
+const ICONS={Tennis:'🎾',Basketball:'🏀',Badminton:'🏸',Pickleball:'🏓',Football:'⚽',Volleyball:'🏐'};
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const ls={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const gB=()=>ls.get('cly5_b',[]);const sB=d=>ls.set('cly5_b',d);
+const gU=()=>ls.get('cly5_u',[]);const sU=d=>ls.set('cly5_u',d);
+const gC=()=>ls.get('cly5_c',SEED);const sC=d=>ls.set('cly5_c',d);
+const gCU=()=>ls.get('cly5_cu',null);const sCU=d=>ls.set('cly5_cu',d);
+const gRv=()=>ls.get('cly5_rv',[]);const sRv=d=>ls.set('cly5_rv',d);
+const gFav=()=>ls.get('cly5_fav',[]);const sFav=d=>ls.set('cly5_fav',d);
+const gWL=()=>ls.get('cly5_wl',[]);const sWL=d=>ls.set('cly5_wl',d);
+const gDs=()=>ls.get('cly5_ds',[]);const sDs=d=>ls.set('cly5_ds',d);
+const gFee=()=>ls.get('cly5_fee',10);const sFee=d=>ls.set('cly5_fee',d);
+const gPO=()=>ls.get('cly5_po',[]);const sPO=d=>ls.set('cly5_po',d);
+const gAv=(cid,date)=>ls.get('cly5_av_'+cid+'_'+date,[]);
+const sAv=(cid,date,d)=>ls.set('cly5_av_'+cid+'_'+date,d);
+const gRec=(cid)=>ls.get('cly5_rec_'+cid,{days:[1,2,3,4,5],from:'07:00',to:'21:00'});
+const sRec=(cid,d)=>ls.set('cly5_rec_'+cid,d);
+
+// ============================================================
+// STATE
+// ============================================================
+let CU=gCU(),sportFilter='',currentDetailId=null,calDetailDate=null,calMonthOffset=0;
+let bSport=null,bCourt=null,bDate=null,bTime=null;
+let selectedStars=0,revPhotoData=null,recurSelDays=[1,2,3,4,5];
+let pendingCourtPhotos=[],pendingEditPhotos=[];
+let currentBTab='upcoming',currentRevFilter=0;
+let resetPendingEmail='',resetPendingCode='';
+let profileSports=[];
+
+// ============================================================
+// REMINDERS SYSTEM
+// ============================================================
+function scheduleReminders(bk){
+  // Parse booking datetime
+  const slotHour=parseSlotToHour(bk.time);
+  const bkDateStr=bk.date;
+  const bkDateObj=new Date(bkDateStr+'T'+String(slotHour).padStart(2,'0')+':00:00');
+  const now=new Date();
+  const ms12=bkDateObj.getTime()-(12*60*60*1000)-now.getTime();
+  const ms1=bkDateObj.getTime()-(1*60*60*1000)-now.getTime();
+  if(ms12>0&&ms12<7*24*60*60*1000){
+    setTimeout(()=>triggerReminder(bk,'12 hours'),ms12);
+    console.log(`⏰ SCHEDULED 12hr reminder for ${bk.name}: ${bk.court} on ${bk.date} at ${bk.time}`);
+  }
+  if(ms1>0&&ms1<7*24*60*60*1000){
+    setTimeout(()=>triggerReminder(bk,'1 hour'),ms1);
+    console.log(`⏰ SCHEDULED 1hr reminder for ${bk.name}: ${bk.court} on ${bk.date} at ${bk.time}`);
+  }
+}
+function parseSlotToHour(slot){
+  const [time,ampm]=slot.split(' ');const [h]=time.split(':');let hour=parseInt(h);
+  if(ampm==='PM'&&hour!==12)hour+=12;if(ampm==='AM'&&hour===12)hour=0;return hour;
+}
+function triggerReminder(bk,timeLabel){
+  const court=gC().find(c=>c.id===bk.courtId);
+  const owner=court?.ownerId?gU().find(u=>u.id===court.ownerId):null;
+  // Simulate email+SMS
+  console.log(`📧 EMAIL REMINDER (${timeLabel}) → ${bk.email}: Reminder! ${bk.court} in ${timeLabel}. ${bk.date} at ${bk.time}`);
+  console.log(`📱 SMS REMINDER (${timeLabel}) → ${bk.phone||'N/A'}: Courtly: ${bk.court} is in ${timeLabel}!`);
+  if(owner){
+    console.log(`📧 OWNER EMAIL REMINDER → ${owner.email}: Booking at ${bk.court} by ${bk.name} in ${timeLabel}`);
+    console.log(`📱 OWNER SMS REMINDER: Booking at ${bk.court} in ${timeLabel} — ${bk.name}`);
+  }
+  // Show in-app notification
+  showReminderNotif(bk,timeLabel);
+}
+function showReminderNotif(bk,timeLabel){
+  const panel=document.getElementById('reminderPanel');
+  const notif=document.createElement('div');
+  notif.className='reminder-notif';
+  notif.innerHTML=`<div class="rn-icon">⏰</div>
+    <div class="rn-body"><strong>Reminder: ${bk.court}</strong>
+    <span>Your booking is in ${timeLabel} — ${bk.time}</span></div>
+    <button class="rn-close" onclick="this.closest('.reminder-notif').remove()">✕</button>`;
+  panel.appendChild(notif);
+  setTimeout(()=>notif.remove(),15000);
+}
+function rescheduleAllReminders(){
+  const today=new Date().toISOString().split('T')[0];
+  const bks=gB().filter(b=>b.date>=today&&b.status==='confirmed'&&(b.userId===CU?.id||b.email===CU?.email));
+  bks.forEach(bk=>scheduleReminders(bk));
+}
+
+// ============================================================
+// NAV
+// ============================================================
+function nav(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  const pg=document.getElementById('pg-'+p);if(pg)pg.classList.add('active');
+  document.querySelectorAll('[id^="nl-"]').forEach(a=>a.classList.remove('active'));
+  const nl=document.getElementById('nl-'+p);if(nl)nl.classList.add('active');
+  window.scrollTo(0,0);
+  if(p==='courts'){populateDateSelect();renderCourts()}
+  if(p==='home')initHome();
+  if(p==='admin')initAdmin();
+  if(p==='owner')initOwner();
+  if(p==='mybookings')renderMyBookings(currentBTab);
+  if(p==='favourites')renderFavourites();
+  if(p==='profile')initProfile();
+}
+function toggleMenu(){document.getElementById('mobMenu').classList.toggle('open')}
+function cm(){document.getElementById('mobMenu').classList.remove('open')}
+
+function updateNav(){
+  CU=gCU();
+  const role=CU?.role;
+  const portalLinks=role==='admin'?`<a onclick="nav('admin')">Admin</a>`:
+    role==='owner'?`<a onclick="nav('owner')">Portal</a>`:
+    CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a>`:'';
+  const logBtn=CU?`<a onclick="doLogout()" class="btn btn-g btn-sm" style="margin-left:4px">Logout</a>`:
+    `<a onclick="nav('login')" class="btn btn-g btn-sm" style="margin-left:4px">Login</a><a onclick="nav('register')" class="btn btn-p btn-sm" style="margin-left:4px">Sign Up</a>`;
+  document.getElementById('navAuth').innerHTML=portalLinks+logBtn;
+  const mP=role==='admin'?`<a onclick="nav('admin');cm()">Admin Panel</a>`:
+    role==='owner'?`<a onclick="nav('owner');cm()">My Portal</a>`:
+    CU?`<a onclick="nav('mybookings');cm()">My Bookings</a><a onclick="nav('profile');cm()">My Profile</a><a onclick="nav('favourites');cm()">Favourites</a>`:'';
+  const mL=CU?`<a onclick="doLogout()">Logout</a>`:`<a onclick="nav('login');cm()">Login</a><a onclick="nav('register');cm()">Sign Up</a>`;
+  document.getElementById('mobAuth').innerHTML=mP+mL;
+}
+function doLogout(){sCU(null);CU=null;updateNav();nav('home');toast('Logged out')}
+
+// ============================================================
+// HOME
+// ============================================================
+function initHome(){
+  document.getElementById('hSC').textContent=gC().length;
+  document.getElementById('hSB').textContent=gB().length;
+  document.getElementById('hSR').textContent=gRv().length;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('hsDate').value=today;
+  document.getElementById('hsDate').min=today;
+  const featured=gC().filter(c=>c.featured).concat(gC().filter(c=>!c.featured)).slice(0,6);
+  document.getElementById('featuredCourts').innerHTML=featured.map(c=>courtCardHTML(c)).join('');
+}
+function heroSearch(){
+  const s=document.getElementById('hsSearch').value;
+  const sport=document.getElementById('hsSport').value;
+  sportFilter=sport;nav('courts');
+  setTimeout(()=>{
+    if(s)document.getElementById('csearch').value=s;
+    if(sport)document.querySelectorAll('.sfbtn').forEach(b=>{if(b.textContent.trim().includes(sport)||(sport===''&&b.textContent==='All Sports')){b.click()}});
+    renderCourts();
+  },100);
+}
+function courtCardHTML(c){
+  const rvs=gRv().filter(r=>r.courtId===c.id);
+  const avg=rvs.length?(rvs.reduce((s,r)=>s+r.stars,0)/rvs.length).toFixed(1):'New';
+  const stars=rvs.length?'★'.repeat(Math.round(parseFloat(avg))):'';
+  const isFav=gFav().includes(c.id);
+  const coverPhoto=c.photos&&c.photos.length?c.photos[0]:null;
+  return`<div class="court-card" onclick="openDetail(${c.id})">
+    <div class="court-card-img">
+      ${c.featured?'<span class="featured-badge">⭐ Featured</span>':''}
+      ${coverPhoto?`<img src="${coverPhoto}" alt="${c.name}"/>`:''}
+      <span class="court-emoji" ${coverPhoto?'style="display:none"':''}>${c.icon}</span>
+      <button class="court-fav-btn" onclick="event.stopPropagation();quickFav(${c.id},this)">${isFav?'♥':'♡'}</button>
+    </div>
+    <div class="court-card-body">
+      <span class="court-sport-tag">${c.sport}</span>
+      <h3>${c.name}</h3>
+      <p style="font-size:.78rem;color:var(--grey)">${c.surface}</p>
+      <div class="court-meta">
+        <div class="court-price"><strong>£${c.price}</strong>/hr</div>
+        <div class="court-stars"><span class="stars">${stars}</span> ${avg}${rvs.length?` (${rvs.length})`:''}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// COURTS PAGE
+// ============================================================
+function populateDateSelect(){
+  const sel=document.getElementById('cdate');if(!sel)return;
+  const today=new Date();sel.innerHTML='<option value="">Any date</option>';
+  for(let i=0;i<14;i++){const d=new Date(today);d.setDate(today.getDate()+i);const v=d.toISOString().split('T')[0];sel.innerHTML+=`<option value="${v}">${i===0?'Today':i===1?'Tomorrow':d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</option>`}
+}
+function setSF(sport,btn){
+  sportFilter=sport;document.querySelectorAll('.sfbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCourts();
+}
+function renderCourts(){
+  const search=(document.getElementById('csearch')?.value||'').toLowerCase();
+  const sort=document.getElementById('csort')?.value||'';
+  const dateFilter=document.getElementById('cdate')?.value||'';
+  let courts=gC();
+  if(sportFilter)courts=courts.filter(c=>c.sport===sportFilter);
+  if(search)courts=courts.filter(c=>c.name.toLowerCase().includes(search)||c.sport.toLowerCase().includes(search)||c.surface.toLowerCase().includes(search));
+  const rvs=gRv();
+  courts=courts.map(c=>{const cr=rvs.filter(r=>r.courtId===c.id);return{...c,avgR:cr.length?cr.reduce((s,r)=>s+r.stars,0)/cr.length:0,rvCount:cr.length}});
+  if(sort==='rating-d')courts.sort((a,b)=>b.avgR-a.avgR);
+  else if(sort==='rating-a')courts.sort((a,b)=>a.avgR-b.avgR);
+  else if(sort==='price-a')courts.sort((a,b)=>a.price-b.price);
+  else if(sort==='price-d')courts.sort((a,b)=>b.price-a.price);
+  else if(sort==='featured')courts.sort((a,b)=>b.featured-a.featured);
+  if(dateFilter)courts=courts.filter(c=>{const booked=gB().filter(b=>b.courtId===c.id&&b.date===dateFilter&&b.status!=='cancelled').length;const blocked=gAv(c.id,dateFilter).length;return SLOTS.length-booked-blocked>0});
+  const rc=document.getElementById('resultsCount');if(rc)rc.textContent=`${courts.length} court${courts.length!==1?'s':''} found`;
+  const el=document.getElementById('courtsGrid');if(!el)return;
+  if(!courts.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div>🏟️</div>No courts match your search.</div>';return}
+  el.innerHTML=courts.map(c=>courtCardHTML(c)).join('');
+}
+
+// ============================================================
+// COURT DETAIL
+// ============================================================
+function openDetail(id){
+  currentDetailId=id;calDetailDate=new Date().toISOString().split('T')[0];
+  const c=gC().find(x=>x.id===id);if(!c)return;
+  // Photos
+  document.getElementById('detailEmoji').textContent=c.icon;
+  const mainImg=document.getElementById('detailImgMain');
+  if(c.photos&&c.photos.length){mainImg.innerHTML=`<img src="${c.photos[0]}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"/>`;
+  }else{mainImg.innerHTML=`<span class="emoji-fallback">${c.icon}</span>`}
+  const gallery=document.getElementById('detailGallery');
+  gallery.innerHTML=c.photos&&c.photos.length>1?c.photos.slice(1,4).map(p=>`<img src="${p}" alt="Court photo" onclick="openLightbox('${p}')">`).join(''):'';
+  document.getElementById('detailName').textContent=c.name;
+  document.getElementById('detailTag').textContent=c.sport;
+  document.getElementById('detailPrice').innerHTML=`£${c.price}<span>/hour</span>`;
+  const owner=c.ownerId?gU().find(u=>u.id===c.ownerId):null;
+  const pEl=document.getElementById('detailPolicy');
+  if(owner?.policy){pEl.innerHTML='📋 <strong>Cancellation Policy:</strong> '+owner.policy;pEl.style.display='block'}else pEl.style.display='none';
+  document.getElementById('detailMeta').innerHTML=`<span>🏟️ ${c.surface}</span><span>💰 £${c.price}/hr</span>${owner?`<span>👤 ${owner.facility||owner.name}</span>`:'<span>👤 Courtly</span>'}${owner?.location?`<span>📍 ${owner.location}</span>`:''}`;
+  const rvs=gRv().filter(r=>r.courtId===id);
+  const avg=rvs.length?rvs.reduce((s,r)=>s+r.stars,0)/rvs.length:0;
+  document.getElementById('detailRating').innerHTML=rvs.length?`<div class="rating-big">${avg.toFixed(1)}</div><div><div style="color:var(--gold);font-size:1.1rem">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</div><span style="font-size:.78rem;color:var(--grey)">${rvs.length} review${rvs.length!==1?'s':''}</span></div>`:'<span style="color:var(--grey);font-size:.88rem">No reviews yet</span>';
+  const isFav=gFav().includes(id);document.getElementById('favBtn').textContent=isFav?'♥ Saved':'♡ Save';
+  build7DayCal(id);renderRevs(id,0);renderLeaveReview(id);
+  nav('detail');
+}
+function build7DayCal(courtId){
+  const today=new Date();const wrap=document.getElementById('calDays');wrap.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);const dStr=d.toISOString().split('T')[0];
+    const booked=gB().filter(b=>b.courtId===courtId&&b.date===dStr&&b.status!=='cancelled').length;
+    const blocked=gAv(courtId,dStr).length;const avail=SLOTS.length-booked-blocked;
+    const btn=document.createElement('div');
+    btn.className='cal-day-btn'+(i===0?' today':'')+(calDetailDate===dStr?' active':'');
+    btn.innerHTML=`<span class="cd-date">${DAYS[d.getDay()]} ${d.getDate()}</span><span class="cd-slots" style="color:${avail>0?'var(--green)':'var(--red)'}">${avail>0?avail+' open':'Full'}</span>`;
+    btn.onclick=()=>{calDetailDate=dStr;document.querySelectorAll('.cal-day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');showCalSlots(courtId,dStr)};
+    wrap.appendChild(btn);
+  }
+  showCalSlots(courtId,today.toISOString().split('T')[0]);
+}
+function showCalSlots(courtId,date){
+  document.getElementById('calSlots').style.display='block';
+  document.getElementById('calSlotTitle').textContent=`Slots for ${new Date(date+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}`;
+  const booked=gB().filter(b=>b.courtId===courtId&&b.date===date&&b.status!=='cancelled').map(b=>b.time);
+  const blocked=gAv(courtId,date);
+  const grid=document.getElementById('calSlotsGrid');grid.innerHTML='';
+  let allTaken=true;
+  SLOTS.forEach(s=>{
+    const d=document.createElement('div');const iT=booked.includes(s),iB=blocked.includes(s);
+    if(!iT&&!iB)allTaken=false;
+    d.className='tslot'+(iT?' taken':iB?' blocked':'');d.textContent=s;
+    if(!iT&&!iB)d.onclick=()=>{bDate=date;bTime=s;const c=gC().find(x=>x.id===courtId);bCourt=c;bSport=c?.sport;nav('book');setTimeout(()=>goStep(3),100)};
+    grid.appendChild(d);
+  });
+  document.getElementById('waitlistBox').style.display=allTaken?'block':'none';
+}
+function toggleFav(){
+  if(!CU){toast('Log in to save favourites','err');return}
+  const favs=gFav();const i=favs.indexOf(currentDetailId);
+  if(i>-1)favs.splice(i,1);else favs.push(currentDetailId);
+  sFav(favs);document.getElementById('favBtn').textContent=i>-1?'♡ Save':'♥ Saved';
+  toast(i>-1?'Removed from favourites':'Added to favourites!');
+}
+function quickFav(id,btn){
+  if(!CU){toast('Log in to save favourites','err');return}
+  const favs=gFav();const i=favs.indexOf(id);
+  if(i>-1)favs.splice(i,1);else favs.push(id);sFav(favs);btn.textContent=i>-1?'♡':'♥';
+}
+function goBookFromDetail(){
+  const c=gC().find(x=>x.id===currentDetailId);if(!c)return;
+  bCourt=c;bSport=c.sport;nav('book');
+  setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.textContent.includes(c.sport)){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
+}
+function joinWaitlist(){
+  if(!CU){toast('Log in to join the waitlist','err');return}
+  const wl=gWL();if(wl.find(w=>w.courtId===currentDetailId&&w.date===calDetailDate&&w.userId===CU.id)){toast('Already on the waitlist','err');return}
+  wl.push({id:'WL'+Date.now(),courtId:currentDetailId,date:calDetailDate,userId:CU.id,name:CU.name,email:CU.email,joinedAt:new Date().toISOString()});
+  sWL(wl);toast('Added to waitlist! We\'ll notify you if a slot opens.');
+}
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open')}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open')}
+
+// ============================================================
+// REVIEWS
+// ============================================================
+function renderRevs(courtId,starFilter){
+  currentRevFilter=starFilter;
+  let rvs=gRv().filter(r=>r.courtId===courtId);
+  if(starFilter>0)rvs=rvs.filter(r=>r.stars===starFilter);
+  rvs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const el=document.getElementById('reviewsList');
+  if(!rvs.length){el.innerHTML=`<div class="empty-state" style="padding:24px 0"><div>💬</div>No reviews${starFilter?` for ${starFilter} stars`:' yet'}.</div>`;return}
+  const c=gC().find(x=>x.id===courtId);
+  const isOwner=CU&&c&&c.ownerId===CU.id;
+  el.innerHTML=rvs.map(r=>`<div class="review-card" id="rc_${r.id}">
+    <div class="rev-hdr">
+      <div class="rev-user"><div class="avatar">${(r.reviewerName||'?')[0].toUpperCase()}</div>
+        <div><div class="rev-name">${r.reviewerName}</div><div class="rev-date">${new Date(r.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+      </div>
+      <div class="rev-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+    </div>
+    <div class="rev-body">${r.body}</div>
+    ${r.photoData?`<img src="${r.photoData}" class="rev-photo" onclick="openLightbox('${r.photoData}')" alt="Review photo"/>` :''}
+    ${r.ownerReply?`<div class="owner-reply"><strong>🏟️ Owner replied:</strong>${r.ownerReply}</div>`:''}
+    ${isOwner&&!r.ownerReply?`<div class="reply-form" id="rf_${r.id}">
+      <textarea placeholder="Write a reply to this review…" id="rt_${r.id}"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-p btn-sm" onclick="submitReply('${r.id}',${courtId})">Reply</button>
+        <button class="btn btn-g btn-sm" onclick="document.getElementById('rf_${r.id}').style.display='none'">Cancel</button>
+      </div>
+    </div>
+    <button class="btn btn-g btn-sm" style="margin-top:8px;font-size:.74rem" onclick="document.getElementById('rf_${r.id}').style.display='block';this.style.display='none'">Reply to Review</button>`:''}
+  </div>`).join('');
+}
+function filterRevs(stars,btn){document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRevs(currentDetailId,stars)}
+function submitReply(rvId,courtId){
+  const txt=document.getElementById('rt_'+rvId)?.value.trim();
+  if(!txt){toast('Please write a reply','err');return}
+  const rvs=gRv();const r=rvs.find(x=>x.id===rvId);if(!r)return;
+  r.ownerReply=txt;sRv(rvs);renderRevs(courtId,currentRevFilter);toast('Reply posted!','ok');
+}
+function renderLeaveReview(courtId){
+  const el=document.getElementById('leaveReviewWrap');
+  if(!CU||CU.role!=='user'){el.innerHTML='<p style="color:var(--grey);font-size:.85rem;margin-top:14px"><a onclick="nav(\'login\')" style="color:var(--green);cursor:pointer">Log in</a> to leave a review.</p>';return}
+  const today=new Date().toISOString().split('T')[0];
+  const pastBk=gB().find(b=>b.courtId===courtId&&(b.email===CU.email||b.userId===CU.id)&&b.date<today&&b.status==='confirmed');
+  if(!pastBk){el.innerHTML='<p style="color:var(--grey);font-size:.85rem;margin-top:14px">Complete a session here to leave a review.</p>';return}
+  if(gRv().find(r=>r.courtId===courtId&&r.reviewerId===CU.id)){el.innerHTML='<div class="info-banner" style="margin-top:14px">✓ You\'ve already reviewed this court.</div>';return}
+  selectedStars=0;revPhotoData=null;
+  el.innerHTML=`<div class="rev-form"><h3 style="margin-bottom:14px;font-size:1.1rem">Leave a Review</h3>
+    <div class="star-input" id="starRow">${[1,2,3,4,5].map(n=>`<button class="star-btn" id="sb${n}" onclick="setStar(${n})">☆</button>`).join('')}</div>
+    <div class="fg"><label>Your Review</label><textarea id="rvTxt" rows="3" placeholder="What did you think of this court?"></textarea></div>
+    <div class="photo-drop" onclick="document.getElementById('rvFile').click()">
+      <input type="file" id="rvFile" accept="image/*" onchange="previewRvPhoto(this)"/>
+      <div id="rvPrevWrap">📷 Upload a photo (optional)</div>
+    </div>
+    <button class="btn btn-p" onclick="submitReview(${courtId})">Submit Review →</button>
+  </div>`;
+}
+function setStar(n){selectedStars=n;[1,2,3,4,5].forEach(i=>{const b=document.getElementById('sb'+i);if(b){b.textContent=i<=n?'★':'☆';b.classList.toggle('lit',i<=n)}})}
+function previewRvPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{revPhotoData=e.target.result;document.getElementById('rvPrevWrap').innerHTML=`<img src="${e.target.result}" style="width:72px;height:72px;border-radius:8px;object-fit:cover;margin-top:8px;" alt="preview"/>`;};r.readAsDataURL(f)}
+function submitReview(courtId){
+  if(!selectedStars){toast('Please select a rating','err');return}
+  const body=document.getElementById('rvTxt')?.value.trim();if(!body){toast('Please write a review','err');return}
+  const rvs=gRv();rvs.push({id:'RV'+Date.now(),courtId,reviewerId:CU.id,reviewerName:CU.name,stars:selectedStars,body,photoData:revPhotoData||null,ownerReply:null,createdAt:new Date().toISOString()});
+  sRv(rvs);toast('Review submitted! ★','ok');openDetail(courtId);
+}
+
+// ============================================================
+// COURT PHOTOS
+// ============================================================
+function previewCourtPhotos(inp){
+  const files=Array.from(inp.files).slice(0,4);
+  pendingCourtPhotos=[];
+  const thumbs=document.getElementById('courtPhotoThumbs');thumbs.innerHTML='';
+  files.forEach((f,i)=>{const r=new FileReader();r.onload=e=>{pendingCourtPhotos[i]=e.target.result;thumbs.innerHTML=pendingCourtPhotos.filter(Boolean).map((p,j)=>`<div class="photo-thumb"><img src="${p}" alt="Photo ${j+1}"/><button class="photo-thumb-del" onclick="removeCourtPhoto(${j})">✕</button></div>`).join('')};r.readAsDataURL(f)});
+}
+function removeCourtPhoto(i){pendingCourtPhotos.splice(i,1);document.getElementById('courtPhotoThumbs').innerHTML=pendingCourtPhotos.map((p,j)=>`<div class="photo-thumb"><img src="${p}" alt="Photo ${j+1}"/><button class="photo-thumb-del" onclick="removeCourtPhoto(${j})">✕</button></div>`).join('')}
+function previewEditPhotos(inp){
+  const files=Array.from(inp.files).slice(0,4);pendingEditPhotos=[];
+  const thumbs=document.getElementById('editPhotoThumbs');thumbs.innerHTML='';
+  files.forEach((f,i)=>{const r=new FileReader();r.onload=e=>{pendingEditPhotos[i]=e.target.result;thumbs.innerHTML=pendingEditPhotos.filter(Boolean).map((p,j)=>`<div class="photo-thumb"><img src="${p}" alt="Photo"/><button class="photo-thumb-del" onclick="removeEditPhoto(${j})">✕</button></div>`).join('')};r.readAsDataURL(f)});
+}
+function removeEditPhoto(i){pendingEditPhotos.splice(i,1);document.getElementById('editPhotoThumbs').innerHTML=pendingEditPhotos.map((p,j)=>`<div class="photo-thumb"><img src="${p}" alt="Photo"/><button class="photo-thumb-del" onclick="removeEditPhoto(${j})">✕</button></div>`).join('')}
+
+// ============================================================
+// BOOKING FLOW
+// ============================================================
+let stripeInst=null,cardEl=null;
+function initStripe(){
+  if(stripeInst)return;
+  stripeInst=Stripe('pk_test_placeholder_replace_with_your_key');
+  const els=stripeInst.elements();
+  cardEl=els.create('card',{style:{base:{fontFamily:"'DM Sans',sans-serif",fontSize:'16px',color:'#141414','::placeholder':{color:'#9ca3af'}}}});
+  cardEl.mount('#card-element');
+  cardEl.on('change',e=>{document.getElementById('card-errors').textContent=e.error?e.error.message:''});
+}
+function selSport(el,sport){
+  document.querySelectorAll('.sopt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');bSport=sport;bCourt=null;
+  const courts=gC().filter(c=>c.sport===sport);
+  const wrap=document.getElementById('courtDW'),sel=document.getElementById('courtDrop');
+  wrap.style.display='block';
+  sel.innerHTML='<option value="">-- Choose court --</option>';
+  courts.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`${c.name} — ${c.surface} — £${c.price}/hr`;sel.appendChild(o)});
+  sel.onchange=()=>{bCourt=gC().find(c=>c.id==sel.value)||null;chk1()};chk1();
+}
+function chk1(){document.getElementById('s1n').disabled=!(bSport&&bCourt)}
+function loadSlots(){
+  const di=document.getElementById('bkDate');bDate=di.value;if(!bDate||!bCourt)return;
+  const booked=gB().filter(b=>b.courtId===bCourt.id&&b.date===bDate&&b.status!=='cancelled').map(b=>b.time);
+  const blocked=gAv(bCourt.id,bDate);
+  const grid=document.getElementById('slotsGrid');grid.innerHTML='';
+  SLOTS.forEach(s=>{const d=document.createElement('div');const iT=booked.includes(s),iB=blocked.includes(s);d.className='tslot'+(iT?' taken':iB?' blocked':'');d.textContent=s;if(!iT&&!iB)d.onclick=()=>selSlot(d,s);grid.appendChild(d)});
+  document.getElementById('slotsW').style.display='block';chk2();
+}
+function selSlot(el,t){document.querySelectorAll('.tslot').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');bTime=t;chk2()}
+function chk2(){document.getElementById('s2n').disabled=!(bDate&&bTime)}
+function goStep(n){
+  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
+  (document.getElementById('bs'+n)||document.getElementById('bsOK')).classList.add('active');
+  [1,2,3,4].forEach(i=>{const d=document.getElementById('d'+i);if(!d)return;d.classList.remove('active','done');if(i<n)d.classList.add('done');if(i===n)d.classList.add('active')});
+  if(n===3||n===4){
+    const fee=gFee(),cf=bCourt?.price||0,pf=Math.round(cf*fee)/100,total=cf+pf;
+    const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
+    if(document.getElementById('bSum'))document.getElementById('bSum').innerHTML=html;
+    if(document.getElementById('bSum2'))document.getElementById('bSum2').innerHTML=html;
+    if(document.getElementById('feeBreakdown'))document.getElementById('feeBreakdown').innerHTML=`<div class="fee-row"><span>Court fee</span><span>£${cf.toFixed(2)}</span></div><div class="fee-row"><span>Courtly fee (${fee}%)</span><span>£${pf.toFixed(2)}</span></div><div class="fee-row total"><span>Total</span><span>£${total.toFixed(2)}</span></div>`;
+    document.getElementById('payAmt').textContent=total.toFixed(2);
+    const owner=bCourt?.ownerId?gU().find(u=>u.id===bCourt.ownerId):null;
+    const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
+    // Pre-fill from profile
+    if(CU&&n===3){
+      const fi=document.getElementById('cFirst'),la=document.getElementById('cLast');
+      if(fi&&!fi.value&&CU.name){const parts=CU.name.split(' ');fi.value=parts[0]||'';la.value=parts.slice(1).join(' ')||''}
+      const em=document.getElementById('cEmail');if(em&&!em.value)em.value=CU.email||'';
+      const ph=document.getElementById('cPhone');if(ph&&!ph.value)ph.value=CU.phone||'';
+    }
+  }
+  if(n===4)setTimeout(initStripe,120);
+}
+async function processPayment(){
+  const first=document.getElementById('cFirst').value.trim(),email=document.getElementById('cEmail').value.trim();
+  if(!first||!email){toast('Please fill in your details','err');return}
+  const payBtn=document.getElementById('payBtn');payBtn.disabled=true;payBtn.textContent='Processing…';
+  await new Promise(r=>setTimeout(r,1800));
+  const fee=gFee(),cf=bCourt?.price||0,pf=Math.round(cf*fee)/100,total=cf+pf;
+  const bk={id:'BK'+Date.now(),name:`${first} ${document.getElementById('cLast').value.trim()}`,email,phone:document.getElementById('cPhone').value.trim(),sport:bSport,court:bCourt?.name,courtId:bCourt?.id,date:bDate,time:bTime,price:cf,platformFee:pf,total,status:'confirmed',paid:true,userId:CU?.id||null,createdAt:new Date().toISOString()};
+  const bks=gB();bks.push(bk);sB(bks);
+  // Notify waitlist
+  gWL().filter(w=>w.courtId===bk.courtId&&w.date===bk.date).forEach(w=>console.log(`📧 WAITLIST NOTIFY → ${w.email}: Slot opened at ${bk.court}!`));
+  simulateNotify(bk);
+  scheduleReminders(bk);
+  payBtn.disabled=false;payBtn.textContent=`Pay £${total.toFixed(2)} →`;
+  document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
+  document.getElementById('bsOK').classList.add('active');
+  document.getElementById('okMsg').textContent=`${bSport} at ${bCourt?.name} on ${fmtDate(bDate)} at ${bTime}. Ref: ${bk.id}`;
+}
+function simulateNotify(bk){
+  const owner=bk.courtId?gC().find(c=>c.id===bk.courtId):null;
+  const ownerUser=owner?.ownerId?gU().find(u=>u.id===owner.ownerId):null;
+  console.log(`📧 EMAIL → ${bk.email}: Booking confirmed! ${bk.court} ${bk.date} ${bk.time}. Ref:${bk.id}`);
+  console.log(`📱 SMS → ${bk.phone||'N/A'}: Courtly confirmed! ${bk.court} ${bk.date} ${bk.time}`);
+  if(ownerUser){console.log(`📧 OWNER → ${ownerUser.email}: New booking at ${bk.court} by ${bk.name}`);console.log(`📱 OWNER SMS: New booking ${bk.court} ${bk.date} ${bk.time}`)}
+  toast(`📧 Confirmation + reminders scheduled for ${bk.email}`,'ok');
+}
+function resetBook(){
+  bSport=null;bCourt=null;bDate=null;bTime=null;
+  document.querySelectorAll('.sopt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('courtDW').style.display='none';
+  document.getElementById('slotsW').style.display='none';
+  ['cFirst','cLast','cEmail','cPhone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  goStep(1);
+}
+function fmtDate(s){if(!s)return'';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+function fmtDateLong(s){if(!s)return'';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+
+// ============================================================
+// MY BOOKINGS
+// ============================================================
+function showBTab(tab,btn){currentBTab=tab;document.querySelectorAll('.btab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderMyBookings(tab)}
+function renderMyBookings(tab){
+  if(!CU){document.getElementById('myBkList').innerHTML='<div class="empty-state"><div>🔒</div><a onclick="nav(\'login\')" style="color:var(--green);cursor:pointer">Log in</a> to view bookings.</div>';return}
+  const today=new Date().toISOString().split('T')[0];
+  let bks=gB().filter(b=>b.email===CU.email||b.userId===CU.id);
+  if(tab==='upcoming')bks=bks.filter(b=>b.date>=today&&b.status!=='cancelled');
+  else if(tab==='past')bks=bks.filter(b=>b.date<today&&b.status!=='cancelled');
+  else bks=bks.filter(b=>b.status==='cancelled');
+  bks.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const el=document.getElementById('myBkList');
+  if(!bks.length){el.innerHTML=`<div class="empty-state"><div>${tab==='upcoming'?'📅':tab==='past'?'✅':'❌'}</div>No ${tab} bookings.</div>`;return}
+  const courts=gC();
+  el.innerHTML=bks.map(b=>{
+    const c=courts.find(x=>x.id===b.courtId);
+    const isPast=b.date<today;
+    const hasRv=gRv().find(r=>r.courtId===b.courtId&&r.reviewerId===CU.id);
+    const hasDs=gDs().find(d=>d.bookingId===b.id);
+    const slotHr=parseSlotToHour(b.time);
+    const bkDT=new Date(b.date+'T'+String(slotHr).padStart(2,'0')+':00:00');
+    const now=new Date();const hoursAway=(bkDT-now)/(1000*60*60);
+    const showReminder=!isPast&&b.status==='confirmed'&&hoursAway>0&&hoursAway<=24;
+    return`<div class="booking-item">
+      <div class="booking-icon">${c?.icon||'🏟️'}</div>
+      <div class="booking-info">
+        <h4>${b.court}</h4>
+        <p>${fmtDateLong(b.date)} · ${b.time}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge ${b.status==='confirmed'?'badge-g':'badge-r'}">${b.status}</span>
+          <span class="badge ${b.paid?'badge-b':'badge-gold'}">${b.paid?'💳 Paid':'Unpaid'}</span>
+          <span class="badge badge-g">£${(b.total||b.price||0).toFixed(2)}</span>
+          ${showReminder?`<span class="reminder-badge">⏰ Reminder set</span>`:''}
+        </div>
+      </div>
+      <div class="booking-actions">
+        <button class="receipt-btn" onclick="showReceipt('${b.id}')">🧾 Receipt</button>
+        ${!isPast&&b.status!=='cancelled'?`<button class="btn btn-r btn-sm" onclick="openCancelModal('${b.id}')">Cancel</button>`:''}
+        ${isPast&&b.status==='confirmed'&&!hasRv&&c?`<button class="btn btn-gold btn-sm" onclick="openDetail(${b.courtId})">★ Review</button>`:''}
+        ${isPast&&b.status==='confirmed'?`<button class="btn btn-g btn-sm" onclick="reBook(${b.courtId})">Rebook</button>`:''}
+        ${isPast&&b.status!=='cancelled'&&!hasDs?`<button class="btn btn-g btn-sm" onclick="openDisputeModal('${b.id}')">Dispute</button>`:''}
+        ${hasDs?`<span class="badge badge-gold">Dispute ${hasDs.status}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function reBook(courtId){const c=gC().find(x=>x.id===courtId);if(!c)return;bCourt=c;bSport=c.sport;nav('book');setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.textContent.includes(c.sport)){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120)}
+function openCancelModal(id){
+  const bk=gB().find(b=>b.id===id);if(!bk)return;
+  document.getElementById('cancelId').value=id;
+  const owner=bk.courtId?gC().find(c=>c.id===bk.courtId):null;
+  const ou=owner?.ownerId?gU().find(u=>u.id===owner.ownerId):null;
+  document.getElementById('cancelPolicy').innerHTML='📋 '+(ou?.policy||'No specific refund policy set.');
+  openModal('cancelModal');
+}
+function doCancel(){const id=document.getElementById('cancelId').value;const bks=gB();const b=bks.find(x=>x.id===id);if(b){b.status='cancelled';sB(bks);closeModal('cancelModal');renderMyBookings(currentBTab);toast('Booking cancelled')}}
+function openDisputeModal(bkId){document.getElementById('disputeBkId').value=bkId;openModal('disputeModal')}
+function submitDispute(){
+  const bkId=document.getElementById('disputeBkId').value;
+  const reason=document.getElementById('disputeReason').value;
+  const detail=document.getElementById('disputeDetail').value.trim();
+  if(!detail){toast('Please describe the issue','err');return}
+  const ds=gDs();const bk=gB().find(b=>b.id===bkId);
+  ds.push({id:'DS'+Date.now(),bookingId:bkId,courtName:bk?.court||'',playerName:CU.name,email:CU.email,reason,detail,status:'open',createdAt:new Date().toISOString()});
+  sDs(ds);closeModal('disputeModal');renderMyBookings(currentBTab);toast('Dispute submitted. Admin will review within 48hrs.','ok');
+}
+function showReceipt(id){
+  const bk=gB().find(b=>b.id===id);if(!bk)return;
+  document.getElementById('receiptContent').innerHTML=`
+    <div style="text-align:center;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--border)">
+      <div class="ok-icon" style="width:50px;height:50px;font-size:1.3rem;margin:0 auto 12px">✓</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Courtly</div>
+      <div style="font-size:.72rem;color:var(--grey)">Booking Receipt</div>
+    </div>
+    ${[['Booking ID',bk.id],['Court',bk.court],['Sport',bk.sport],['Date',fmtDateLong(bk.date)],['Time',bk.time],['Name',bk.name],['Email',bk.email],['Court Fee','£'+(bk.price||0).toFixed(2)],['Platform Fee','£'+(bk.platformFee||0).toFixed(2)],['Status',bk.status]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--grey-l);font-size:.84rem"><span>${k}</span><span>${v}</span></div>`).join('')}
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;font-size:.92rem"><span>Total Paid</span><span>£${(bk.total||bk.price||0).toFixed(2)}</span></div>
+    <p style="font-size:.7rem;color:var(--grey);text-align:center;margin-top:14px">courtly.com · Powered by Stripe 🔒</p>`;
+  openModal('receiptModal');
+}
+
+// ============================================================
+// PLAYER PROFILE
+// ============================================================
+function initProfile(){
+  if(!CU){nav('login');return}
+  const fresh=gU().find(x=>x.id===CU.id)||CU;
+  document.getElementById('profileName').textContent=fresh.name||'Your Name';
+  document.getElementById('profileEmail').textContent=fresh.email||'';
+  // Avatar
+  const avEl=document.getElementById('profileAvatarDisplay');
+  if(fresh.avatar){avEl.innerHTML=`<img src="${fresh.avatar}" alt="Avatar"/><input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>`;
+  }else{avEl.innerHTML=`<span id="avatarInitial">${(fresh.name||'?')[0].toUpperCase()}</span><input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>`}
+  // Sports
+  profileSports=fresh.favSports||[];
+  const sportsEl=document.getElementById('profileSports');
+  sportsEl.innerHTML=profileSports.map(s=>`<span class="sport-chip">${ICONS[s]||''} ${s}</span>`).join('');
+  // Stats
+  const bks=gB().filter(b=>b.email===CU.email||b.userId===CU.id);
+  const rvs=gRv().filter(r=>r.reviewerId===CU.id);
+  const favs=gFav();
+  const spent=bks.filter(b=>b.paid).reduce((s,b)=>s+(b.total||b.price||0),0);
+  document.getElementById('pStatBk').textContent=bks.length;
+  document.getElementById('pStatRv').textContent=rvs.length;
+  document.getElementById('pStatFav').textContent=favs.length;
+  document.getElementById('pStatSpent').textContent='£'+spent.toFixed(0);
+  // Form
+  const parts=(fresh.name||'').split(' ');
+  document.getElementById('pFirst').value=parts[0]||'';
+  document.getElementById('pLast').value=parts.slice(1).join(' ')||'';
+  document.getElementById('pEmail').value=fresh.email||'';
+  document.getElementById('pPhone').value=fresh.phone||'';
+  // Sport picker
+  document.querySelectorAll('.sport-pick-btn').forEach(btn=>{
+    const s=btn.textContent.trim().replace(/[^a-zA-Z]/g,'');
+    btn.classList.toggle('sel',profileSports.some(x=>x===s||(btn.textContent.includes(x))));
+  });
+}
+function toggleSport(btn,sport){
+  const i=profileSports.indexOf(sport);
+  if(i>-1)profileSports.splice(i,1);else profileSports.push(sport);
+  btn.classList.toggle('sel');
+}
+function uploadAvatar(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const users=gU();const u=users.find(x=>x.id===CU.id);
+    if(u){u.avatar=e.target.result;sU(users);sCU(u);CU=u;}
+    const avEl=document.getElementById('profileAvatarDisplay');
+    avEl.innerHTML=`<img src="${e.target.result}" alt="Avatar" style="width:100%;height:100%;object-fit:cover"/><input type="file" id="avatarFile" accept="image/*" style="display:none" onchange="uploadAvatar(this)"/>`;
+    toast('Profile photo updated!','ok');
+  };
+  r.readAsDataURL(f);
+}
+function saveProfile(){
+  const first=document.getElementById('pFirst').value.trim(),last=document.getElementById('pLast').value.trim();
+  const email=document.getElementById('pEmail').value.trim(),phone=document.getElementById('pPhone').value.trim();
+  if(!first||!email){showMsg('profileMsg','Please fill in name and email.','err');return}
+  const users=gU();const u=users.find(x=>x.id===CU.id);
+  if(u){u.name=`${first} ${last}`.trim();u.email=email;u.phone=phone;u.favSports=profileSports;sU(users);sCU(u);CU=u;}
+  document.getElementById('profileName').textContent=`${first} ${last}`.trim();
+  document.getElementById('profileSports').innerHTML=profileSports.map(s=>`<span class="sport-chip">${ICONS[s]||''} ${s}</span>`).join('');
+  showMsg('profileMsg','Profile saved!','ok');toast('Profile saved!','ok');
+}
+function changePassword(){
+  const cur=document.getElementById('pCurPass').value,nw=document.getElementById('pNewPass').value,conf=document.getElementById('pConfPass').value;
+  if(!cur||!nw||!conf){showMsg('profileMsg','Please fill in all password fields.','err');return}
+  const users=gU();const u=users.find(x=>x.id===CU.id);
+  if(!u||u.password!==cur){showMsg('profileMsg','Current password is incorrect.','err');return}
+  if(nw.length<6){showMsg('profileMsg','New password must be 6+ characters.','err');return}
+  if(nw!==conf){showMsg('profileMsg','Passwords do not match.','err');return}
+  u.password=nw;sU(users);sCU(u);CU=u;
+  ['pCurPass','pNewPass','pConfPass'].forEach(id=>document.getElementById(id).value='');
+  showMsg('profileMsg','Password changed successfully!','ok');toast('Password updated!','ok');
+}
+function showProfileTab(name,btn){
+  document.querySelectorAll('#pg-profile .tpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#pg-profile .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('pt-'+name).classList.add('active');
+  if(name==='history')renderProfileHistory();
+  if(name==='reminders')renderProfileReminders();
+}
+function renderProfileHistory(){
+  if(!CU)return;
+  const bks=gB().filter(b=>b.email===CU.email||b.userId===CU.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el=document.getElementById('profileBkHistory');
+  if(!bks.length){el.innerHTML='<div class="empty-state"><div>📅</div>No bookings yet.</div>';return}
+  el.innerHTML=bks.map(b=>`<div class="booking-item" style="margin-bottom:10px">
+    <div class="booking-icon">${gC().find(c=>c.id===b.courtId)?.icon||'🏟️'}</div>
+    <div class="booking-info"><h4>${b.court}</h4><p>${fmtDateLong(b.date)} · ${b.time}</p>
+      <span class="badge ${b.status==='confirmed'?'badge-g':'badge-r'}">${b.status}</span>
+      <span class="badge badge-b" style="margin-left:4px">£${(b.total||b.price||0).toFixed(2)}</span>
+    </div>
+  </div>`).join('');
+}
+function renderProfileReminders(){
+  if(!CU)return;
+  const today=new Date().toISOString().split('T')[0];
+  const bks=gB().filter(b=>(b.email===CU.email||b.userId===CU.id)&&b.date>=today&&b.status==='confirmed');
+  const el=document.getElementById('profileReminders');
+  if(!bks.length){el.innerHTML='<div class="empty-state"><div>⏰</div>No upcoming reminders.</div>';return}
+  el.innerHTML=bks.map(b=>{
+    const slotHr=parseSlotToHour(b.time);
+    const bkDT=new Date(b.date+'T'+String(slotHr).padStart(2,'0')+':00:00');
+    const r12=new Date(bkDT.getTime()-12*60*60*1000);
+    const r1=new Date(bkDT.getTime()-60*60*1000);
+    return`<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px">
+      <div style="font-weight:500;margin-bottom:8px">${b.court} · ${b.time}</div>
+      <div style="font-size:.82rem;color:var(--grey);margin-bottom:10px">${fmtDateLong(b.date)}</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="reminder-badge" style="width:fit-content">📧📱 12-hour reminder: ${r12.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} on ${r12.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+        <div class="reminder-badge" style="width:fit-content">📧📱 1-hour reminder: ${r1.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} on ${r1.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// FAVOURITES
+// ============================================================
+function renderFavourites(){
+  const el=document.getElementById('favList');if(!el)return;
+  if(!CU){el.innerHTML='<div class="empty-state"><div>🔒</div><a onclick="nav(\'login\')" style="color:var(--green);cursor:pointer">Log in</a> to view favourites.</div>';return}
+  const ids=gFav();const courts=gC().filter(c=>ids.includes(c.id));
+  if(!courts.length){el.innerHTML='<div class="empty-state"><div>♡</div>No favourites yet.<br/><button class="btn btn-p" onclick="nav(\'courts\')" style="margin-top:14px">Browse Courts</button></div>';return}
+  el.innerHTML=`<div class="courts-grid">${courts.map(c=>courtCardHTML(c)).join('')}</div>`;
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+let regRole='user';
+function setRole(r){regRole=r;document.getElementById('rBU').classList.toggle('active',r==='user');document.getElementById('rBO').classList.toggle('active',r==='owner');document.getElementById('ownerFields').style.display=r==='owner'?'block':'none';document.getElementById('ownerNote').style.display=r==='owner'?'block':'none'}
+function doLogin(){
+  const email=document.getElementById('lEmail').value.trim(),pass=document.getElementById('lPass').value;
+  if(!email||!pass){showMsg('lMsg','Please fill in all fields.','err');return}
+  if(email==='admin@courtly.com'&&pass==='admin123'){const u={id:'admin',name:'Admin',email,role:'admin'};sCU(u);CU=u;updateNav();nav('admin');return}
+  const u=gU().find(u=>u.email===email&&u.password===pass);
+  if(u){sCU(u);CU=u;updateNav();showMsg('lMsg','Login successful!','ok');
+    setTimeout(()=>{nav(u.role==='owner'?'owner':'home');if(u.role==='user')rescheduleAllReminders()},700)}
+  else showMsg('lMsg','Invalid email or password.','err');
+}
+function doRegister(){
+  const first=document.getElementById('rFirst').value.trim(),last=document.getElementById('rLast').value.trim();
+  const email=document.getElementById('rEmail').value.trim(),pass=document.getElementById('rPass').value;
+  if(!first||!last||!email||!pass){showMsg('rMsg','Please fill in all fields.','err');return}
+  if(pass.length<6){showMsg('rMsg','Password must be 6+ characters.','err');return}
+  const users=gU();if(users.find(u=>u.email===email)){showMsg('rMsg','Email already in use.','err');return}
+  const nu={id:'U'+Date.now(),name:`${first} ${last}`,email,password:pass,role:regRole,phone:'',avatar:null,favSports:[],joinedAt:new Date().toISOString()};
+  if(regRole==='owner'){nu.facility=document.getElementById('rFacility').value.trim();nu.location=document.getElementById('rLocation').value.trim();nu.policy=document.getElementById('rPolicy').value.trim();nu.desc=document.getElementById('rDesc').value.trim();nu.approvalStatus='pending'}
+  users.push(nu);sU(users);sCU(nu);CU=nu;updateNav();
+  if(regRole==='owner'){showMsg('rMsg','Account created! Awaiting approval.','ok');setTimeout(()=>nav('owner'),1200)}
+  else{showMsg('rMsg','Welcome to Courtly!','ok');setTimeout(()=>nav('home'),900)}
+}
+
+// PASSWORD RESET
+function sendResetLink(){
+  const email=document.getElementById('resetEmail').value.trim();
+  if(!email){showMsg('resetMsg1','Please enter your email.','err');return}
+  const u=gU().find(x=>x.email===email);
+  if(!u){showMsg('resetMsg1','No account found with that email.','err');return}
+  // Generate 6-digit code and store
+  resetPendingEmail=email;
+  resetPendingCode=String(Math.floor(100000+Math.random()*900000));
+  console.log(`📧 PASSWORD RESET EMAIL → ${email}: Your reset code is ${resetPendingCode}`);
+  showMsg('resetMsg1',`Reset code sent to ${email} (check console for demo)! Expires in 10 minutes.`,'ok');
+  setTimeout(()=>{document.getElementById('resetStep1').style.display='none';document.getElementById('resetStep2').style.display='block'},1500);
+}
+function doReset(){
+  const code=document.getElementById('resetCode').value.trim();
+  const nw=document.getElementById('resetNewPass').value;
+  const conf=document.getElementById('resetConfPass').value;
+  if(code!==resetPendingCode){showMsg('resetMsg2','Invalid reset code.','err');return}
+  if(nw.length<6){showMsg('resetMsg2','Password must be 6+ characters.','err');return}
+  if(nw!==conf){showMsg('resetMsg2','Passwords do not match.','err');return}
+  const users=gU();const u=users.find(x=>x.email===resetPendingEmail);
+  if(!u){showMsg('resetMsg2','Something went wrong.','err');return}
+  u.password=nw;sU(users);resetPendingCode='';resetPendingEmail='';
+  showMsg('resetMsg2','Password reset successfully!','ok');
+  toast('Password reset! Please log in.','ok');
+  setTimeout(()=>nav('login'),1500);
+}
+function showMsg(id,msg,type){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.className='auth-msg '+type;el.style.display='block'}
+
+// ============================================================
+// OWNER PORTAL
+// ============================================================
+function initOwner(){
+  let u=gCU();if(!u||u.role!=='owner')return;
+  const fresh=gU().find(x=>x.id===u.id)||u;sCU(fresh);CU=fresh;
+  document.getElementById('ownerTitle').textContent=fresh.facility||fresh.name;
+  document.getElementById('ownerSub').textContent=`${fresh.location||''} · Manage your courts.`;
+  const pend=fresh.approvalStatus==='pending';
+  document.getElementById('pendBanner').style.display=pend?'block':'none';
+  document.getElementById('ownerBody').style.display=pend?'none':'block';
+  if(pend)return;
+  const myCourts=gC().filter(c=>c.ownerId===CU.id);
+  const myBks=gB().filter(b=>myCourts.map(c=>c.id).includes(b.courtId));
+  const myRvs=gRv().filter(r=>myCourts.map(c=>c.id).includes(r.courtId));
+  const fee=gFee();
+  const rev=myBks.filter(b=>b.paid).reduce((s,b)=>s+(b.price-(b.price*fee/100)),0);
+  const avgR=myRvs.length?(myRvs.reduce((s,r)=>s+r.stars,0)/myRvs.length).toFixed(1):'—';
+  document.getElementById('oS1').textContent=myCourts.length;
+  document.getElementById('oS2').textContent=myBks.length;
+  document.getElementById('oS3').textContent='£'+rev.toFixed(0);
+  document.getElementById('oS4').textContent=avgR+(myRvs.length?' ★':'');
+  renderChart('week',document.getElementById('ctW'));
+  renderOwnerCourts();renderOwnerBk();populateOwnerSelects();
+  document.getElementById('sF').value=fresh.facility||'';
+  document.getElementById('sL').value=fresh.location||'';
+  document.getElementById('sP').value=fresh.policy||'';
+  renderOwnerCal();buildRecurDays();renderPayouts();
+}
+function renderOwnerCourts(){
+  const courts=gC().filter(c=>c.ownerId===CU.id);
+  const el=document.getElementById('ownerCourtsList');
+  if(!courts.length){el.innerHTML='<div class="empty-state"><div>🏟️</div>No courts yet. Add your first court.</div>';return}
+  el.innerHTML=courts.map(c=>`<div class="cmcard">
+    <div class="cmcard-hdr">
+      <div>
+        <h4 style="margin-bottom:4px">${c.icon} ${c.name} <span class="court-sport-tag">${c.sport}</span></h4>
+        <p style="font-size:.78rem;color:var(--grey)">${c.surface} · £${c.price}/hr</p>
+        ${c.photos&&c.photos.length?`<div class="photo-thumbs" style="margin-top:8px">${c.photos.slice(0,3).map(p=>`<div class="photo-thumb"><img src="${p}" onclick="openLightbox('${p}')"/></div>`).join('')}</div>`:'<p style="font-size:.72rem;color:var(--grey);margin-top:6px">No photos uploaded</p>'}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-g btn-sm" onclick="openEditCourt(${c.id})">Edit</button>
+        <button class="btn btn-r btn-sm" onclick="delCt(${c.id},true)">Remove</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function renderOwnerBk(){
+  const courts=gC().filter(c=>c.ownerId===CU.id).map(c=>c.id);
+  const bks=gB().filter(b=>courts.includes(b.courtId));
+  const tb=document.getElementById('ownerBkBody');
+  if(!bks.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div>📋</div>No bookings yet.</div></td></tr>';return}
+  tb.innerHTML=bks.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(b=>`<tr><td>${b.id}</td><td>${b.name}</td><td>${b.court}</td><td>${fmtDate(b.date)}</td><td>${b.time}</td><td>${b.paid?`<span class="sb sb-g">£${(b.total||b.price).toFixed(2)}</span>`:'<span class="sb sb-gold">Unpaid</span>'}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab d" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}</td></tr>`).join('');
+}
+function renderOwnerCal(){
+  const today=new Date();const d=new Date(today);d.setDate(1);d.setMonth(d.getMonth()+calMonthOffset);
+  const year=d.getFullYear(),month=d.getMonth();
+  document.getElementById('calMonthLabel').textContent=d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const grid=document.getElementById('ownerCalGrid');grid.innerHTML='';
+  DAYS.forEach(d=>{const h=document.createElement('div');h.className='bk-cal-hdr';h.textContent=d;grid.appendChild(h)});
+  const first=new Date(year,month,1).getDay();
+  for(let i=0;i<first;i++)grid.appendChild(document.createElement('div'));
+  const days=new Date(year,month+1,0).getDate();
+  const todayStr=new Date().toISOString().split('T')[0];
+  const courts=gC().filter(c=>c.ownerId===CU.id).map(c=>c.id);
+  for(let dd=1;dd<=days;dd++){
+    const dStr=`${year}-${String(month+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    const dayBks=gB().filter(b=>courts.includes(b.courtId)&&b.date===dStr&&b.status!=='cancelled');
+    const cell=document.createElement('div');cell.className='bk-cal-cell'+(dStr===todayStr?' today':'');
+    cell.innerHTML=`<span class="bcc-date">${dd}</span>${dayBks.slice(0,3).map(()=>'<span class="bk-cal-dot"></span>').join('')}${dayBks.length>3?`<span style="font-size:.6rem;color:var(--green)">+${dayBks.length-3}</span>`:''}`;
+    grid.appendChild(cell);
+  }
+}
+function moveCalMonth(d){calMonthOffset+=d;renderOwnerCal()}
+function populateOwnerSelects(){
+  const courts=gC().filter(c=>c.ownerId===CU.id);
+  ['availCourtSel','recurCourtSel'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    sel.innerHTML='<option value="">-- Select court --</option>';
+    courts.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name+' — '+c.sport;sel.appendChild(o)});
+  });
+}
+function renderAvailGrid(){
+  const cid=document.getElementById('availCourtSel').value,date=document.getElementById('availDate').value;
+  if(!cid||!date){document.getElementById('availWrap').style.display='none';return}
+  document.getElementById('availWrap').style.display='block';
+  const blocked=gAv(cid,date);const grid=document.getElementById('availGrid');grid.innerHTML='';
+  SLOTS.forEach(s=>{const d=document.createElement('div');d.className='avail-slot '+(blocked.includes(s)?'closed':'open');d.textContent=s;d.onclick=()=>{const bl=gAv(cid,date);const i=bl.indexOf(s);if(i>-1)bl.splice(i,1);else bl.push(s);sAv(cid,date,bl);renderAvailGrid()};grid.appendChild(d)});
+}
+function buildRecurDays(){
+  const grid=document.getElementById('recurDays');if(!grid)return;grid.innerHTML='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((day,i)=>{const d=document.createElement('div');d.className='recur-day'+(recurSelDays.includes(i)?' sel':'');d.textContent=day;d.onclick=()=>{const idx=recurSelDays.indexOf(i);if(idx>-1)recurSelDays.splice(idx,1);else recurSelDays.push(i);d.classList.toggle('sel')};grid.appendChild(d)});
+}
+function loadRecurring(){
+  const cid=document.getElementById('recurCourtSel').value;if(!cid)return;
+  const rec=gRec(cid);recurSelDays=[...rec.days];buildRecurDays();
+  document.getElementById('recurFrom').value=rec.from;document.getElementById('recurTo').value=rec.to;
+}
+function saveRecurring(){
+  const cid=document.getElementById('recurCourtSel').value;if(!cid){toast('Select a court','err');return}
+  sRec(cid,{days:[...recurSelDays],from:document.getElementById('recurFrom').value,to:document.getElementById('recurTo').value});
+  toast('Recurring hours saved!','ok');
+}
+function showOwnerTab(name,btn){
+  document.querySelectorAll('#ownerBody .tpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#ownerTabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('ot-'+name).classList.add('active');
+  if(name==='calendar')renderOwnerCal();
+  if(name==='avail'){const t=new Date().toISOString().split('T')[0];document.getElementById('availDate').value=t;document.getElementById('availDate').min=t;}
+  if(name==='payouts')renderPayouts();
+}
+function saveSettings(){
+  const users=gU();const u=users.find(x=>x.id===CU.id);if(!u)return;
+  u.facility=document.getElementById('sF').value.trim();u.location=document.getElementById('sL').value.trim();u.policy=document.getElementById('sP').value.trim();
+  sU(users);sCU(u);CU=u;toast('Settings saved!','ok');
+}
+function renderChart(mode,btn){
+  document.querySelectorAll('.ctgl').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const courts=gC().filter(c=>c.ownerId===CU.id).map(c=>c.id);
+  const days=mode==='week'?7:30;const labels=[],values=[];
+  for(let i=days-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const dStr=d.toISOString().split('T')[0];
+    values.push(gB().filter(b=>courts.includes(b.courtId)&&b.date===dStr&&b.paid).reduce((s,b)=>s+(b.price||0),0));
+    labels.push(d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}));}
+  const max=Math.max(...values,1);
+  const wrap=document.getElementById('chartBars');wrap.innerHTML='';
+  labels.forEach((lbl,i)=>{const pct=Math.round((values[i]/max)*100);const bw=document.createElement('div');bw.className='chart-bar-wrap';bw.innerHTML=`<div class="chart-bar" style="height:${pct}%"><span class="chart-bar-val">£${values[i]}</span></div><div class="chart-bar-lbl">${mode==='week'?lbl:i%5===0?lbl:''}</div>`;wrap.appendChild(bw)});
+}
+
+// PAYOUTS
+function renderPayouts(){
+  const el=document.getElementById('payoutContent');if(!el)return;
+  const myPOs=gPO().filter(p=>p.ownerId===CU.id);
+  const fee=gFee();
+  const myCourts=gC().filter(c=>c.ownerId===CU.id).map(c=>c.id);
+  const available=gB().filter(b=>myCourts.includes(b.courtId)&&b.paid&&b.status==='confirmed').reduce((s,b)=>s+(b.price-(b.price*fee/100)),0);
+  const pending=myPOs.filter(p=>p.status==='pending').reduce((s,p)=>s+p.amount,0);
+  el.innerHTML=`<div class="payout-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+      <div>
+        <div style="font-size:.78rem;color:var(--grey);margin-bottom:4px">Available balance (after platform fee)</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green)">£${available.toFixed(2)}</div>
+      </div>
+      <button class="btn btn-p" onclick="openPayoutModal()">Request Payout →</button>
+    </div>
+    ${pending>0?`<div class="warn-banner">£${pending.toFixed(2)} pending in payout requests.</div>`:''}
+    <h3 style="margin-bottom:12px;font-size:.95rem">Payout History</h3>
+    ${myPOs.length?myPOs.map(p=>`<div class="payout-row"><span>${new Date(p.createdAt).toLocaleDateString('en-GB')}</span><span>£${p.amount.toFixed(2)}</span><span>${p.bankName} ····${p.last4||'????'}</span><span class="payout-status ${p.status}">${p.status}</span></div>`).join(''):'<p style="color:var(--grey);font-size:.84rem">No payout requests yet.</p>'}
+  </div>`;
+}
+function openPayoutModal(){
+  document.getElementById('payoutOwnerId').value=CU.id;
+  openModal('payoutModal');
+}
+function submitPayout(){
+  const bank=document.getElementById('payoutBank').value.trim();
+  const accName=document.getElementById('payoutAccName').value.trim();
+  const bsb=document.getElementById('payoutBSB').value.trim();
+  const accNum=document.getElementById('payoutAccNum').value.trim();
+  const amount=parseFloat(document.getElementById('payoutAmount').value);
+  if(!bank||!accName||!bsb||!accNum||!amount){toast('Please fill in all fields','err');return}
+  const pos=gPO();
+  pos.push({id:'PO'+Date.now(),ownerId:CU.id,ownerName:CU.name||'',facility:CU.facility||'',bankName:bank,accName,bsb,last4:accNum.slice(-4),amount,status:'pending',createdAt:new Date().toISOString()});
+  sPO(pos);closeModal('payoutModal');
+  ['payoutBank','payoutAccName','payoutBSB','payoutAccNum','payoutAmount'].forEach(id=>document.getElementById(id).value='');
+  renderPayouts();toast('Payout request submitted! Admin will process within 3–5 business days.','ok');
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function initAdmin(){
+  const bks=gB(),pend=gU().filter(u=>u.role==='owner'&&u.approvalStatus==='pending');
+  const ds=gDs().filter(d=>d.status==='open'),pos=gPO().filter(p=>p.status==='pending');
+  document.getElementById('aS1').textContent=bks.length;document.getElementById('aS2').textContent=gC().length;
+  document.getElementById('aS3').textContent=gU().length;document.getElementById('aS4').textContent=pend.length;
+  const pb=document.getElementById('pendBadge');pb.textContent=pend.length;pb.style.display=pend.length?'inline':'none';
+  const db=document.getElementById('dispBadge');db.textContent=ds.length;db.style.display=ds.length?'inline':'none';
+  const payb=document.getElementById('payBadge');payb.textContent=pos.length;payb.style.display=pos.length?'inline':'none';
+  document.getElementById('feePct').value=gFee();
+  document.getElementById('feeNote').textContent=`Currently: ${gFee()}% on every booking`;
+  renderBkTbl(bks);renderCtTbl();renderUsTbl();renderOwTbl();renderRvTbl();renderDsTbl();renderFeTbl();renderPoTbl();
+}
+function saveFee(){const v=parseFloat(document.getElementById('feePct').value);if(isNaN(v)||v<0||v>30){toast('Enter 0–30%','err');return}sFee(v);document.getElementById('feeNote').textContent=`Currently: ${v}% on every booking`;toast(`Fee set to ${v}%`,'ok')}
+function renderBkTbl(bks){
+  const tb=document.getElementById('bkBody');if(!tb)return;
+  if(!bks.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div>📋</div>No bookings.</div></td></tr>';return}
+  tb.innerHTML=bks.map(b=>`<tr><td>${b.id}</td><td>${b.name}</td><td>${b.court}</td><td>${fmtDate(b.date)}</td><td>${b.time}</td><td>£${(b.price||0).toFixed(2)}</td><td>£${(b.platformFee||0).toFixed(2)}</td><td>£${(b.total||b.price||0).toFixed(2)}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}<button class="ab d" onclick="delBk('${b.id}')">Del</button></td></tr>`).join('');
+}
+function renderCtTbl(){
+  const tb=document.getElementById('ctBody');if(!tb)return;const users=gU(),rvs=gRv();
+  tb.innerHTML=gC().map(c=>{const owner=c.ownerId?users.find(u=>u.id===c.ownerId):null;const cr=rvs.filter(r=>r.courtId===c.id);const avg=cr.length?(cr.reduce((s,r)=>s+r.stars,0)/cr.length).toFixed(1):'—';
+    return`<tr><td>${c.icon} ${c.name}</td><td>${c.sport}</td><td>${owner?owner.name:'Courtly'}</td><td>£${c.price}/hr</td><td>${avg}</td><td>${c.featured?'<span class="sb sb-gold">⭐</span>':'No'}</td><td><button class="ab" onclick="openEditCourt(${c.id})">Edit</button><button class="ab d" onclick="delCt(${c.id},false)">Del</button></td></tr>`;
+  }).join('');
+}
+function renderUsTbl(){const tb=document.getElementById('usBody');if(!tb)return;const users=gU(),bks=gB();if(!users.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><div>👤</div>No users.</div></td></tr>';return}tb.innerHTML=users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td><td><span class="sb ${u.role==='owner'?'sb-gold':u.role==='admin'?'sb-b':'sb-g'}">${u.role}</span></td><td>${new Date(u.joinedAt).toLocaleDateString('en-GB')}</td><td>${bks.filter(b=>b.email===u.email).length}</td><td><button class="ab d" onclick="delUs('${u.id}')">Del</button></td></tr>`).join('')}
+function renderOwTbl(){const tb=document.getElementById('owBody');if(!tb)return;const owners=gU().filter(u=>u.role==='owner');if(!owners.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><div>🏟️</div>No applications.</div></td></tr>';return}tb.innerHTML=owners.map(u=>`<tr><td>${u.name}<br/><span style="font-size:.7rem;color:var(--grey)">${u.email}</span></td><td>${u.facility||'—'}</td><td>${u.location||'—'}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.policy||'—'}</td><td><span class="sb ${u.approvalStatus==='approved'?'sb-g':u.approvalStatus==='rejected'?'sb-r':'sb-gold'}">${u.approvalStatus||'pending'}</span></td><td>${u.approvalStatus!=='approved'?`<button class="ab ok" onclick="approveOwner('${u.id}')">Approve</button>`:''}${u.approvalStatus!=='rejected'?`<button class="ab rej" onclick="rejectOwner('${u.id}')">Reject</button>`:''}</td></tr>`).join('')}
+function renderRvTbl(){const tb=document.getElementById('rvBody');if(!tb)return;const rvs=gRv(),courts=gC();if(!rvs.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><div>⭐</div>No reviews.</div></td></tr>';return}tb.innerHTML=rvs.map(r=>{const c=courts.find(x=>x.id===r.courtId);return`<tr><td>${c?.name||'—'}</td><td>${r.reviewerName}</td><td>${'★'.repeat(r.stars)}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.body}</td><td>${new Date(r.createdAt).toLocaleDateString('en-GB')}</td><td><button class="ab d" onclick="delRv('${r.id}')">Del</button></td></tr>`}).join('')}
+function renderDsTbl(){const tb=document.getElementById('dsBody');if(!tb)return;const ds=gDs();if(!ds.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><div>⚖️</div>No disputes.</div></td></tr>';return}tb.innerHTML=ds.map(d=>`<tr><td>${d.id}</td><td>${d.playerName}</td><td>${d.courtName}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.reason}</td><td><span class="sb ${d.status==='open'?'sb-gold':d.status==='refunded'?'sb-g':'sb-r'}">${d.status}</span></td><td>${d.status==='open'?`<button class="ab ok" onclick="openResolveModal('${d.id}')">Resolve</button>`:d.resolution||''}</td></tr>`).join('')}
+function renderFeTbl(){const tb=document.getElementById('feBody');if(!tb)return;const users=gU();tb.innerHTML=gC().map(c=>{const owner=c.ownerId?users.find(u=>u.id===c.ownerId):null;return`<tr><td>${c.icon} ${c.name}</td><td>${c.sport}</td><td>${owner?owner.name:'Courtly'}</td><td>${c.featured?'<span class="sb sb-gold">⭐ Yes</span>':'No'}</td><td><button class="ab ${c.featured?'d':''}" onclick="toggleFeatured(${c.id})">${c.featured?'Unfeature':'Feature'}</button></td></tr>`}).join('')}
+function renderPoTbl(){
+  const tb=document.getElementById('poBody');if(!tb)return;
+  const pos=gPO();if(!pos.length){tb.innerHTML='<tr><td colspan="7"><div class="empty-state"><div>💰</div>No payout requests.</div></td></tr>';return}
+  tb.innerHTML=pos.map(p=>`<tr><td>${p.id}</td><td>${p.ownerName}</td><td>${p.facility||'—'}</td><td>£${p.amount.toFixed(2)}</td><td>${new Date(p.createdAt).toLocaleDateString('en-GB')}</td><td><span class="sb ${p.status==='paid'?'sb-g':p.status==='rejected'?'sb-r':'sb-gold'}">${p.status}</span></td><td>${p.status==='pending'?`<button class="ab ok" onclick="approvePayout('${p.id}')">Mark Paid</button><button class="ab rej" onclick="rejectPayout('${p.id}')">Reject</button>`:p.status}</td></tr>`).join('');
+}
+function approvePayout(id){const pos=gPO();const p=pos.find(x=>x.id===id);if(!p)return;p.status='paid';sPO(pos);initAdmin();toast('Payout marked as paid','ok')}
+function rejectPayout(id){const pos=gPO();const p=pos.find(x=>x.id===id);if(!p)return;p.status='rejected';sPO(pos);initAdmin();toast('Payout rejected')}
+function approveOwner(id){const users=gU();const u=users.find(x=>x.id===id);if(!u)return;u.approvalStatus='approved';sU(users);const cu=gCU();if(cu&&cu.id===id){cu.approvalStatus='approved';sCU(cu)}toast('Owner approved!','ok');initAdmin()}
+function rejectOwner(id){const users=gU();const u=users.find(x=>x.id===id);if(!u)return;u.approvalStatus='rejected';sU(users);const cu=gCU();if(cu&&cu.id===id){cu.approvalStatus='rejected';sCU(cu)}toast('Rejected.','err');initAdmin()}
+function toggleFeatured(id){const courts=gC();const c=courts.find(x=>x.id===id);if(!c)return;c.featured=!c.featured;sC(courts);initAdmin();toast(c.featured?'Court featured!':'Court unfeatured')}
+function openResolveModal(id){document.getElementById('resolveId').value=id;openModal('resolveModal')}
+function resolveDispute(){const id=document.getElementById('resolveId').value;const action=document.getElementById('resolveAction').value;const notes=document.getElementById('resolveNotes').value.trim();const ds=gDs();const d=ds.find(x=>x.id===id);if(!d)return;d.status=action;d.resolution=notes||action;sDs(ds);closeModal('resolveModal');initAdmin();toast('Dispute resolved')}
+function adminCancelBk(id){const bks=gB();const b=bks.find(x=>x.id===id);if(b){b.status='cancelled';sB(bks);initAdmin()}}
+function delBk(id){if(!confirm('Delete?'))return;sB(gB().filter(b=>b.id!==id));initAdmin()}
+function delCt(id,isOwner){if(!confirm('Remove?'))return;sC(gC().filter(c=>c.id!==id));if(isOwner)initOwner();else initAdmin()}
+function delUs(id){if(!confirm('Remove?'))return;sU(gU().filter(u=>u.id!==id));initAdmin()}
+function delRv(id){if(!confirm('Remove?'))return;sRv(gRv().filter(r=>r.id!==id));initAdmin()}
+function searchBk(q){renderBkTbl(gB().filter(b=>[b.name,b.email,b.court,b.id].some(v=>v?.toLowerCase().includes(q.toLowerCase()))))}
+function exportBk(){const bks=gB();if(!bks.length){alert('No bookings.');return}const rows=[['ID','Name','Email','Court','Date','Time','Court Fee','Platform Fee','Total','Status'],...bks.map(b=>[b.id,b.name,b.email,b.court,b.date,b.time,'£'+(b.price||0),'£'+(b.platformFee||0),'£'+(b.total||b.price||0),b.status])];const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));a.download='courtly_bookings.csv';a.click()}
+function showAdminTab(name,btn){document.querySelectorAll('.admin-wrap .tpane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.admin-wrap .tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.getElementById('tp-'+name).classList.add('active')}
+
+// ============================================================
+// COURT MODALS
+// ============================================================
+function addCourt(isOwner){
+  const p=isOwner?'oa':'aa';
+  const name=document.getElementById(p+'N').value.trim(),sport=document.getElementById(p+'S').value,surface=document.getElementById(p+'Surf').value.trim(),price=parseInt(document.getElementById(p+'P').value);
+  if(!name||!price){toast('Fill in all fields','err');return}
+  const courts=gC();
+  courts.push({id:Date.now(),name,sport,price,icon:ICONS[sport]||'🏟️',surface:surface||'Standard',ownerId:isOwner?CU?.id:null,featured:false,photos:isOwner?[...pendingCourtPhotos.filter(Boolean)]:[]});
+  sC(courts);[p+'N',p+'Surf',p+'P'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  pendingCourtPhotos=[];const thumbs=document.getElementById('courtPhotoThumbs');if(thumbs)thumbs.innerHTML='';
+  closeModal(isOwner?'oAddModal':'aAddModal');toast('Court added!','ok');
+  if(isOwner)initOwner();else initAdmin();
+}
+function openEditCourt(id){
+  const c=gC().find(x=>x.id===id);if(!c)return;
+  document.getElementById('ecId').value=id;document.getElementById('ecN').value=c.name;document.getElementById('ecS').value=c.sport;document.getElementById('ecSurf').value=c.surface;document.getElementById('ecP').value=c.price;
+  pendingEditPhotos=c.photos?[...c.photos]:[];
+  const thumbs=document.getElementById('editPhotoThumbs');
+  if(thumbs)thumbs.innerHTML=pendingEditPhotos.map((p,j)=>`<div class="photo-thumb"><img src="${p}" alt="Photo"/><button class="photo-thumb-del" onclick="removeEditPhoto(${j})">✕</button></div>`).join('');
+  openModal('editModal');
+}
+function saveCourt(){
+  const id=parseInt(document.getElementById('ecId').value);const courts=gC();const c=courts.find(x=>x.id===id);if(!c)return;
+  c.name=document.getElementById('ecN').value.trim();c.sport=document.getElementById('ecS').value;c.surface=document.getElementById('ecSurf').value.trim();c.price=parseInt(document.getElementById('ecP').value);c.icon=ICONS[c.sport]||'🏟️';
+  if(pendingEditPhotos.length>0)c.photos=[...pendingEditPhotos.filter(Boolean)];
+  sC(courts);closeModal('editModal');toast('Court updated!','ok');pendingEditPhotos=[];
+  const cu=gCU();if(cu?.role==='owner')initOwner();else initAdmin();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+let tTimer;
+function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(type==='ok'?'ok':type==='err'?'err':'');clearTimeout(tTimer);setTimeout(()=>el.classList.add('show'),10);tTimer=setTimeout(()=>el.classList.remove('show'),3500)}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=new Date().toISOString().split('T')[0];
+  ['bkDate','availDate'].forEach(id=>{const el=document.getElementById(id);if(el){el.min=t;el.value=t}});
+  document.getElementById('hsDate').min=t;document.getElementById('hsDate').value=t;
+  populateDateSelect();updateNav();initHome();
+  if(gCU()?.role==='user')rescheduleAllReminders();
+});
+</script>
+</body>
+</html>
