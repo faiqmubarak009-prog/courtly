@@ -1772,9 +1772,12 @@ async function doRegister(){
   showMsg('rMsg','Creating account…','ok');
   const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name:`${first} ${last}`,role:regRole}}});
   if(error){showMsg('rMsg',error.message,'err');return}
+  const { data, error } = await sb.auth.signUp({...});
+if(error){ showMsg('rMsg', error.message, 'err'); return; }
+if(!data.session){ showMsg('rMsg', 'Please check your email to confirm your account.', 'ok'); return; }
   const update={name:`${first} ${last}`,email,role:regRole,phone:'',fav_sports:[]};
   if(regRole==='owner'){update.facility=document.getElementById('rFacility')?.value.trim();update.location=document.getElementById('rLocation')?.value.trim();update.policy=document.getElementById('rPolicy')?.value.trim();update.approval_status='pending';}
-  await sb.from('profiles').update(update).eq('id',data.user.id);
+  await sb.from('profiles').upsert({id: data.user.id, ...update});
   await loadProfile(data.user.id);updateNav();
   if(regRole==='owner'){showMsg('rMsg','Account created! Awaiting admin approval.','ok');setTimeout(()=>nav('owner'),1200);}
   else{showMsg('rMsg','Welcome to Courtly!','ok');setTimeout(()=>nav('home'),900);}
