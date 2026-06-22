@@ -1770,11 +1770,8 @@ async function doRegister(){
   if(!first||!last||!email||!pass){showMsg('rMsg','Please fill in all fields.','err');return}
   if(pass.length<6){showMsg('rMsg','Password must be 6+ characters.','err');return}
   showMsg('rMsg','Creating account…','ok');
-  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name:`${first} ${last}`,role:regRole}}});
+ const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name:`${first} ${last}`,role:regRole}}});
   if(error){showMsg('rMsg',error.message,'err');return}
-  const { data, error } = await sb.auth.signUp({...});
-if(error){ showMsg('rMsg', error.message, 'err'); return; }
-if(!data.session){ showMsg('rMsg', 'Please check your email to confirm your account.', 'ok'); return; }
   const update={name:`${first} ${last}`,email,role:regRole,phone:'',fav_sports:[]};
   if(regRole==='owner'){update.facility=document.getElementById('rFacility')?.value.trim();update.location=document.getElementById('rLocation')?.value.trim();update.policy=document.getElementById('rPolicy')?.value.trim();update.approval_status='pending';}
   await sb.from('profiles').upsert({id: data.user.id, ...update});
@@ -1788,7 +1785,7 @@ async function sendResetLink(){
   const{data:profile}=await sb.from('profiles').select('id').eq('email',email).single();
   if(!profile){showMsg('resetMsg1','No account found with that email.','err');return}
   resetPendingEmail=email;
-  const hasEdge=SUPABASE_URL&&!SUPABASE_URL.includes('YOUR_PROJECT');
+  const hasEdge=SUPABASE_URL&&!SUPABASE_URL.includes('https://ezjneyfnzozpoiqzqxao.supabase.co');
   if(hasEdge){
     const res=await fetch(`${EDGE_URL}?action=send-password-reset`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({email})});
     if(res.ok){showMsg('resetMsg1',`Reset code sent to ${email}!`,'ok');setTimeout(()=>{document.getElementById('resetStep1').style.display='none';document.getElementById('resetStep2').style.display='block'},1500);}
