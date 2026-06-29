@@ -640,7 +640,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
           <div class="secure-note">🔒 Encrypted & processed securely by Stripe.</div>
           <div class="test-cards"><strong>Test Mode:</strong> Success: <code>4242 4242 4242 4242</code> · Decline: <code>4000 0000 0000 0002</code> · Any future expiry/CVC</div>
         </div>
-        <div class="row2"><button class="btn btn-g" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="processPayment()" id="payBtn">Pay £<span id="payAmt">0</span> →</button></div>
+        <div class="row2"><button class="btn btn-g" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="processPayment()" id="payBtn">Pay $<span id="payAmt">0</span> →</button></div>
       </div>
       <div class="bstep" id="bsOK">
         <div class="ok-screen">
@@ -698,7 +698,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <div class="profile-stat"><strong id="pStatBk">0</strong><span>Total Bookings</span></div>
       <div class="profile-stat"><strong id="pStatRv">0</strong><span>Reviews Written</span></div>
       <div class="profile-stat"><strong id="pStatFav">0</strong><span>Favourites</span></div>
-      <div class="profile-stat"><strong id="pStatSpent">£0</strong><span>Total Spent</span></div>
+      <div class="profile-stat"><strong id="pStatSpent">$0</strong><span>Total Spent</span></div>
     </div>
     <div class="tabs">
       <button class="tab active" onclick="showProfileTab('edit',this)">Edit Profile</button>
@@ -834,7 +834,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <div class="stats-row">
         <div class="stat-card"><span class="stat-num" id="oS1">0</span><span class="stat-lbl">My Courts</span></div>
         <div class="stat-card"><span class="stat-num" id="oS2">0</span><span class="stat-lbl">Bookings</span></div>
-        <div class="stat-card"><span class="stat-num" id="oS3">£0</span><span class="stat-lbl">Revenue (after fee)</span></div>
+        <div class="stat-card"><span class="stat-num" id="oS3">$0</span><span class="stat-lbl">Revenue (after fee)</span></div>
         <div class="stat-card"><span class="stat-num" id="oS4">—</span><span class="stat-lbl">Avg Rating</span></div>
       </div>
       <div class="chart-wrap">
@@ -961,7 +961,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Name</label><input type="text" id="aaN"/></div>
   <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
   <div class="fg"><label>Surface</label><input type="text" id="aaSurf"/></div>
-  <div class="fg"><label>Price/hr (£)</label><input type="number" id="aaP"/></div>
+  <div class="fg"><label>Price/hr ($)</label><input type="number" id="aaP"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('aAddModal')">Cancel</button><button class="btn btn-p" onclick="addCourt(false)">Add</button></div>
 </div></div>
 
@@ -969,7 +969,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Name</label><input type="text" id="oaN"/></div>
   <div class="fg"><label>Sport</label><select id="oaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
   <div class="fg"><label>Surface</label><input type="text" id="oaSurf"/></div>
-  <div class="fg"><label>Price/hr (£)</label><input type="number" id="oaP"/></div>
+  <div class="fg"><label>Price/hr ($)</label><input type="number" id="oaP"/></div>
   <div class="fg"><label>Court Photos (up to 4)</label>
     <div class="photo-upload-zone" onclick="document.getElementById('courtPhotoFile').click()">
       <input type="file" id="courtPhotoFile" accept="image/*" multiple onchange="previewCourtPhotos(this)"/>
@@ -985,7 +985,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Name</label><input type="text" id="ecN"/></div>
   <div class="fg"><label>Sport</label><select id="ecS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
   <div class="fg"><label>Surface</label><input type="text" id="ecSurf"/></div>
-  <div class="fg"><label>Price/hr (£)</label><input type="number" id="ecP"/></div>
+  <div class="fg"><label>Price/hr ($)</label><input type="number" id="ecP"/></div>
   <div class="fg"><label>Update Photos (up to 4)</label>
     <div class="photo-upload-zone" onclick="document.getElementById('editPhotoFile').click()">
       <input type="file" id="editPhotoFile" accept="image/*" multiple onchange="previewEditPhotos(this)"/>
@@ -1026,7 +1026,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Account Name</label><input type="text" id="payoutAccName" placeholder="John Smith"/></div>
   <div class="fg"><label>BSB</label><input type="text" id="payoutBSB" placeholder="062-000"/></div>
   <div class="fg"><label>Account Number</label><input type="text" id="payoutAccNum" placeholder="12345678"/></div>
-  <div class="fg"><label>Amount to request (£)</label><input type="number" id="payoutAmount" placeholder="0.00"/></div>
+  <div class="fg"><label>Amount to request ($)</label><input type="number" id="payoutAmount" placeholder="0.00"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('payoutModal')">Cancel</button><button class="btn btn-p" onclick="submitPayout()">Submit Request</button></div>
 </div></div>
 
@@ -1256,7 +1256,7 @@ function courtCardHTML(c){
       <h3>${c.name}</h3>
       <p style="font-size:.78rem;color:var(--grey)">${c.surface}</p>
       <div class="court-meta">
-        <div class="court-price"><strong>£${c.price_per_hour}</strong>/hr</div>
+        <div class="court-price"><strong>$${c.price_per_hour}</strong>/hr</div>
         <div class="court-stars"><span class="stars">${stars}</span> ${avg}${count?` (${count})`:''}</div>
       </div>
     </div>
@@ -1290,12 +1290,12 @@ async function openDetail(id){
   // Info
   const dn=document.getElementById('detailName');if(dn)dn.textContent=c.name;
   const dt=document.getElementById('detailTag');if(dt)dt.textContent=c.sport;
-  const dp=document.getElementById('detailPrice');if(dp)dp.innerHTML=`£${c.price_per_hour}<span>/hour</span>`;
+  const dp=document.getElementById('detailPrice');if(dp)dp.innerHTML=`$${c.price_per_hour}<span>/hour</span>`;
   const owner=c.profiles;
   const pEl=document.getElementById('detailPolicy');
   if(pEl){if(owner?.policy){pEl.innerHTML='📋 <strong>Cancellation Policy:</strong> '+owner.policy;pEl.style.display='block'}else pEl.style.display='none'}
   const dm=document.getElementById('detailMeta');
-  if(dm)dm.innerHTML=`<span>🏟️ ${c.surface}</span><span>💰 £${c.price_per_hour}/hr</span>${owner?`<span>👤 ${owner.facility||owner.name}</span>`:'<span>👤 Courtly</span>'}${owner?.location?`<span>📍 ${owner.location}</span>`:''}`;
+  if(dm)dm.innerHTML=`<span>🏟️ ${c.surface}</span><span>💰 $${c.price_per_hour}/hr</span>${owner?`<span>👤 ${owner.facility||owner.name}</span>`:'<span>👤 Courtly</span>'}${owner?.location?`<span>📍 ${owner.location}</span>`:''}`;
   const rvs=c.court_ratings;
   const dr=document.getElementById('detailRating');
   if(dr)dr.innerHTML=rvs?.avg_rating
@@ -1473,7 +1473,7 @@ async function loadCourtsForSport(sport){
   if(!wrap||!sel)return;
   wrap.style.display='block';
   sel.innerHTML='<option value="">-- Choose court --</option>';
-  (courts||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`${c.name} — ${c.surface} — £${c.price_per_hour}/hr`;o.dataset.court=JSON.stringify(c);sel.appendChild(o)});
+  (courts||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`${c.name} — ${c.surface} — $${c.price_per_hour}/hr`;o.dataset.court=JSON.stringify(c);sel.appendChild(o)});
   sel.onchange=()=>{const opt=sel.options[sel.selectedIndex];bCourt=opt.dataset.court?JSON.parse(opt.dataset.court):null;chk1()};
   chk1();
 }
@@ -1501,7 +1501,7 @@ function goStep(n){
     const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
     const bs=document.getElementById('bSum');if(bs)bs.innerHTML=html;
     const bs2=document.getElementById('bSum2');if(bs2)bs2.innerHTML=html;
-    const fb=document.getElementById('feeBreakdown');if(fb)fb.innerHTML=`<div class="fee-row"><span>Court fee</span><span>£${cf.toFixed(2)}</span></div><div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>£${pf.toFixed(2)}</span></div><div class="fee-row total"><span>Total</span><span>£${total.toFixed(2)}</span></div>`;
+    const fb=document.getElementById('feeBreakdown');if(fb)fb.innerHTML=`<div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div><div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div><div class="fee-row total"><span>Total</span><span>$${total.toFixed(2)}</span></div>`;
     const pa=document.getElementById('payAmt');if(pa)pa.textContent=total.toFixed(2);
     const owner=window._currentCourt?.profiles;
     const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
@@ -1530,13 +1530,13 @@ async function processPayment(){
       const piRes=await fetch(`${EDGE_URL}?action=create-payment-intent`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({amount:total,booking_meta:{court_name:bCourt.name,booking_date:bDate,time_slot:bTime,player_email:email}})});
       const{client_secret}=await piRes.json();
       const{paymentIntent,error}=await stripeInst.confirmCardPayment(client_secret,{payment_method:{card:cardEl,billing_details:{name:`${first} ${document.getElementById('cLast')?.value.trim()}`,email}}});
-      if(error){toast(error.message,'err');payBtn.disabled=false;payBtn.textContent=`Pay £${total.toFixed(2)} →`;return}
+      if(error){toast(error.message,'err');payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;return}
       stripePaymentId=paymentIntent.id;
-    }catch(e){toast('Payment failed. Try again.','err');payBtn.disabled=false;payBtn.textContent=`Pay £${total.toFixed(2)} →`;return}
+    }catch(e){toast('Payment failed. Try again.','err');payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;return}
   }
   const booking={id:'BK'+Date.now(),user_id:CU?.id||null,court_id:bCourt.id,court_name:bCourt.name,sport:bSport,player_name:`${first} ${document.getElementById('cLast')?.value.trim()||''}`.trim(),player_email:email,player_phone:document.getElementById('cPhone')?.value.trim()||'',booking_date:bDate,time_slot:bTime,court_fee:cf,platform_fee:pf,total,status:'confirmed',paid:hasStripe,stripe_payment_id:stripePaymentId};
   const{error}=await sb.from('bookings').insert(booking);
-  payBtn.disabled=false;payBtn.textContent=`Pay £${total.toFixed(2)} →`;
+  payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;
   if(error){toast('Booking failed. Please try again.','err');return}
   // Send emails if Edge Function available
   if(hasStripe){
@@ -1586,7 +1586,7 @@ async function renderMyBookings(tab){
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <span class="badge ${b.status==='confirmed'?'badge-g':'badge-r'}">${b.status}</span>
           <span class="badge ${b.paid?'badge-b':'badge-gold'}">${b.paid?'💳 Paid':'Payment pending'}</span>
-          <span class="badge badge-g">£${Number(b.total||b.court_fee||0).toFixed(2)}</span>
+          <span class="badge badge-g">$${Number(b.total||b.court_fee||0).toFixed(2)}</span>
         </div>
       </div>
       <div class="booking-actions">
@@ -1621,7 +1621,7 @@ async function reBook(courtId){
 async function showReceipt(id){
   const{data:bk}=await sb.from('bookings').select('*').eq('id',id).single();if(!bk)return;
   const el=document.getElementById('receiptContent');
-  if(el)el.innerHTML=`<div style="text-align:center;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--border)"><div class="ok-icon" style="width:50px;height:50px;font-size:1.3rem;margin:0 auto 12px">✓</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Courtly</div><div style="font-size:.72rem;color:var(--grey)">Booking Receipt</div></div>${[['Booking ID',bk.id],['Court',bk.court_name],['Sport',bk.sport],['Date',fmtDateLong(bk.booking_date)],['Time',bk.time_slot],['Name',bk.player_name],['Email',bk.player_email],['Court Fee','£'+Number(bk.court_fee||0).toFixed(2)],['Platform Fee','£'+Number(bk.platform_fee||0).toFixed(2)],['Status',bk.status]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--grey-l);font-size:.84rem"><span>${k}</span><span>${v}</span></div>`).join('')}<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;font-size:.92rem"><span>Total Paid</span><span>£${Number(bk.total||bk.court_fee||0).toFixed(2)}</span></div><p style="font-size:.7rem;color:var(--grey);text-align:center;margin-top:14px">courtly.com · Powered by Stripe 🔒</p>`;
+  if(el)el.innerHTML=`<div style="text-align:center;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--border)"><div class="ok-icon" style="width:50px;height:50px;font-size:1.3rem;margin:0 auto 12px">✓</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Courtly</div><div style="font-size:.72rem;color:var(--grey)">Booking Receipt</div></div>${[['Booking ID',bk.id],['Court',bk.court_name],['Sport',bk.sport],['Date',fmtDateLong(bk.booking_date)],['Time',bk.time_slot],['Name',bk.player_name],['Email',bk.player_email],['Court Fee','$'+Number(bk.court_fee||0).toFixed(2)],['Platform Fee','$'+Number(bk.platform_fee||0).toFixed(2)],['Status',bk.status]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--grey-l);font-size:.84rem"><span>${k}</span><span>${v}</span></div>`).join('')}<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;font-size:.92rem"><span>Total Paid</span><span>$${Number(bk.total||bk.court_fee||0).toFixed(2)}</span></div><p style="font-size:.7rem;color:var(--grey);text-align:center;margin-top:14px">courtly.com · Powered by Stripe 🔒</p>`;
   openModal('receiptModal');
 }
 function openDisputeModal(bkId,courtName){
@@ -1665,7 +1665,7 @@ async function initProfile(){
   const s1=document.getElementById('pStatBk');if(s1)s1.textContent=bkC||0;
   const s2=document.getElementById('pStatRv');if(s2)s2.textContent=rvC||0;
   const s3=document.getElementById('pStatFav');if(s3)s3.textContent=favC||0;
-  const s4=document.getElementById('pStatSpent');if(s4)s4.textContent='£'+totalSpent.toFixed(0);
+  const s4=document.getElementById('pStatSpent');if(s4)s4.textContent='$'+totalSpent.toFixed(0);
   profileSports=CU.fav_sports||[];
   const parts=(CU.name||'').split(' ');
   const pf=document.getElementById('pFirst');if(pf)pf.value=parts[0]||'';
@@ -1731,7 +1731,7 @@ async function renderProfileHistory(){
   const el=document.getElementById('profileBkHistory');if(!el||!CU)return;
   const{data:bks}=await sb.from('bookings').select('*').eq('user_id',CU.id).order('booking_date',{ascending:false}).limit(20);
   if(!bks?.length){el.innerHTML='<div class="empty-state"><div>📅</div>No bookings yet.</div>';return}
-  el.innerHTML=bks.map(b=>`<div class="booking-item" style="margin-bottom:10px"><div class="booking-icon">${ICONS[b.sport]||'🏟️'}</div><div class="booking-info"><h4>${b.court_name}</h4><p>${fmtDateLong(b.booking_date)} · ${b.time_slot}</p><span class="badge ${b.status==='confirmed'?'badge-g':'badge-r'}">${b.status}</span><span class="badge badge-b" style="margin-left:4px">£${Number(b.total||b.court_fee||0).toFixed(2)}</span></div></div>`).join('');
+  el.innerHTML=bks.map(b=>`<div class="booking-item" style="margin-bottom:10px"><div class="booking-icon">${ICONS[b.sport]||'🏟️'}</div><div class="booking-info"><h4>${b.court_name}</h4><p>${fmtDateLong(b.booking_date)} · ${b.time_slot}</p><span class="badge ${b.status==='confirmed'?'badge-g':'badge-r'}">${b.status}</span><span class="badge badge-b" style="margin-left:4px">$${Number(b.total||b.court_fee||0).toFixed(2)}</span></div></div>`).join('');
 }
 async function renderProfileReminders(){
   const el=document.getElementById('profileReminders');if(!el||!CU)return;
@@ -1869,7 +1869,7 @@ async function initOwner(){
   const avgR=rvs?.length?(rvs.reduce((s,r)=>s+r.stars,0)/rvs.length).toFixed(1):'—';
   const s1=document.getElementById('oS1');if(s1)s1.textContent=courtIds.length;
   const s2=document.getElementById('oS2');if(s2)s2.textContent=bks?.length||0;
-  const s3=document.getElementById('oS3');if(s3)s3.textContent='£'+rev.toFixed(0);
+  const s3=document.getElementById('oS3');if(s3)s3.textContent='$'+rev.toFixed(0);
   const s4=document.getElementById('oS4');if(s4)s4.textContent=avgR;
   renderChart('week',document.getElementById('ctW'));
   await renderOwnerCourts();await renderOwnerBk(courtIds);await populateOwnerSelects();
@@ -1882,13 +1882,13 @@ async function renderOwnerCourts(){
   const{data:courts}=await sb.from('courts').select('*').eq('owner_id',CU.id);
   const el=document.getElementById('ownerCourtsList');if(!el)return;
   if(!courts?.length){el.innerHTML='<div class="empty-state"><div>🏟️</div>No courts yet. Add your first court.</div>';return}
-  el.innerHTML=courts.map(c=>`<div class="cmcard"><div class="cmcard-hdr"><div><h4 style="margin-bottom:4px">${c.icon} ${c.name} <span class="court-sport-tag">${c.sport}</span></h4><p style="font-size:.78rem;color:var(--grey)">${c.surface} · £${c.price_per_hour}/hr</p>${c.photo_urls?.length?`<div class="photo-thumbs" style="margin-top:8px">${c.photo_urls.slice(0,3).map(p=>`<div class="photo-thumb"><img src="${getPhotoUrl('court-photos',p)}" onclick="openLightbox('${getPhotoUrl('court-photos',p)}')"/></div>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="openEditCourt(${c.id})">Edit</button><button class="btn btn-r btn-sm" onclick="delCt(${c.id},true)">Remove</button></div></div></div>`).join('');
+  el.innerHTML=courts.map(c=>`<div class="cmcard"><div class="cmcard-hdr"><div><h4 style="margin-bottom:4px">${c.icon} ${c.name} <span class="court-sport-tag">${c.sport}</span></h4><p style="font-size:.78rem;color:var(--grey)">${c.surface} · $${c.price_per_hour}/hr</p>${c.photo_urls?.length?`<div class="photo-thumbs" style="margin-top:8px">${c.photo_urls.slice(0,3).map(p=>`<div class="photo-thumb"><img src="${getPhotoUrl('court-photos',p)}" onclick="openLightbox('${getPhotoUrl('court-photos',p)}')"/></div>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="openEditCourt(${c.id})">Edit</button><button class="btn btn-r btn-sm" onclick="delCt(${c.id},true)">Remove</button></div></div></div>`).join('');
 }
 async function renderOwnerBk(courtIds){
   const{data:bks}=await sb.from('bookings').select('*').in('court_id',courtIds||[]).order('created_at',{ascending:false}).limit(50);
   const tb=document.getElementById('ownerBkBody');if(!tb)return;
   if(!bks?.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div>📋</div>No bookings yet.</div></td></tr>';return}
-  tb.innerHTML=bks.map(b=>`<tr><td>${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>${b.paid?`<span class="sb sb-g">£${Number(b.total||b.court_fee).toFixed(2)}</span>`:'Unpaid'}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab d" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}</td></tr>`).join('');
+  tb.innerHTML=bks.map(b=>`<tr><td>${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>${b.paid?`<span class="sb sb-g">$${Number(b.total||b.court_fee).toFixed(2)}</span>`:'Unpaid'}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab d" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}</td></tr>`).join('');
 }
 async function populateOwnerSelects(){
   const{data:courts}=await sb.from('courts').select('id,name,sport').eq('owner_id',CU.id);
@@ -1950,7 +1950,7 @@ async function renderChart(mode,btn){
   (bks||[]).forEach(b=>{const day=b.created_at.split('T')[0];if(buckets[day]!==undefined)buckets[day]+=Number(b.court_fee)});
   const values=Object.values(buckets);const labels=Object.keys(buckets).map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
   const max=Math.max(...values,1);const wrap=document.getElementById('chartBars');if(!wrap)return;wrap.innerHTML='';
-  labels.forEach((lbl,i)=>{const pct=Math.round((values[i]/max)*100);const bw=document.createElement('div');bw.className='chart-bar-wrap';bw.innerHTML=`<div class="chart-bar" style="height:${pct}%" title="£${values[i]}"></div><div class="chart-bar-lbl">${mode==='week'?lbl:i%5===0?lbl:''}</div>`;wrap.appendChild(bw)});
+  labels.forEach((lbl,i)=>{const pct=Math.round((values[i]/max)*100);const bw=document.createElement('div');bw.className='chart-bar-wrap';bw.innerHTML=`<div class="chart-bar" style="height:${pct}%" title="$${values[i]}"></div><div class="chart-bar-lbl">${mode==='week'?lbl:i%5===0?lbl:''}</div>`;wrap.appendChild(bw)});
 }
 function renderOwnerCal(){
   const today=new Date();const d=new Date(today);d.setDate(1);d.setMonth(d.getMonth()+calMonthOffset);
@@ -1976,7 +1976,7 @@ async function renderPayouts(){
     sb.from('payouts').select('*').eq('owner_id',CU.id).order('created_at',{ascending:false}),
   ]);
   const available=(bks||[]).reduce((s,b)=>s+(Number(b.court_fee)-Number(b.platform_fee)),0);
-  el.innerHTML=`<div class="payout-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px"><div><div style="font-size:.78rem;color:var(--grey);margin-bottom:4px">Available balance (after platform fee)</div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green)">£${available.toFixed(2)}</div></div><button class="btn btn-p" onclick="openModal('payoutModal')">Request Payout →</button></div><h3 style="margin-bottom:12px;font-size:.95rem">Payout History</h3>${pos?.length?pos.map(p=>`<div class="payout-row"><span>${new Date(p.created_at).toLocaleDateString('en-GB')}</span><span>£${Number(p.amount).toFixed(2)}</span><span>${p.bank_name} ····${p.account_last4}</span><span class="payout-status ${p.status}">${p.status}</span></div>`).join(''):'<p style="color:var(--grey);font-size:.84rem">No payout requests yet.</p>'}</div>`;
+  el.innerHTML=`<div class="payout-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px"><div><div style="font-size:.78rem;color:var(--grey);margin-bottom:4px">Available balance (after platform fee)</div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green)">$${available.toFixed(2)}</div></div><button class="btn btn-p" onclick="openModal('payoutModal')">Request Payout →</button></div><h3 style="margin-bottom:12px;font-size:.95rem">Payout History</h3>${pos?.length?pos.map(p=>`<div class="payout-row"><span>${new Date(p.created_at).toLocaleDateString('en-GB')}</span><span>$${Number(p.amount).toFixed(2)}</span><span>${p.bank_name} ····${p.account_last4}</span><span class="payout-status ${p.status}">${p.status}</span></div>`).join(''):'<p style="color:var(--grey);font-size:.84rem">No payout requests yet.</p>'}</div>`;
 }
 async function submitPayout(){
   const bank=document.getElementById('payoutBank')?.value.trim();const accName=document.getElementById('payoutAccName')?.value.trim();const bsb=document.getElementById('payoutBSB')?.value.trim();const accNum=document.getElementById('payoutAccNum')?.value.trim();const amount=parseFloat(document.getElementById('payoutAmount')?.value);
@@ -2019,12 +2019,12 @@ async function renderBkTbl(filter=''){
   if(filter)q=q.or(`player_name.ilike.%${filter}%,court_name.ilike.%${filter}%,id.ilike.%${filter}%`);
   const{data:bks}=await q;const tb=document.getElementById('bkBody');if(!tb)return;
   if(!bks?.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><div>📋</div>No bookings.</div></td></tr>';return}
-  tb.innerHTML=bks.map(b=>`<tr><td style="font-size:.72rem;font-family:monospace">${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>£${Number(b.court_fee||0).toFixed(2)}</td><td>£${Number(b.platform_fee||0).toFixed(2)}</td><td>£${Number(b.total||b.court_fee||0).toFixed(2)}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}<button class="ab d" onclick="delBk('${b.id}')">Del</button></td></tr>`).join('');
+  tb.innerHTML=bks.map(b=>`<tr><td style="font-size:.72rem;font-family:monospace">${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>$${Number(b.court_fee||0).toFixed(2)}</td><td>$${Number(b.platform_fee||0).toFixed(2)}</td><td>$${Number(b.total||b.court_fee||0).toFixed(2)}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}<button class="ab d" onclick="delBk('${b.id}')">Del</button></td></tr>`).join('');
 }
 async function renderCtTbl(){
   const{data:courts}=await sb.from('courts').select('*,profiles(name),court_ratings(avg_rating)').order('id');
   const tb=document.getElementById('ctBody');if(!tb)return;
-  tb.innerHTML=(courts||[]).map(c=>`<tr><td>${c.icon} ${c.name}</td><td>${c.sport}</td><td>${c.profiles?.name||'Courtly'}</td><td>£${c.price_per_hour}/hr</td><td>${c.court_ratings?.avg_rating?parseFloat(c.court_ratings.avg_rating).toFixed(1):'—'}</td><td>${c.featured?'⭐ Yes':'No'}</td><td><button class="ab" onclick="openEditCourt(${c.id})">Edit</button><button class="ab" onclick="toggleFeatured(${c.id})">${c.featured?'Unfeature':'Feature'}</button><button class="ab d" onclick="delCt(${c.id},false)">Del</button></td></tr>`).join('');
+  tb.innerHTML=(courts||[]).map(c=>`<tr><td>${c.icon} ${c.name}</td><td>${c.sport}</td><td>${c.profiles?.name||'Courtly'}</td><td>$${c.price_per_hour}/hr</td><td>${c.court_ratings?.avg_rating?parseFloat(c.court_ratings.avg_rating).toFixed(1):'—'}</td><td>${c.featured?'⭐ Yes':'No'}</td><td><button class="ab" onclick="openEditCourt(${c.id})">Edit</button><button class="ab" onclick="toggleFeatured(${c.id})">${c.featured?'Unfeature':'Feature'}</button><button class="ab d" onclick="delCt(${c.id},false)">Del</button></td></tr>`).join('');
 }
 async function renderUsTbl(){
   const{data:users}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
@@ -2054,7 +2054,7 @@ async function renderFeTbl(){
 async function renderPoTbl(){
   const{data:pos}=await sb.from('payouts').select('*').order('created_at',{ascending:false});
   const tb=document.getElementById('poBody');if(!tb)return;
-  tb.innerHTML=(pos||[]).map(p=>`<tr><td>${p.id}</td><td>${p.owner_name}</td><td>${p.facility||'—'}</td><td>£${Number(p.amount).toFixed(2)}</td><td>${new Date(p.created_at).toLocaleDateString('en-GB')}</td><td><span class="sb ${p.status==='paid'?'sb-g':p.status==='rejected'?'sb-r':'sb-gold'}">${p.status}</span></td><td>${p.status==='pending'?`<button class="ab ok" onclick="approvePayout('${p.id}')">Mark Paid</button><button class="ab rej" onclick="rejectPayout('${p.id}')">Reject</button>`:p.status}</td></tr>`).join('');
+  tb.innerHTML=(pos||[]).map(p=>`<tr><td>${p.id}</td><td>${p.owner_name}</td><td>${p.facility||'—'}</td><td>$${Number(p.amount).toFixed(2)}</td><td>${new Date(p.created_at).toLocaleDateString('en-GB')}</td><td><span class="sb ${p.status==='paid'?'sb-g':p.status==='rejected'?'sb-r':'sb-gold'}">${p.status}</span></td><td>${p.status==='pending'?`<button class="ab ok" onclick="approvePayout('${p.id}')">Mark Paid</button><button class="ab rej" onclick="rejectPayout('${p.id}')">Reject</button>`:p.status}</td></tr>`).join('');
 }
 async function approveOwner(id){await sb.from('profiles').update({approval_status:'approved'}).eq('id',id);toast('Owner approved!','ok');renderOwTbl();initAdmin()}
 async function rejectOwner(id){await sb.from('profiles').update({approval_status:'rejected'}).eq('id',id);toast('Rejected.');renderOwTbl()}
@@ -2075,7 +2075,7 @@ async function resolveDispute(){
 function searchBk(q){renderBkTbl(q)}
 async function exportBk(){
   const{data:bks}=await sb.from('bookings').select('*');if(!bks?.length){alert('No bookings.');return}
-  const rows=[['ID','Name','Email','Court','Date','Time','Court Fee','Platform Fee','Total','Status'],...bks.map(b=>[b.id,b.player_name,b.player_email,b.court_name,b.booking_date,b.time_slot,'£'+b.court_fee,'£'+b.platform_fee,'£'+(b.total||b.court_fee),b.status])];
+  const rows=[['ID','Name','Email','Court','Date','Time','Court Fee','Platform Fee','Total','Status'],...bks.map(b=>[b.id,b.player_name,b.player_email,b.court_name,b.booking_date,b.time_slot,'$'+b.court_fee,'$'+b.platform_fee,'$'+(b.total||b.court_fee),b.status])];
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));a.download='courtly_bookings.csv';a.click();
 }
 
