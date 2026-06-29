@@ -464,7 +464,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <div class="hero-search">
         <div class="hs-field"><label>Where</label><input type="text" id="hsSearch" placeholder="Any location…"/></div>
         <div class="hs-divider"></div>
-        <div class="hs-field"><label>Sport</label><select id="hsSport"><option value="">Any sport</option><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+        <div class="hs-field"><label>Sport</label><select id="hsSport"><option value="">Any sport</option><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option></select>
         <div class="hs-divider"></div>
         <div class="hs-field"><label>Date</label><input type="date" id="hsDate"/></div>
         <button class="hs-btn" onclick="heroSearch()">Search</button>
@@ -523,6 +523,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <button class="sfbtn" onclick="setSF('Pickleball',this)">🏓 Pickleball</button>
       <button class="sfbtn" onclick="setSF('Football',this)">⚽ Football</button>
       <button class="sfbtn" onclick="setSF('Volleyball',this)">🏐 Volleyball</button>
+      <button class="sfbtn" onclick="setSF('Cricket',this)">🏏 Cricket</button>
     </div>
     <div class="results-meta"><span id="resultsCount"></span></div>
     <div class="courts-grid" id="courtsGrid"></div>
@@ -605,6 +606,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
           <div class="sopt" onclick="selSport(this,'Pickleball')">🏓<br/>Pickleball</div>
           <div class="sopt" onclick="selSport(this,'Football')">⚽<br/>5-a-side</div>
           <div class="sopt" onclick="selSport(this,'Volleyball')">🏐<br/>Volleyball</div>
+          <div class="sopt" onclick="selSport(this,'Cricket')">🏏<br/>Cricket</div>
         </div>
         <div id="courtDW" style="display:none"><div class="fg"><label>Select Court</label><select id="courtDrop"></select></div></div>
         <button class="btn btn-p btn-full" onclick="goStep(2)" id="s1n" disabled>Next →</button>
@@ -722,6 +724,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
             <button class="sport-pick-btn" onclick="toggleSport(this,'Pickleball')">🏓 Pickleball</button>
             <button class="sport-pick-btn" onclick="toggleSport(this,'Football')">⚽ Football</button>
             <button class="sport-pick-btn" onclick="toggleSport(this,'Volleyball')">🏐 Volleyball</button>
+            <button class="sport-pick-btn" onclick="toggleSport(this,'Cricket')">🏏 Cricket</button>
           </div>
         </div>
         <button class="btn btn-p" onclick="saveProfile()">Save Profile</button>
@@ -959,7 +962,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 <!-- MODALS -->
 <div class="modal-bg" id="aAddModal"><div class="modal"><h3>Add Court (Admin)</h3>
   <div class="fg"><label>Name</label><input type="text" id="aaN"/></div>
-  <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option><option>Cricket</option></select></div>
   <div class="fg"><label>Surface</label><input type="text" id="aaSurf"/></div>
   <div class="fg"><label>Price/hr ($)</label><input type="number" id="aaP"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('aAddModal')">Cancel</button><button class="btn btn-p" onclick="addCourt(false)">Add</button></div>
@@ -983,7 +986,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 <div class="modal-bg" id="editModal"><div class="modal"><h3>Edit Court</h3>
   <input type="hidden" id="ecId"/>
   <div class="fg"><label>Name</label><input type="text" id="ecN"/></div>
-  <div class="fg"><label>Sport</label><select id="ecS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Sport</label><select id="ecS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option></select></div>
   <div class="fg"><label>Surface</label><input type="text" id="ecSurf"/></div>
   <div class="fg"><label>Price/hr ($)</label><input type="number" id="ecP"/></div>
   <div class="fg"><label>Update Photos (up to 4)</label>
@@ -1063,7 +1066,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 // CONSTANTS
 // ============================================================
 const SLOTS=['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM','9:30 PM'];
-const ICONS={Tennis:'🎾',Basketball:'🏀',Badminton:'🏸',Pickleball:'🏓',Football:'⚽',Volleyball:'🏐'};
+const ICONS={Tennis:'🎾',Basketball:'🏀',Badminton:'🏸',Pickleball:'🏓',Football:'⚽',Cricket:'🏏',Volleyball:'🏐'};
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 // ============================================================
