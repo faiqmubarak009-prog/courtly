@@ -816,6 +816,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
         <div class="fg"><label>Location</label><input type="text" id="rLocation" placeholder="e.g. Melbourne, VIC"/></div>
         <div class="fg"><label>Cancellation / Refund Policy</label><textarea id="rPolicy" rows="2" placeholder="e.g. Full refund if cancelled 24hrs before."></textarea></div>
         <div class="fg"><label>Description</label><textarea id="rDesc" rows="2" placeholder="Describe your courts…"></textarea></div>
+        <div class="fg" id="refCodeWrap">
+  <label>Referral Code (optional)</label>
+  <input type="text" id="rRefCode" placeholder="e.g. FAIQ2026" oninput="validateRefCode(this.value)" style="text-transform:uppercase"/>
+  <div id="refCodeMsg" style="font-size:.78rem;margin-top:5px;display:none"></div>
       </div>
       <button class="btn btn-p btn-full" onclick="doRegister()">Create Account</button>
       <p class="auth-switch">Have an account? <a onclick="nav('login')">Log In</a></p>
@@ -1081,6 +1085,7 @@ let currentBTab='upcoming',currentRevFilter=0;
 let recurSelDays=[1,2,3,4,5],profileSports=[];
 let stripeInst=null,cardEl=null;
 let resetPendingEmail='';
+let currentRefCode=null;
 
 // ============================================================
 // BOOT
@@ -1755,6 +1760,33 @@ async function renderProfileReminders(){
 // ============================================================
 let regRole='user';
 function setRole(r){regRole=r;document.getElementById('rBU')?.classList.toggle('active',r==='user');document.getElementById('rBO')?.classList.toggle('active',r==='owner');const of2=document.getElementById('ownerFields');if(of2)of2.style.display=r==='owner'?'block':'none';const on=document.getElementById('ownerNote');if(on)on.style.display=r==='owner'?'block':'none'}
+  let refValidTimer;
+async function validateRefCode(val){
+  const msg=document.getElementById('refCodeMsg');
+  if(!msg)return;
+  val=val.trim().toUpperCase();
+  if(!val){msg.style.display='none';currentRefCode=null;return}
+  clearTimeout(refValidTimer);
+  refValidTimer=setTimeout(async()=>{
+    msg.style.display='block';
+    msg.style.color='var(--grey)';
+    msg.textContent='Checking code…';
+    const{data,error}=await sb.from('referral_codes')
+      .select('code,holder_name,is_active')
+      .eq('code',val)
+      .eq('is_active',true)
+      .single();
+    if(data&&!error){
+      msg.style.color='var(--green)';
+      msg.textContent=`✓ Valid code — referred by ${data.holder_name}`;
+      currentRefCode=val;
+    } else {
+      msg.style.color='var(--red)';
+      msg.textContent='✗ Invalid or inactive code';
+      currentRefCode=null;
+    }
+  },500);
+}
 async function doLogin(){
   const email=document.getElementById('lEmail')?.value.trim();
   const pass=document.getElementById('lPass')?.value;
@@ -1773,12 +1805,31 @@ async function doRegister(){
   const pass=document.getElementById('rPass')?.value;
   if(!first||!last||!email||!pass){showMsg('rMsg','Please fill in all fields.','err');return}
   if(pass.length<6){showMsg('rMsg','Password must be 6+ characters.','err');return}
-  showMsg('rMsg','Creating account…','ok');
- const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name:`${first} ${last}`,role:regRole}}});
+showMsg('rMsg','Creating account…','ok');
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name:`${first} ${last}`,role:regRole}}});
   if(error){showMsg('rMsg',error.message,'err');return}
   const update={name:`${first} ${last}`,email,role:regRole,phone:'',fav_sports:[]};
-  if(regRole==='owner'){update.facility=document.getElementById('rFacility')?.value.trim();update.location=document.getElementById('rLocation')?.value.trim();update.policy=document.getElementById('rPolicy')?.value.trim();update.approval_status='pending';}
-  await sb.from('profiles').upsert({id: data.user.id, ...update});
+  if(regRole==='owner'){
+    update.facility=document.getElementById('rFacility')?.value.trim();
+    update.location=document.getElementById('rLocation')?.value.trim();
+    update.policy=document.getElementById('rPolicy')?.value.trim();
+    update.approval_status='pending';
+    if(currentRefCode){
+      const{data:rc}=await sb.from('referral_codes')
+        .select('code')
+        .eq('code',currentRefCode)
+        .eq('is_active',true)
+        .single();
+      if(rc){
+        update.referral_code=currentRefCode;
+        await sb.from('referrals').insert({
+          code:currentRefCode,
+          referred_owner_id:data.user.id
+        });
+      }
+    }
+  }
+  await sb.from('profiles').upsert({id:data.user.id,...update});
   await loadProfile(data.user.id);updateNav();
   if(regRole==='owner'){showMsg('rMsg','Account created! Awaiting admin approval.','ok');setTimeout(()=>nav('owner'),1200);}
   else{showMsg('rMsg','Welcome to Courtly!','ok');setTimeout(()=>nav('home'),900);}
