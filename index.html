@@ -1546,6 +1546,51 @@ async function processPayment(){
   const{error}=await sb.from('bookings').insert(booking);
   payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;
   if(error){toast('Booking failed. Please try again.','err');return}
+  if(bCourt.owner_id){
+  const{data:ownerProf}=await sb.from('profiles')
+    .select('referral_code')
+    .eq('id',bCourt.owner_id)
+    .single();
+  
+  if(ownerProf?.referral_code){
+    const{data:refCode}=await sb.from('referral_codes')
+      .select('reward_percent,holder_user_id,holder_name')
+      .eq('code',ownerProf.referral_code)
+      .eq('is_active',true)
+      .single();
+    
+    if(refCode){
+      const rewardAmt=Math.round(cf*refCode.reward_percent)/100;
+      // double-dip check
+      const isDoubleDip=CU&&refCode.holder_user_id===CU.id;
+      const rewardType=isDoubleDip?'credit':'cash';
+      
+      // log the earning
+      await sb.from('referral_earnings').insert({
+        code:ownerProf.referral_code,
+        holder_user_id:refCode.holder_user_id,
+        booking_id:booking.id,
+        court_name:bCourt.name,
+        booking_date:bDate,
+        court_fee:cf,
+        reward_percent:refCode.reward_percent,
+        reward_amount:rewardAmt,
+        reward_type:rewardType,
+        status:isDoubleDip?'credited':'pending'
+      });
+      
+      // if double-dip, add booking credit to their profile
+      if(isDoubleDip&&CU){
+        const newCredit=(CU.booking_credit||0)+rewardAmt;
+        await sb.from('profiles')
+          .update({booking_credit:newCredit})
+          .eq('id',CU.id);
+        CU.booking_credit=newCredit;
+        toast(`Booking credit of £${rewardAmt.toFixed(2)} added to your account!`,'ok');
+      }
+    }
+  }
+}
   // Send emails if Edge Function available
   if(hasStripe){
     fetch(`${EDGE_URL}?action=confirm-booking`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({booking,stripe_payment_id:stripePaymentId})}).catch(()=>{});
