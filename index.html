@@ -747,7 +747,26 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
 </div>
-
+<!-- REFERRAL EARNINGS -->
+<div class="page" id="pg-referral">
+  <div class="fav-wrap">
+    <div class="sec-label">Your Referrals</div>
+    <h1>Referral Earnings</h1>
+    <div style="margin-top:8px;margin-bottom:28px;color:var(--grey);font-size:.88rem">Track your earnings from courts you've referred to Courtly.</div>
+    <div class="profile-stats-row" id="refStatsRow" style="margin-bottom:28px"></div>
+    <div class="tabs">
+      <button class="tab active" onclick="showRefTab('earnings',this)">Earnings</button>
+      <button class="tab" onclick="showRefTab('payouts',this)">Payout History</button>
+    </div>
+    <div class="tpane active" id="rt-earnings">
+      <div id="refEarningsList"></div>
+    </div>
+    <div class="tpane" id="rt-payouts">
+      <div id="refPayoutList"></div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
 <!-- FAVOURITES -->
 <div class="page" id="pg-favourites">
   <div class="fav-wrap">
@@ -950,6 +969,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <button class="tab" onclick="showAdminTab('ds',this)">Disputes <span id="dispBadge" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
       <button class="tab" onclick="showAdminTab('fe',this)">Featured</button>
       <button class="tab" onclick="showAdminTab('po',this)">Payouts <span id="payBadge" style="background:var(--gold);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
+      <button class="tab" onclick="showAdminTab('rf',this)">Referrals</button>
     </div>
     <div class="tpane active" id="tp-bk"><div class="toolbar"><input type="text" placeholder="Search…" oninput="searchBk(this.value)"/><button class="btn btn-g btn-sm" onclick="exportBk()">Export CSV</button></div><div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Court Fee</th><th>Platform Fee</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bkBody"></tbody></table></div></div>
     <div class="tpane" id="tp-ct"><div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('aAddModal')">+ Add Court</button></div><div class="twrap"><table><thead><tr><th>Court</th><th>Sport</th><th>Owner</th><th>Price</th><th>Rating</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="ctBody"></tbody></table></div></div>
@@ -959,6 +979,15 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     <div class="tpane" id="tp-ds"><div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead><tbody id="dsBody"></tbody></table></div></div>
     <div class="tpane" id="tp-fe"><p style="font-size:.88rem;color:var(--grey);margin-bottom:16px">Toggle featured status for any court.</p><div class="twrap"><table><thead><tr><th>Court</th><th>Sport</th><th>Owner</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="feBody"></tbody></table></div></div>
     <div class="tpane" id="tp-po"><div class="twrap"><table><thead><tr><th>ID</th><th>Owner</th><th>Facility</th><th>Amount</th><th>Period</th><th>Status</th><th>Actions</th></tr></thead><tbody id="poBody"></tbody></table></div></div>
+    <div class="tpane" id="tp-rf">
+  <div style="margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-p btn-sm" onclick="openModal('addRefModal')">+ Create Referral Code</button>
+  </div>
+  <div id="refCodesList"></div>
+  <div class="divider"></div>
+  <h3 style="margin:18px 0 14px;font-size:1rem">All Earnings</h3>
+  <div class="twrap"><table><thead><tr><th>Code</th><th>Court</th><th>Date</th><th>Court Fee</th><th>Reward</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody id="rfBody"></tbody></table></div>
+</div>
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
 </div>
@@ -1035,6 +1064,21 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Account Number</label><input type="text" id="payoutAccNum" placeholder="12345678"/></div>
   <div class="fg"><label>Amount to request ($)</label><input type="number" id="payoutAmount" placeholder="0.00"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('payoutModal')">Cancel</button><button class="btn btn-p" onclick="submitPayout()">Submit Request</button></div>
+</div></div>
+  <div class="modal-bg" id="addRefModal"><div class="modal">
+  <h3>Create Referral Code</h3>
+  <div class="fg"><label>Code (uppercase, no spaces)</label><input type="text" id="rcCode" placeholder="e.g. FAIQ2026" style="text-transform:uppercase"/></div>
+  <div class="fg"><label>Holder Name</label><input type="text" id="rcName" placeholder="Full name"/></div>
+  <div class="fg"><label>Holder Email</label><input type="email" id="rcEmail" placeholder="their@email.com"/></div>
+  <div class="fg"><label>Holder Courtly Account Email</label><input type="email" id="rcUserEmail" placeholder="their Courtly login email"/></div>
+  <div class="fg"><label>Reward %</label><input type="number" id="rcPct" value="5" min="1" max="20" step="0.5"/></div>
+  <div class="fg"><label>Bank Name</label><input type="text" id="rcBank" placeholder="e.g. Commonwealth Bank"/></div>
+  <div class="fg"><label>BSB</label><input type="text" id="rcBSB" placeholder="062-000"/></div>
+  <div class="fg"><label>Account Number</label><input type="text" id="rcAccNum" placeholder="12345678"/></div>
+  <div class="modal-btns">
+    <button class="btn btn-g" onclick="closeModal('addRefModal')">Cancel</button>
+    <button class="btn btn-p" onclick="createRefCode()">Create Code</button>
+  </div>
 </div></div>
 
 <!-- Lightbox -->
@@ -1151,8 +1195,9 @@ function nav(p){
   if(p==='admin')initAdmin();
   if(p==='owner')initOwner();
   if(p==='mybookings')renderMyBookings(currentBTab);
-  if(p==='favourites')renderFavourites();
-  if(p==='profile')initProfile();
+if(p==='favourites')renderFavourites();
+if(p==='referral')initReferralPage();
+if(p==='profile')initProfile();
 }
 function toggleMenu(){document.getElementById('mobMenu')?.classList.toggle('open')}
 function cm(){document.getElementById('mobMenu')?.classList.remove('open')}
@@ -1162,7 +1207,7 @@ function updateNav(){
   const role=CU?.role;
   const portalLinks=role==='admin'?`<a onclick="nav('admin')">Admin</a>`:
     role==='owner'?`<a onclick="nav('owner')">Portal</a>`:
-    CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a>`:'';
+    CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a><a onclick="nav('referral')">💰 Referrals</a>`:'';
   const logBtn=CU
     ?`<a onclick="doLogout()" class="btn btn-g btn-sm" style="margin-left:4px">Logout</a>`
     :`<a onclick="nav('login')" class="btn btn-g btn-sm" style="margin-left:4px">Login</a><a onclick="nav('register')" class="btn btn-p btn-sm" style="margin-left:4px">Sign Up</a>`;
@@ -1500,7 +1545,7 @@ async function loadSlots(){
 }
 function selSlot(el,t){document.querySelectorAll('.tslot').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');bTime=t;chk2()}
 function chk2(){const btn=document.getElementById('s2n');if(btn)btn.disabled=!(bDate&&bTime)}
-function goStep(n){
+async function goStep(n){
   document.querySelectorAll('.bstep').forEach(s=>s.classList.remove('active'));
   (document.getElementById('bs'+n)||document.getElementById('bsOK')).classList.add('active');
   [1,2,3,4].forEach(i=>{const d=document.getElementById('d'+i);if(!d)return;d.classList.remove('active','done');if(i<n)d.classList.add('done');if(i===n)d.classList.add('active')});
@@ -1509,8 +1554,21 @@ function goStep(n){
     const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
     const bs=document.getElementById('bSum');if(bs)bs.innerHTML=html;
     const bs2=document.getElementById('bSum2');if(bs2)bs2.innerHTML=html;
-    const fb=document.getElementById('feeBreakdown');if(fb)fb.innerHTML=`<div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div><div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div><div class="fee-row total"><span>Total</span><span>$${total.toFixed(2)}</span></div>`;
-    const pa=document.getElementById('payAmt');if(pa)pa.textContent=total.toFixed(2);
+const credit=CU?.booking_credit||0;
+const creditApplied=Math.min(credit,total);
+const finalTotal=Math.max(0,total-creditApplied);
+const fb=document.getElementById('feeBreakdown');
+if(fb)fb.innerHTML=`
+  <div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div>
+  <div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div>
+  ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
+  <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
+const pa=document.getElementById('payAmt');if(pa)pa.textContent=finalTotal.toFixed(2);
+if(creditApplied>0&&CU){
+  const remaining=Math.max(0,(CU.booking_credit||0)-creditApplied);
+  await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
+  CU.booking_credit=remaining;
+}
     const owner=window._currentCourt?.profiles;
     const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
     if(CU&&n===3){
@@ -1906,7 +1964,85 @@ async function doReset(){
   if(res.ok){showMsg('resetMsg2','Password reset successfully!','ok');toast('Password reset! Please log in.','ok');setTimeout(()=>nav('login'),1500);}
   else showMsg('resetMsg2','Invalid or expired code.','err');
 }
+// ============================================================
+// REFERRAL EARNINGS
+// ============================================================
+async function initReferralPage(){
+  if(!CU){nav('login');return}
+  const{data:myCode}=await sb.from('referral_codes')
+    .select('*')
+    .eq('holder_user_id',CU.id)
+    .eq('is_active',true)
+    .single();
+  if(!myCode){
+    const el=document.getElementById('refEarningsList');
+    if(el)el.innerHTML='<div class="empty-state"><div>🔗</div>You don\'t have a referral code yet. Contact Courtly admin to get one.</div>';
+    return;
+  }
+  const{data:earnings}=await sb.from('referral_earnings')
+    .select('*')
+    .eq('code',myCode.code)
+    .order('created_at',{ascending:false});
+  const cashEarned=(earnings||[]).filter(e=>e.reward_type==='cash').reduce((s,e)=>s+Number(e.reward_amount),0);
+  const cashPending=(earnings||[]).filter(e=>e.reward_type==='cash'&&e.status==='pending').reduce((s,e)=>s+Number(e.reward_amount),0);
+  const creditEarned=(earnings||[]).filter(e=>e.reward_type==='credit').reduce((s,e)=>s+Number(e.reward_amount),0);
+  const totalBookings=(earnings||[]).length;
+  const sr=document.getElementById('refStatsRow');
+  if(sr)sr.innerHTML=`
+    <div class="profile-stat"><strong style="color:var(--green)">$${cashEarned.toFixed(2)}</strong><span>Total Cash Earned</span></div>
+    <div class="profile-stat"><strong style="color:var(--gold)">$${cashPending.toFixed(2)}</strong><span>Pending Payout</span></div>
+    <div class="profile-stat"><strong style="color:var(--blue)">$${creditEarned.toFixed(2)}</strong><span>Credits Earned</span></div>
+    <div class="profile-stat"><strong>${totalBookings}</strong><span>Bookings Referred</span></div>`;
+  const el=document.getElementById('refEarningsList');
+  if(!el)return;
+  if(!earnings?.length){
+    el.innerHTML=`<div class="empty-state"><div>💰</div>No earnings yet. Share your code <strong>${myCode.code}</strong> with court owners!</div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="info-banner" style="margin-bottom:18px">Your referral code: <strong style="font-size:1rem;letter-spacing:1px">${myCode.code}</strong> · ${myCode.reward_percent}% per booking</div>
+    ${earnings.map(e=>`
+      <div class="cmcard">
+        <div class="cmcard-hdr">
+          <div>
+            <h4 style="margin-bottom:3px">${e.court_name}</h4>
+            <p style="font-size:.78rem;color:var(--grey)">${fmtDateLong(e.booking_date)} · Court fee: $${Number(e.court_fee).toFixed(2)}</p>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:${e.reward_type==='cash'?'var(--green)':'var(--blue)'}">
+              ${e.reward_type==='cash'?'+':'🎁 '}$${Number(e.reward_amount).toFixed(2)}
+            </div>
+            <span class="badge ${e.status==='pending'?'badge-gold':e.status==='paid'?'badge-g':'badge-b'}">
+              ${e.reward_type==='credit'?'Booking credit':e.status}
+            </span>
+          </div>
+        </div>
+      </div>`).join('')}`;
+  const{data:pos}=await sb.from('referral_payouts')
+    .select('*')
+    .eq('code',myCode.code)
+    .order('created_at',{ascending:false});
+  const pl=document.getElementById('refPayoutList');
+  if(pl)pl.innerHTML=pos?.length
+    ?pos.map(p=>`
+      <div class="cmcard">
+        <div class="cmcard-hdr">
+          <div>
+            <h4>$${Number(p.amount).toFixed(2)}</h4>
+            <p style="font-size:.78rem;color:var(--grey)">${new Date(p.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p>
+          </div>
+          <span class="badge ${p.status==='paid'?'badge-g':'badge-gold'}">${p.status}</span>
+        </div>
+      </div>`).join('')
+    :'<div class="empty-state"><div>💳</div>No payouts yet.</div>';
+}
 
+function showRefTab(name,btn){
+  document.querySelectorAll('#pg-referral .tpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#pg-referral .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const tp=document.getElementById('rt-'+name);if(tp)tp.classList.add('active');
+}
 // ============================================================
 // FAVOURITES
 // ============================================================
@@ -2106,7 +2242,7 @@ async function initAdmin(){
   const payb=document.getElementById('payBadge');if(payb){payb.textContent=payPend?.length||0;payb.style.display=payPend?.length?'inline':'none'}
   const fp=document.getElementById('feePct');if(fp)fp.value=PLATFORM_FEE;
   const fn=document.getElementById('feeNote');if(fn)fn.textContent=`Currently: ${PLATFORM_FEE}% on every booking`;
-  await renderBkTbl();await renderCtTbl();await renderUsTbl();await renderOwTbl();await renderRvTbl();await renderDsTbl();await renderFeTbl();await renderPoTbl();
+await renderBkTbl();await renderCtTbl();await renderUsTbl();await renderOwTbl();await renderRvTbl();await renderDsTbl();await renderFeTbl();await renderPoTbl();await renderRefTab();
 }
 async function saveFee(){
   const v=parseFloat(document.getElementById('feePct')?.value);if(isNaN(v)||v<0||v>30){toast('Enter 0–30%','err');return}
@@ -2172,6 +2308,100 @@ async function resolveDispute(){
   closeModal('resolveModal');renderDsTbl();toast('Dispute resolved');
 }
 function searchBk(q){renderBkTbl(q)}
+  // ============================================================
+// ADMIN REFERRALS
+// ============================================================
+async function renderRefTab(){
+  await renderRefCodes();
+  await renderRefEarnings();
+}
+async function renderRefCodes(){
+  const{data:codes}=await sb.from('referral_codes').select('*').order('created_at',{ascending:false});
+  const el=document.getElementById('refCodesList');if(!el)return;
+  if(!codes?.length){el.innerHTML='<div class="empty-state"><div>🔗</div>No referral codes yet.</div>';return}
+  el.innerHTML=codes.map(c=>`
+    <div class="cmcard" style="margin-bottom:10px">
+      <div class="cmcard-hdr">
+        <div>
+          <h4 style="margin-bottom:3px;font-size:1rem;letter-spacing:1px">${c.code} <span class="badge ${c.is_active?'badge-g':'badge-r'}">${c.is_active?'Active':'Inactive'}</span></h4>
+          <p style="font-size:.78rem;color:var(--grey)">${c.holder_name} · ${c.holder_email||''} · ${c.reward_percent}% reward</p>
+          <p style="font-size:.76rem;color:var(--grey);margin-top:2px">${c.holder_bank_name||''} · BSB: ${c.holder_bsb||''} · Acc: ${c.holder_account_number||''}</p>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start">
+          <input type="number" value="${c.reward_percent}" min="1" max="20" step="0.5" style="width:60px;padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:.82rem" id="rcp_${c.id}"/>
+          <button class="btn btn-g btn-sm" onclick="updateRefPct('${c.id}')">Save %</button>
+          <button class="btn btn-${c.is_active?'r':'p'} btn-sm" onclick="toggleRefCode('${c.id}',${c.is_active})">${c.is_active?'Deactivate':'Activate'}</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+async function renderRefEarnings(){
+  const{data:earnings}=await sb.from('referral_earnings').select('*').order('created_at',{ascending:false}).limit(100);
+  const tb=document.getElementById('rfBody');if(!tb)return;
+  if(!earnings?.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div>💰</div>No earnings yet.</div></td></tr>';return}
+  tb.innerHTML=earnings.map(e=>`
+    <tr>
+      <td><strong>${e.code}</strong></td>
+      <td>${e.court_name}</td>
+      <td>${fmtDate(e.booking_date)}</td>
+      <td>$${Number(e.court_fee).toFixed(2)}</td>
+      <td>$${Number(e.reward_amount).toFixed(2)}</td>
+      <td><span class="badge ${e.reward_type==='cash'?'badge-g':'badge-b'}">${e.reward_type==='cash'?'💵 Cash':'🎁 Credit'}</span></td>
+      <td><span class="badge ${e.status==='pending'?'badge-gold':e.status==='paid'?'badge-g':'badge-b'}">${e.status}</span></td>
+      <td>${e.reward_type==='cash'&&e.status==='pending'?`<button class="ab ok" onclick="markEarningPaid('${e.id}')">Mark Paid</button>`:'—'}</td>
+    </tr>`).join('');
+}
+async function createRefCode(){
+  const code=document.getElementById('rcCode')?.value.trim().toUpperCase();
+  const name=document.getElementById('rcName')?.value.trim();
+  const email=document.getElementById('rcEmail')?.value.trim();
+  const userEmail=document.getElementById('rcUserEmail')?.value.trim();
+  const pct=parseFloat(document.getElementById('rcPct')?.value);
+  const bank=document.getElementById('rcBank')?.value.trim();
+  const bsb=document.getElementById('rcBSB')?.value.trim();
+  const acc=document.getElementById('rcAccNum')?.value.trim();
+  if(!code||!name||!pct){toast('Fill in code, name and reward %','err');return}
+  let holderUserId=null;
+  if(userEmail){
+    const{data:prof}=await sb.from('profiles').select('id').eq('email',userEmail).single();
+    if(prof)holderUserId=prof.id;
+    else{toast('No Courtly account found for that email','err');return}
+  }
+  const{error}=await sb.from('referral_codes').insert({
+    code,
+    holder_name:name,
+    holder_email:email,
+    holder_user_id:holderUserId,
+    reward_percent:pct,
+    holder_bank_name:bank,
+    holder_bsb:bsb,
+    holder_account_number:acc,
+    is_active:true
+  });
+  if(!error){
+    closeModal('addRefModal');
+    ['rcCode','rcName','rcEmail','rcUserEmail','rcBank','rcBSB','rcAccNum'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+    document.getElementById('rcPct').value='5';
+    toast('Referral code created!','ok');
+    renderRefCodes();
+  } else toast('Failed to create code: '+error.message,'err');
+}
+async function updateRefPct(id){
+  const val=parseFloat(document.getElementById('rcp_'+id)?.value);
+  if(isNaN(val)||val<1||val>20){toast('Enter 1–20%','err');return}
+  const{error}=await sb.from('referral_codes').update({reward_percent:val}).eq('id',id);
+  if(!error)toast('Reward % updated!','ok');else toast('Failed to update','err');
+}
+async function toggleRefCode(id,isActive){
+  await sb.from('referral_codes').update({is_active:!isActive}).eq('id',id);
+  toast(isActive?'Code deactivated':'Code activated!','ok');
+  renderRefCodes();
+}
+async function markEarningPaid(id){
+  await sb.from('referral_earnings').update({status:'paid'}).eq('id',id);
+  toast('Marked as paid','ok');
+  renderRefEarnings();
+}
 async function exportBk(){
   const{data:bks}=await sb.from('bookings').select('*');if(!bks?.length){alert('No bookings.');return}
   const rows=[['ID','Name','Email','Court','Date','Time','Court Fee','Platform Fee','Total','Status'],...bks.map(b=>[b.id,b.player_name,b.player_email,b.court_name,b.booking_date,b.time_slot,'$'+b.court_fee,'$'+b.platform_fee,'$'+(b.total||b.court_fee),b.status])];
