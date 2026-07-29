@@ -2241,7 +2241,7 @@ async function initAdmin(){
   const db=document.getElementById('dispBadge');if(db){db.textContent=dispOpen?.length||0;db.style.display=dispOpen?.length?'inline':'none'}
   const payb=document.getElementById('payBadge');if(payb){payb.textContent=payPend?.length||0;payb.style.display=payPend?.length?'inline':'none'}
   const fp=document.getElementById('feePct');if(fp)fp.value=PLATFORM_FEE;
-  const fn=document.getElementById('feeNote');if(fn)fn.textContent=`Currently: ${PLATFORM_FEE}% on every booking`;
+  const feeNoteEl=document.getElementById('feeNote');if(feeNoteEl)feeNoteEl.textContent=`Currently: ${PLATFORM_FEE}% on every booking`;
 await renderBkTbl();await renderCtTbl();await renderUsTbl();await renderOwTbl();await renderRvTbl();await renderDsTbl();await renderFeTbl();await renderPoTbl();await renderRefTab();
 }
 async function saveFee(){
