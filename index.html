@@ -1565,11 +1565,6 @@ if(fb)fb.innerHTML=`
   ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
   <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
 const pa=document.getElementById('payAmt');if(pa)pa.textContent=finalTotal.toFixed(2);
-if(creditApplied>0&&CU){
-  const remaining=Math.max(0,(CU.booking_credit||0)-creditApplied);
-  await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
-  CU.booking_credit=remaining;
-}
     const owner=window._currentCourt?.profiles;
     const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
     if(CU&&n===3){
@@ -1588,7 +1583,15 @@ async function processPayment(){
   if(!first||!email){toast('Please fill in your details','err');return}
   const payBtn=document.getElementById('payBtn');
   payBtn.disabled=true;payBtn.textContent='Confirming…';
-  const cf=parseFloat(bCourt?.price_per_hour||0),pf=Math.round(cf*PLATFORM_FEE)/100,total=cf+pf;
+  const cf=parseFloat(bCourt?.price_per_hour||0),pf=Math.round(cf*PLATFORM_FEE)/100;
+const credit=CU?.booking_credit||0;
+const creditApplied=Math.min(credit,cf+pf);
+const total=Math.max(0,(cf+pf)-creditApplied);
+if(creditApplied>0&&CU){
+    const remaining=Math.max(0,(CU.booking_credit||0)-creditApplied);
+    await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
+    CU.booking_credit=remaining;
+  }
   // If Stripe key is real, process payment — otherwise save booking directly
   const hasStripe=STRIPE_PUB_KEY&&!STRIPE_PUB_KEY.includes('YOUR_STRIPE');
   let stripePaymentId=null;
