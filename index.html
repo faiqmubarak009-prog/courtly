@@ -1648,6 +1648,7 @@ if(creditApplied>0&&CU){
           .update({booking_credit:newCredit})
           .eq('id',CU.id);
         CU.booking_credit=newCredit;
+        await loadProfile(CU.id);
         toast(`Booking credit of £${rewardAmt.toFixed(2)} added to your account!`,'ok');
       }
     }
