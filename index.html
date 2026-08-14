@@ -88,6 +88,21 @@ button:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shad
 
 /* COURT CARDS */
 .courts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.venues-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.venue-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s}
+.venue-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+.venue-card-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:var(--grey-l);position:relative;overflow:hidden}
+.venue-card-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.venue-card-body{padding:20px}
+.venue-card-body h3{margin-bottom:4px;font-size:1.05rem}
+.venue-location{font-size:.78rem;color:var(--grey);margin-bottom:10px}
+.venue-sports{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.venue-sport-tag{display:inline-block;background:var(--green-p);color:var(--green);font-size:.68rem;padding:2px 10px;border-radius:12px;font-weight:500}
+.venue-meta{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)}
+.venue-price{font-size:.82rem;color:var(--grey)}
+.venue-price strong{color:var(--dark);font-size:.92rem}
+.venue-courts-count{font-size:.78rem;color:var(--grey);background:var(--grey-l);padding:3px 10px;border-radius:12px}
+@media(max-width:760px){.venues-grid{grid-template-columns:1fr}}
 .court-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;position:relative}
 .court-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
 .court-card-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:3.2rem;background:var(--grey-l);position:relative;overflow:hidden}
@@ -426,6 +441,21 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 .sfbtn:hover,.sfbtn.active{border-color:var(--green);background:var(--green-p);color:var(--green)}
 .results-meta{display:flex;justify-content:space-between;margin-bottom:16px;font-size:.84rem;color:var(--grey)}
 .fav-wrap{max-width:1240px;margin:0 auto;padding:48px 24px 72px}
+/* VENUE TIMETABLE */
+.venue-timetable{width:100%;border-collapse:collapse;font-size:.75rem}
+.venue-timetable th{background:var(--grey-l);padding:8px 10px;text-align:center;border-right:1px solid var(--border);white-space:nowrap;font-weight:500;font-size:.72rem;color:var(--grey);min-width:54px}
+.venue-timetable td{padding:3px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center}
+.venue-timetable tr:last-child td{border-bottom:none}
+.court-row-label{text-align:left;padding:8px 12px;font-weight:500;font-size:.8rem;background:#fff;position:sticky;left:0;z-index:1;border-right:1px solid var(--border);white-space:nowrap;min-width:100px}
+.tslot-cell{width:100%;height:32px;border:none;cursor:pointer;border-radius:3px;transition:all .15s;display:block}
+.tslot-cell.available{background:#fff}
+.tslot-cell.available:hover{background:var(--green-p)}
+.tslot-cell.booked{background:var(--red-p);cursor:not-allowed}
+.tslot-cell.blocked{background:var(--gold-p);cursor:not-allowed}
+.tslot-cell.selected{background:var(--green)}
+.tslot-cell.drag-selecting{background:var(--green-p);outline:2px solid var(--green)}
+.date-tab{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.date-tab:hover,.date-tab.active{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -437,7 +467,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     <span class="logo" onclick="nav('home')">Court<span>ly</span></span>
     <div class="nav-links">
       <a onclick="nav('home')" id="nl-home" class="active">Home</a>
-      <a onclick="nav('courts')" id="nl-courts">Courts</a>
+      <a onclick="nav('courts')" id="nl-courts">Venues</a>
       <a onclick="nav('book')" id="nl-book">Book</a>
       <span id="navAuth"></span>
     </div>
@@ -445,7 +475,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div>
   <div class="mob-menu" id="mobMenu">
     <a onclick="nav('home');cm()">Home</a>
-    <a onclick="nav('courts');cm()">Courts</a>
+    <a onclick="nav('courts');cm()">Venues</a>
     <a onclick="nav('book');cm()">Book</a>
     <div id="mobAuth"></div>
   </div>
@@ -498,7 +528,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <footer class="footer"><div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand"><span class="flogo" onclick="nav('home')">Courtly</span><p>The easiest way to find, book and pay for sports courts online.</p></div>
-      <div class="footer-col"><h4>Product</h4><a onclick="nav('courts')">Browse Courts</a><a onclick="nav('book')">Book a Court</a><a onclick="nav('register')">List Courts</a></div>
+      <div class="footer-col"><h4>Product</h4><a onclick="nav('courts')">Browse Venues</a><a onclick="nav('book')">Book a Court</a><a onclick="nav('register')">List Courts</a></div>
       <div class="footer-col"><h4>Account</h4><a onclick="nav('login')">Login</a><a onclick="nav('register')">Sign Up</a><a onclick="nav('mybookings')">My Bookings</a><a onclick="nav('profile')">My Profile</a></div>
       <div class="footer-col"><h4>Company</h4><a>About</a><a>Contact</a><a>Privacy Policy</a><a>Terms of Service</a></div>
     </div>
@@ -506,14 +536,22 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div></footer>
 </div>
 
-<!-- COURTS -->
+<!-- COURTS / VENUES -->
 <div class="page" id="pg-courts">
   <div class="courts-page">
-    <div class="sec-label">All Venues</div><h1 style="margin-bottom:20px">Browse Courts</h1>
+    <div class="sec-label">All Venues</div>
+    <h1 style="margin-bottom:20px">Browse Venues</h1>
     <div class="search-filter-bar">
-      <input type="text" id="csearch" placeholder="Search by name, location, surface…" oninput="renderCourts()"/>
-      <select id="csort" onchange="renderCourts()"><option value="">Sort: Default</option><option value="rating-d">Highest Rated</option><option value="rating-a">Lowest Rated</option><option value="price-a">Price ↑</option><option value="price-d">Price ↓</option><option value="featured">Featured First</option></select>
-      <select id="cdate" onchange="renderCourts()"><option value="">Any date</option></select>
+      <input type="text" id="csearch" placeholder="Search by venue name, location, sport…" oninput="renderVenues()"/>
+      <select id="csort" onchange="renderVenues()">
+        <option value="">Sort: Default</option>
+        <option value="rating-d">Highest Rated</option>
+        <option value="rating-a">Lowest Rated</option>
+        <option value="price-a">Price ↑</option>
+        <option value="price-d">Price ↓</option>
+        <option value="featured">Featured First</option>
+      </select>
+      <select id="cdate" onchange="renderVenues()"><option value="">Any date</option></select>
     </div>
     <div class="sport-filter-row">
       <button class="sfbtn active" onclick="setSF('',this)">All Sports</button>
@@ -526,12 +564,128 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <button class="sfbtn" onclick="setSF('Cricket',this)">🏏 Cricket</button>
     </div>
     <div class="results-meta"><span id="resultsCount"></span></div>
-    <div class="courts-grid" id="courtsGrid"></div>
+    <div class="venues-grid" id="venuesGrid"></div>
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span><span>🔒 Stripe</span></div></div></footer>
 </div>
 
-<!-- COURT DETAIL -->
+<!-- VENUE DETAIL -->
+<div class="page" id="pg-venue">
+  <div class="court-detail">
+    <button class="btn btn-g btn-sm" onclick="nav('courts')" style="margin-bottom:18px">← Back to Venues</button>
+    <div class="detail-grid">
+      <div>
+        <div class="detail-img-wrap">
+          <div class="detail-img-main" id="venueImgMain"><span class="emoji-fallback" id="venueEmoji">🏟️</span></div>
+          <div class="detail-img-gallery" id="venueGallery"></div>
+        </div>
+      </div>
+      <div class="detail-info">
+        <span class="court-sport-tag" id="venueSportsTag"></span>
+        <h1 id="venueName"></h1>
+        <div class="detail-meta" id="venueMeta"></div>
+        <div id="venuePolicy" class="policy-box" style="display:none"></div>
+        <div class="rating-row" id="venueRating"></div>
+        <div id="venueHours" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- TIMETABLE GRID -->
+    <div style="margin-top:36px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <h2 style="font-size:1.3rem">Court Availability</h2>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" onclick="moveTimetableDate(-1)">← Prev</button>
+          <span id="timetableDateLabel" style="font-size:.88rem;font-weight:500;min-width:120px;text-align:center"></span>
+          <button class="btn btn-g btn-sm" onclick="moveTimetableDate(1)">Next →</button>
+        </div>
+      </div>
+
+      <!-- DATE TABS -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px" id="dateTabs"></div>
+
+      <!-- LEGEND -->
+      <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--grey)"><span style="width:12px;height:12px;background:#fff;border:1px solid var(--border);border-radius:2px;display:inline-block"></span>Available</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--grey)"><span style="width:12px;height:12px;background:var(--red-p);border:1px solid #fca5a5;border-radius:2px;display:inline-block"></span>Booked</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--grey)"><span style="width:12px;height:12px;background:var(--gold-p);border:1px solid #fde68a;border-radius:2px;display:inline-block"></span>Blocked</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--grey)"><span style="width:12px;height:12px;background:var(--green);border-radius:2px;display:inline-block"></span>Selected</span>
+      </div>
+
+      <!-- TIMETABLE -->
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)">
+        <table class="venue-timetable" id="venueTimetable">
+          <thead>
+            <tr id="timetableHeader">
+              <th style="min-width:100px;text-align:left;padding:10px 12px;background:var(--grey-l);font-size:.75rem;font-weight:500;position:sticky;left:0;z-index:2;border-right:1px solid var(--border)">Court</th>
+            </tr>
+          </thead>
+          <tbody id="timetableBody"></tbody>
+          <tfoot>
+            <tr id="timetablePriceRow">
+              <td style="padding:6px 12px;font-size:.72rem;color:var(--grey);background:var(--grey-l);position:sticky;left:0;border-right:1px solid var(--border)">Price</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- CUSTOM TIME PICKER -->
+      <div style="margin-top:20px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px">
+        <h3 style="font-size:.95rem;margin-bottom:14px">Custom time entry</h3>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div class="fg" style="margin:0;flex:1;min-width:140px">
+            <label>Court</label>
+            <select id="customCourtSel"></select>
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Start time</label>
+            <input type="time" id="customStartTime" value="09:00" style="width:120px"/>
+          </div>
+          <div class="fg" style="margin:0">
+            <label>Duration</label>
+            <select id="customDuration" style="width:120px">
+              <option value="30">30 min</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="150">2.5 hours</option>
+              <option value="180">3 hours</option>
+            </select>
+          </div>
+          <button class="btn btn-p" onclick="checkCustomTime()">Check & Book →</button>
+        </div>
+        <div id="customTimeMsg" style="margin-top:10px;font-size:.82rem;display:none"></div>
+      </div>
+
+      <!-- BOOKING SUMMARY BAR -->
+      <div id="venueSummaryBar" style="display:none;margin-top:16px;background:var(--green-p);border:1px solid #b7e4c7;border-radius:var(--r);padding:16px 20px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-weight:500;font-size:.92rem" id="venueSummaryText"></div>
+          <div style="font-size:.8rem;color:var(--grey);margin-top:3px" id="venueSummaryPrice"></div>
+        </div>
+        <button class="btn btn-p" onclick="bookFromTimetable()">Book Now →</button>
+      </div>
+    </div>
+
+    <!-- VENUE REVIEWS -->
+    <div class="reviews-section" style="margin-top:48px">
+      <div class="reviews-top">
+        <h2>Reviews</h2>
+        <div class="rev-filters">
+          <button class="rfbtn active" onclick="filterVenueRevs(0,this)">All</button>
+          <button class="rfbtn" onclick="filterVenueRevs(5,this)">★ 5</button>
+          <button class="rfbtn" onclick="filterVenueRevs(4,this)">★ 4</button>
+          <button class="rfbtn" onclick="filterVenueRevs(3,this)">★ 3</button>
+          <button class="rfbtn" onclick="filterVenueRevs(2,this)">★ 2</button>
+          <button class="rfbtn" onclick="filterVenueRevs(1,this)">★ 1</button>
+        </div>
+      </div>
+      <div id="venueReviewsList"></div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
+  <!-- COURT DETAIL -->
 <div class="page" id="pg-detail">
   <div class="court-detail">
     <button class="btn btn-g btn-sm" onclick="nav('courts')" style="margin-bottom:18px">← Back</button>
@@ -873,14 +1027,16 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
         </div>
         <div class="chart-bars" id="chartBars"></div>
       </div>
-      <div class="tabs" id="ownerTabs">
-        <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
-        <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
-        <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
-        <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
-        <button class="tab" onclick="showOwnerTab('payouts',this)">Payouts</button>
-        <button class="tab" onclick="showOwnerTab('settings',this)">Settings</button>
-      </div>
+    <div class="tabs" id="ownerTabs">
+  <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
+  <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
+  <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
+  <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
+  <button class="tab" onclick="showOwnerTab('hours',this)">Opening Hours</button>
+  <button class="tab" onclick="showOwnerTab('peak',this)">Peak Pricing</button>
+  <button class="tab" onclick="showOwnerTab('payouts',this)">Payouts</button>
+  <button class="tab" onclick="showOwnerTab('settings',this)">Settings</button>
+</div>
       <div class="tpane active" id="ot-courts">
         <div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('oAddModal')">+ Add Court</button></div>
         <div id="ownerCourtsList"></div>
@@ -925,9 +1081,28 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
           </div>
         </div>
       </div>
-      <div class="tpane" id="ot-payouts">
-        <div id="payoutContent"></div>
-      </div>
+      <!-- OPERATING HOURS -->
+<div class="tpane" id="ot-hours">
+  <div class="info-banner">Set your venue's opening hours for each day of the week. These apply to all your courts.</div>
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:600px">
+    <div id="hoursGrid"></div>
+    <button class="btn btn-p" style="margin-top:18px" onclick="saveVenueHours()">Save Opening Hours</button>
+  </div>
+</div>
+
+<!-- PEAK PRICING -->
+<div class="tpane" id="ot-peak">
+  <div class="info-banner">Set peak pricing windows per court. Players will see peak rates on the timetable.</div>
+  <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <select id="peakCourtSel" onchange="loadPeakPricing()" style="padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem"></select>
+    <button class="btn btn-p btn-sm" onclick="openModal('addPeakModal')">+ Add Peak Window</button>
+  </div>
+  <div id="peakPricingList"></div>
+</div>
+      
+<div class="tpane" id="ot-payouts">
+  <div id="payoutContent"></div>
+</div>
       <div class="tpane" id="ot-settings">
         <div style="max-width:500px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
           <h3 style="margin-bottom:16px;font-size:1.1rem">Business Settings</h3>
@@ -1066,6 +1241,28 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="fg"><label>Amount to request ($)</label><input type="number" id="payoutAmount" placeholder="0.00"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('payoutModal')">Cancel</button><button class="btn btn-p" onclick="submitPayout()">Submit Request</button></div>
 </div></div>
+  <div class="modal-bg" id="addPeakModal"><div class="modal">
+  <h3>Add Peak Pricing Window</h3>
+  <input type="hidden" id="peakCourtId"/>
+  <div class="fg"><label>Label</label><input type="text" id="peakLabel" placeholder="e.g. Weekday evenings"/></div>
+  <div class="fg">
+    <label>Applies to</label>
+    <select id="peakDayType">
+      <option value="weekday">Weekdays (Mon–Fri)</option>
+      <option value="weekend">Weekends (Sat–Sun)</option>
+      <option value="all">All days</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <div class="fg"><label>Start time</label><input type="time" id="peakStart" value="17:00"/></div>
+    <div class="fg"><label>End time</label><input type="time" id="peakEnd" value="21:00"/></div>
+  </div>
+  <div class="fg"><label>Peak price ($/hr)</label><input type="number" id="peakPrice" placeholder="e.g. 35"/></div>
+  <div class="modal-btns">
+    <button class="btn btn-g" onclick="closeModal('addPeakModal')">Cancel</button>
+    <button class="btn btn-p" onclick="savePeakWindow()">Save</button>
+  </div>
+</div></div>
   <div class="modal-bg" id="addRefModal"><div class="modal">
   <h3>Create Referral Code</h3>
   <div class="fg"><label>Code (uppercase, no spaces)</label><input type="text" id="rcCode" placeholder="e.g. FAIQ2026" style="text-transform:uppercase"/></div>
@@ -1192,7 +1389,8 @@ function nav(p){
   const nl=document.getElementById('nl-'+p);if(nl)nl.classList.add('active');
   window.scrollTo(0,0);
   if(p==='home')initHome();
-  if(p==='courts'){populateDateSelect();renderCourts()}
+  if(p==='courts'){populateDateSelect();renderVenues()}
+  if(p==='venue'){}
   if(p==='admin')initAdmin();
   if(p==='owner')initOwner();
   if(p==='mybookings')renderMyBookings(currentBTab);
@@ -1261,6 +1459,443 @@ function setSF(sport,btn){
   document.querySelectorAll('.sfbtn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderCourts();
+}
+// ============================================================
+// VENUES
+// ============================================================
+let currentVenueId=null;
+let timetableDate=new Date().toISOString().split('T')[0];
+let timetableWeekOffset=0;
+let selectedTimetableSlots=[];
+let isDragging=false;
+let dragStartCell=null;
+let dragCourtId=null;
+let currentVenueCourts=[];
+let currentVenueRevFilter=0;
+
+async function renderVenues(){
+  const search=(document.getElementById('csearch')?.value||'').toLowerCase();
+  const sort=document.getElementById('csort')?.value||'';
+  const{data:owners}=await sb.from('profiles')
+    .select('*')
+    .eq('role','owner')
+    .eq('approval_status','approved');
+  if(!owners?.length){
+    const el=document.getElementById('venuesGrid');
+    if(el)el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div>🏟️</div>No venues yet.</div>';
+    return;
+  }
+  let venues=[];
+  for(const owner of owners){
+    const{data:courts}=await sb.from('courts')
+      .select('*,court_ratings(avg_rating,review_count)')
+      .eq('owner_id',owner.id);
+    if(!courts?.length)continue;
+    if(sportFilter&&!courts.some(c=>c.sport===sportFilter))continue;
+    const sports=[...new Set(courts.map(c=>c.sport))];
+    const minPrice=Math.min(...courts.map(c=>c.price_per_hour));
+    const maxPrice=Math.max(...courts.map(c=>c.price_per_hour));
+    const ratings=courts.filter(c=>c.court_ratings?.avg_rating).map(c=>parseFloat(c.court_ratings.avg_rating));
+    const avgRating=ratings.length?(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1):null;
+    const featured=courts.some(c=>c.featured);
+    const cover=courts.find(c=>c.photo_urls?.length)?.photo_urls[0]||null;
+    venues.push({owner,courts,sports,minPrice,maxPrice,avgRating,featured,cover,courtCount:courts.length});
+  }
+  if(search)venues=venues.filter(v=>
+    v.owner.facility?.toLowerCase().includes(search)||
+    v.owner.location?.toLowerCase().includes(search)||
+    v.sports.some(s=>s.toLowerCase().includes(search))
+  );
+  if(sort==='rating-d')venues.sort((a,b)=>(b.avgRating||0)-(a.avgRating||0));
+  else if(sort==='rating-a')venues.sort((a,b)=>(a.avgRating||0)-(b.avgRating||0));
+  else if(sort==='price-a')venues.sort((a,b)=>a.minPrice-b.minPrice);
+  else if(sort==='price-d')venues.sort((a,b)=>b.minPrice-a.minPrice);
+  else if(sort==='featured')venues.sort((a,b)=>b.featured-a.featured);
+  const rc=document.getElementById('resultsCount');
+  if(rc)rc.textContent=`${venues.length} venue${venues.length!==1?'s':''} found`;
+  const el=document.getElementById('venuesGrid');
+  if(!el)return;
+  el.innerHTML=venues.length?venues.map(v=>venueCardHTML(v)).join(''):'<div class="empty-state" style="grid-column:1/-1"><div>🏟️</div>No venues found.</div>';
+}
+
+function venueCardHTML(v){
+  const{owner,sports,minPrice,maxPrice,avgRating,featured,cover,courtCount}=v;
+  const stars=avgRating?'★'.repeat(Math.round(avgRating)):'';
+  const priceStr=minPrice===maxPrice?`$${minPrice}/hr`:`$${minPrice}–$${maxPrice}/hr`;
+  return`<div class="venue-card" onclick="openVenue('${owner.id}')">
+    <div class="venue-card-img">
+      ${featured?'<span class="featured-badge">⭐ Featured</span>':''}
+      ${cover?`<img src="${getPhotoUrl('court-photos',cover)}" alt="${owner.facility}"/>`:''}
+      <span style="font-size:3rem;position:relative;z-index:1${cover?';display:none':''}">🏟️</span>
+    </div>
+    <div class="venue-card-body">
+      <h3>${owner.facility||owner.name}</h3>
+      <div class="venue-location">📍 ${owner.location||'Location not set'}</div>
+      <div class="venue-sports">${sports.map(s=>`<span class="venue-sport-tag">${ICONS[s]||''} ${s}</span>`).join('')}</div>
+      <div class="venue-meta">
+        <div class="venue-price"><strong>${priceStr}</strong></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${avgRating?`<span style="font-size:.78rem;color:var(--gold)">${stars}</span><span style="font-size:.78rem;color:var(--grey)">${avgRating}</span>`:'<span style="font-size:.78rem;color:var(--grey)">New</span>'}
+          <span class="venue-courts-count">${courtCount} court${courtCount!==1?'s':''}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function openVenue(ownerId){
+  currentVenueId=ownerId;
+  selectedTimetableSlots=[];
+  timetableDate=new Date().toISOString().split('T')[0];
+  showLoad(true);
+  const[{data:owner},{data:courts},{data:hours}]=await Promise.all([
+    sb.from('profiles').select('*').eq('id',ownerId).single(),
+    sb.from('courts').select('*,court_ratings(avg_rating,review_count)').eq('owner_id',ownerId),
+    sb.from('venue_hours').select('*').eq('owner_id',ownerId),
+  ]);
+  showLoad(false);
+  if(!owner)return;
+  currentVenueCourts=courts||[];
+  window._currentVenue={owner,courts:courts||[],hours:hours||[]};
+  // Header
+  const vn=document.getElementById('venueName');if(vn)vn.textContent=owner.facility||owner.name;
+  const vm=document.getElementById('venueMeta');
+  if(vm)vm.innerHTML=`<span>📍 ${owner.location||'Location not set'}</span><span>🏟️ ${courts?.length||0} courts</span>${owner.email?`<span>✉️ ${owner.email}</span>`:''}`;
+  const vp=document.getElementById('venuePolicy');
+  if(vp){if(owner.policy){vp.innerHTML='📋 <strong>Cancellation Policy:</strong> '+owner.policy;vp.style.display='block'}else vp.style.display='none'}
+  // Sports tag
+  const sports=[...new Set((courts||[]).map(c=>c.sport))];
+  const vst=document.getElementById('venueSportsTag');
+  if(vst)vst.textContent=sports.join(' · ');
+  // Rating
+  const allRatings=(courts||[]).filter(c=>c.court_ratings?.avg_rating);
+  const avgR=allRatings.length?(allRatings.reduce((s,c)=>s+parseFloat(c.court_ratings.avg_rating),0)/allRatings.length).toFixed(1):null;
+  const vr=document.getElementById('venueRating');
+  if(vr)vr.innerHTML=avgR
+    ?`<div class="rating-big">${avgR}</div><div><div style="color:var(--gold);font-size:1.1rem">${'★'.repeat(Math.round(avgR))}${'☆'.repeat(5-Math.round(avgR))}</div></div>`
+    :'<span style="color:var(--grey);font-size:.88rem">No reviews yet</span>';
+  // Hours
+  const vh=document.getElementById('venueHours');
+  if(vh&&hours?.length){
+    const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    vh.innerHTML=`<div style="font-size:.8rem;font-weight:500;margin-bottom:6px;color:var(--dark)">Opening Hours</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">${dayNames.map((d,i)=>{
+      const h=hours.find(h=>h.day_of_week===i);
+      return`<span style="font-size:.72rem;background:${h?.is_open?'var(--green-p)':'var(--grey-l)'};color:${h?.is_open?'var(--green)':'var(--grey)'};padding:3px 8px;border-radius:12px">${d}${h?.is_open?` ${h.open_from?.slice(0,5)}–${h.open_until?.slice(0,5)}`:' Closed'}</span>`;
+    }).join('')}</div>`;
+  }
+  // Photos
+  const firstPhotoUrl=courts?.find(c=>c.photo_urls?.length)?.photo_urls[0];
+  const vim=document.getElementById('venueImgMain');
+  const ve=document.getElementById('venueEmoji');
+  if(vim&&firstPhotoUrl){
+    let img=vim.querySelector('img');
+    if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0';vim.appendChild(img)}
+    img.src=getPhotoUrl('court-photos',firstPhotoUrl);
+    if(ve)ve.style.display='none';
+  }
+  // Custom court selector
+  const ccs=document.getElementById('customCourtSel');
+  if(ccs){
+    ccs.innerHTML=(courts||[]).map(c=>`<option value="${c.id}">${c.name} — ${c.sport}</option>`).join('');
+  }
+  // Build timetable
+  await buildTimetable();
+  await renderVenueRevs(ownerId,0);
+  // Log view
+  if(courts?.length){
+    sb.from('court_views').insert({court_id:courts[0].id,venue_owner_id:ownerId,viewer_id:CU?.id||null}).then(()=>{});
+  }
+  nav('venue');
+}
+
+async function buildTimetable(){
+  const venue=window._currentVenue;
+  if(!venue)return;
+  const courts=venue.courts;
+  const date=timetableDate;
+  // Build date tabs
+  buildDateTabs();
+  // Update label
+  const lbl=document.getElementById('timetableDateLabel');
+  if(lbl)lbl.textContent=new Date(date+'T00:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+  // Get venue hours for this day
+  const dow=new Date(date+'T00:00:00').getDay();
+  const dayHours=venue.hours?.find(h=>h.day_of_week===dow);
+  const openFrom=dayHours?.open_from||'07:00';
+  const openUntil=dayHours?.open_until||'22:00';
+  // Filter slots to venue hours
+  const activeSlots=SLOTS.filter(s=>{
+    const h=parseSlotHour(s);
+    const fromH=parseInt(openFrom.split(':')[0]);
+    const untilH=parseInt(openUntil.split(':')[0]);
+    return h>=fromH&&h<untilH;
+  });
+  // Fetch bookings and blocks for all courts on this date
+  const courtIds=courts.map(c=>c.id);
+  const[{data:bks},{data:bls},{data:peaks}]=await Promise.all([
+    sb.from('bookings').select('court_id,time_slot').in('court_id',courtIds).eq('booking_date',date).neq('status','cancelled'),
+    sb.from('availability_blocks').select('court_id,time_slot').in('court_id',courtIds).eq('block_date',date),
+    sb.from('peak_pricing').select('*').in('court_id',courtIds),
+  ]);
+  const bookedMap={};const blockedMap={};
+  (bks||[]).forEach(b=>{if(!bookedMap[b.court_id])bookedMap[b.court_id]=[];bookedMap[b.court_id].push(b.time_slot)});
+  (bls||[]).forEach(b=>{if(!blockedMap[b.court_id])blockedMap[b.court_id]=[];blockedMap[b.court_id].push(b.time_slot)});
+  // Build header row
+  const header=document.getElementById('timetableHeader');
+  if(header){
+    header.innerHTML=`<th style="min-width:100px;text-align:left;padding:10px 12px;background:var(--grey-l);font-size:.75rem;font-weight:500;position:sticky;left:0;z-index:2;border-right:1px solid var(--border)">Court</th>`;
+    activeSlots.forEach(s=>{
+      const th=document.createElement('th');
+      th.textContent=s;
+      header.appendChild(th);
+    });
+  }
+  // Build body rows
+  const tbody=document.getElementById('timetableBody');
+  if(tbody){
+    tbody.innerHTML='';
+    courts.forEach(court=>{
+      const tr=document.createElement('tr');
+      const tdLabel=document.createElement('td');
+      tdLabel.className='court-row-label';
+      tdLabel.innerHTML=`<div style="font-weight:500">${court.name}</div><div style="font-size:.7rem;color:var(--grey)">${court.sport} · $${court.price_per_hour}/hr</div>`;
+      tr.appendChild(tdLabel);
+      activeSlots.forEach(slot=>{
+        const td=document.createElement('td');
+        td.style.padding='2px';
+        const isBooked=(bookedMap[court.id]||[]).includes(slot);
+        const isBlocked=(blockedMap[court.id]||[]).includes(slot);
+        const isSelected=selectedTimetableSlots.some(s=>s.courtId===court.id&&s.slot===slot);
+        const btn=document.createElement('button');
+        btn.className=`tslot-cell ${isBooked?'booked':isBlocked?'blocked':isSelected?'selected':'available'}`;
+        btn.dataset.courtId=court.id;
+        btn.dataset.slot=slot;
+        btn.dataset.date=date;
+        if(!isBooked&&!isBlocked){
+          btn.addEventListener('mousedown',()=>startDrag(court.id,slot));
+          btn.addEventListener('mouseover',()=>continueDrag(court.id,slot));
+          btn.addEventListener('mouseup',()=>endDrag());
+          btn.addEventListener('click',()=>toggleSlotSelection(court.id,slot,date,court));
+        }
+        td.appendChild(btn);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+  // Build price row
+  const priceRow=document.getElementById('timetablePriceRow');
+  if(priceRow){
+    priceRow.innerHTML=`<td style="padding:6px 12px;font-size:.72rem;color:var(--grey);background:var(--grey-l);position:sticky;left:0;border-right:1px solid var(--border)">Price</td>`;
+    activeSlots.forEach(slot=>{
+      const td=document.createElement('td');
+      td.style.cssText='padding:4px 2px;font-size:.7rem;color:var(--grey);background:var(--grey-l);text-align:center';
+      const slotH=parseSlotHour(slot);
+      const isPeak=(peaks||[]).some(p=>{
+        const sh=parseInt(p.start_time?.split(':')[0]);
+        const eh=parseInt(p.end_time?.split(':')[0]);
+        return slotH>=sh&&slotH<eh;
+      });
+      td.innerHTML=isPeak?`<span style="color:var(--gold);font-weight:500">Peak</span>`:'';
+      priceRow.appendChild(td);
+    });
+  }
+  // Global mouse up to end drag
+  document.addEventListener('mouseup',endDrag,{once:true});
+}
+
+function buildDateTabs(){
+  const tabs=document.getElementById('dateTabs');
+  if(!tabs)return;
+  tabs.innerHTML='';
+  const today=new Date();
+  for(let i=0;i<7;i++){
+    const d=new Date(today);
+    d.setDate(today.getDate()+i);
+    const dStr=d.toISOString().split('T')[0];
+    const btn=document.createElement('button');
+    btn.className='date-tab'+(dStr===timetableDate?' active':'');
+    btn.textContent=i===0?'Today':d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+    btn.onclick=()=>{timetableDate=dStr;selectedTimetableSlots=[];updateSummaryBar();buildTimetable()};
+    tabs.appendChild(btn);
+  }
+}
+
+function moveTimetableDate(dir){
+  const d=new Date(timetableDate+'T00:00:00');
+  d.setDate(d.getDate()+dir);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(d<today)return;
+  timetableDate=d.toISOString().split('T')[0];
+  selectedTimetableSlots=[];
+  updateSummaryBar();
+  buildTimetable();
+}
+// DRAG SELECTION
+function startDrag(courtId,slot){
+  isDragging=true;
+  dragStartCell={courtId,slot};
+  dragCourtId=courtId;
+}
+function continueDrag(courtId,slot){
+  if(!isDragging||courtId!==dragCourtId)return;
+  document.querySelectorAll('.tslot-cell.drag-selecting').forEach(el=>el.classList.remove('drag-selecting'));
+  const slots=SLOTS;
+  const startIdx=slots.indexOf(dragStartCell?.slot);
+  const endIdx=slots.indexOf(slot);
+  if(startIdx<0||endIdx<0)return;
+  const from=Math.min(startIdx,endIdx);
+  const to=Math.max(startIdx,endIdx);
+  for(let i=from;i<=to;i++){
+    const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slots[i]}"]`);
+    if(btn&&btn.classList.contains('available'))btn.classList.add('drag-selecting');
+  }
+}
+function endDrag(){
+  if(!isDragging)return;
+  isDragging=false;
+  const dragging=document.querySelectorAll('.tslot-cell.drag-selecting');
+  if(dragging.length>1){
+    const court=currentVenueCourts.find(c=>c.id==dragCourtId);
+    dragging.forEach(btn=>{
+      btn.classList.remove('drag-selecting');
+      btn.classList.add('selected');
+      const slot=btn.dataset.slot;
+      if(!selectedTimetableSlots.some(s=>s.courtId==dragCourtId&&s.slot===slot)){
+        selectedTimetableSlots.push({courtId:parseInt(dragCourtId),slot,date:timetableDate,court});
+      }
+    });
+    updateSummaryBar();
+  } else {
+    dragging.forEach(btn=>btn.classList.remove('drag-selecting'));
+  }
+  dragStartCell=null;dragCourtId=null;
+}
+
+function toggleSlotSelection(courtId,slot,date,court){
+  if(isDragging)return;
+  const idx=selectedTimetableSlots.findIndex(s=>s.courtId===courtId&&s.slot===slot);
+  const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
+  if(idx>-1){
+    selectedTimetableSlots.splice(idx,1);
+    if(btn)btn.className='tslot-cell available';
+  } else {
+    // clear other court selections if switching courts
+    if(selectedTimetableSlots.length&&selectedTimetableSlots[0].courtId!==courtId){
+      selectedTimetableSlots.forEach(s=>{
+        const b=document.querySelector(`[data-court-id="${s.courtId}"][data-slot="${s.slot}"]`);
+        if(b)b.className='tslot-cell available';
+      });
+      selectedTimetableSlots=[];
+    }
+    selectedTimetableSlots.push({courtId,slot,date,court});
+    if(btn)btn.className='tslot-cell selected';
+  }
+  updateSummaryBar();
+}
+
+function updateSummaryBar(){
+  const bar=document.getElementById('venueSummaryBar');
+  const txt=document.getElementById('venueSummaryText');
+  const prc=document.getElementById('venueSummaryPrice');
+  if(!bar)return;
+  if(!selectedTimetableSlots.length){bar.style.display='none';return}
+  bar.style.display='flex';
+  const court=selectedTimetableSlots[0].court;
+  const slots=selectedTimetableSlots.map(s=>s.slot);
+  const totalHrs=slots.length*0.5;
+  const totalCost=totalHrs*(court?.price_per_hour||0);
+  const firstSlot=slots[0];
+  const lastSlot=slots[slots.length-1];
+  if(txt)txt.textContent=`${court?.name} — ${court?.sport} · ${firstSlot}${slots.length>1?' → '+lastSlot:''}`;
+  if(prc)prc.textContent=`${totalHrs} hour${totalHrs!==1?'s':''} · $${totalCost.toFixed(2)} total`;
+}
+
+async function checkCustomTime(){
+  const courtId=parseInt(document.getElementById('customCourtSel')?.value);
+  const startTime=document.getElementById('customStartTime')?.value;
+  const duration=parseInt(document.getElementById('customDuration')?.value);
+  const msg=document.getElementById('customTimeMsg');
+  if(!courtId||!startTime||!duration){toast('Please fill in all fields','err');return}
+  const court=currentVenueCourts.find(c=>c.id===courtId);
+  if(!court)return;
+  // Convert start time to slot format and find all needed slots
+  const[h,m]=startTime.split(':').map(Number);
+  const startMinutes=h*60+m;
+  const neededSlots=[];
+  for(let i=0;i<duration;i+=30){
+    const mins=startMinutes+i;
+    const slotH=Math.floor(mins/60);
+    const slotM=mins%60;
+    const ampm=slotH>=12?'PM':'AM';
+    const displayH=slotH>12?slotH-12:slotH===0?12:slotH;
+    const slotStr=`${displayH}:${slotM===0?'00':slotM} ${ampm}`;
+    neededSlots.push(slotStr);
+  }
+  // Check if all slots are available
+  const{data:bks}=await sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',timetableDate).neq('status','cancelled');
+  const{data:bls}=await sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',timetableDate);
+  const taken=[...(bks||[]).map(b=>b.time_slot),...(bls||[]).map(b=>b.time_slot)];
+  const conflicts=neededSlots.filter(s=>taken.includes(s));
+  if(msg)msg.style.display='block';
+  if(conflicts.length){
+    if(msg){msg.style.color='var(--red)';msg.textContent=`Conflict at: ${conflicts.join(', ')} — please choose a different time.`}
+    return;
+  }
+  if(!neededSlots.every(s=>SLOTS.includes(s))){
+    if(msg){msg.style.color='var(--red)';msg.textContent='One or more slots fall outside available hours.'}
+    return;
+  }
+  // All clear — select these slots
+  selectedTimetableSlots=neededSlots.map(slot=>({courtId,slot,date:timetableDate,court}));
+  if(msg){msg.style.color='var(--green)';msg.textContent=`✓ Available! ${neededSlots.length*0.5} hour${neededSlots.length>1?'s':''} selected.`}
+  updateSummaryBar();
+  await buildTimetable();
+}
+
+function bookFromTimetable(){
+  if(!selectedTimetableSlots.length){toast('Please select a time slot first','err');return}
+  if(!CU){toast('Please log in to book','err');nav('login');return}
+  const first=selectedTimetableSlots[0];
+  const court=first.court;
+  bCourt=court;
+  bSport=court.sport;
+  bDate=first.date;
+  bTime=first.slot;
+  if(selectedTimetableSlots.length>1){
+    bTime=`${selectedTimetableSlots[0].slot} – ${selectedTimetableSlots[selectedTimetableSlots.length-1].slot}`;
+  }
+  nav('book');
+  setTimeout(()=>goStep(3),100);
+}
+
+async function renderVenueRevs(ownerId,starFilter){
+  currentVenueRevFilter=starFilter;
+  const courtIds=(window._currentVenue?.courts||[]).map(c=>c.id);
+  if(!courtIds.length)return;
+  let query=sb.from('reviews').select('*').in('court_id',courtIds).order('created_at',{ascending:false});
+  if(starFilter>0)query=query.eq('stars',starFilter);
+  const{data:rvs}=await query;
+  const el=document.getElementById('venueReviewsList');if(!el)return;
+  if(!rvs?.length){el.innerHTML='<div class="empty-state" style="padding:24px 0"><div>💬</div>No reviews yet.</div>';return}
+  el.innerHTML=rvs.map(r=>`<div class="review-card">
+    <div class="rev-hdr">
+      <div class="rev-user"><div class="avatar">${(r.reviewer_name||'?')[0].toUpperCase()}</div>
+        <div><div class="rev-name">${r.reviewer_name}</div><div class="rev-date">${new Date(r.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+      </div>
+      <div class="rev-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+    </div>
+    <div class="rev-body">${r.body}</div>
+    ${r.photo_url?`<img src="${getPhotoUrl('court-photos',r.photo_url)}" class="rev-photo" onclick="openLightbox('${getPhotoUrl('court-photos',r.photo_url)}')" alt="Review photo"/>`:''}
+    ${r.owner_reply?`<div class="owner-reply"><strong>🏟️ Owner replied:</strong> ${r.owner_reply}</div>`:''}
+  </div>`).join('');
+}
+
+async function filterVenueRevs(stars,btn){
+  document.querySelectorAll('#pg-venue .rfbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  await renderVenueRevs(currentVenueId,stars);
 }
 async function renderCourts(){
   const search=(document.getElementById('csearch')?.value||'').toLowerCase();
@@ -2112,7 +2747,7 @@ async function initOwner(){
   const s3=document.getElementById('oS3');if(s3)s3.textContent='$'+rev.toFixed(0);
   const s4=document.getElementById('oS4');if(s4)s4.textContent=avgR;
   renderChart('week',document.getElementById('ctW'));
-  await renderOwnerCourts();await renderOwnerBk(courtIds);await populateOwnerSelects();
+  await renderOwnerCourts();await renderOwnerBk(courtIds);await populateOwnerSelects();await populatePeakCourtSelect();
   const sF=document.getElementById('sF');if(sF)sF.value=CU.facility||'';
   const sL=document.getElementById('sL');if(sL)sL.value=CU.location||'';
   const sP=document.getElementById('sP');if(sP)sP.value=CU.policy||'';
@@ -2130,12 +2765,15 @@ async function renderOwnerBk(courtIds){
   if(!bks?.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div>📋</div>No bookings yet.</div></td></tr>';return}
   tb.innerHTML=bks.map(b=>`<tr><td>${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>${b.paid?`<span class="sb sb-g">$${Number(b.total||b.court_fee).toFixed(2)}</span>`:'Unpaid'}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab d" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}</td></tr>`).join('');
 }
-async function populateOwnerSelects(){
+async function populatePeakCourtSelect(){
   const{data:courts}=await sb.from('courts').select('id,name,sport').eq('owner_id',CU.id);
-  ['availCourtSel','recurCourtSel'].forEach(id=>{
-    const sel=document.getElementById(id);if(!sel)return;
-    sel.innerHTML='<option value="">-- Select court --</option>';
-    (courts||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=`${c.name} — ${c.sport}`;sel.appendChild(o)});
+  const sel=document.getElementById('peakCourtSel');if(!sel)return;
+  sel.innerHTML='<option value="">-- Select court --</option>';
+  (courts||[]).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id;
+    o.textContent=`${c.name} — ${c.sport}`;
+    sel.appendChild(o);
   });
 }
 async function renderAvailGrid(){
@@ -2175,8 +2813,114 @@ function showOwnerTab(name,btn){
   btn.classList.add('active');const tp=document.getElementById('ot-'+name);if(tp)tp.classList.add('active');
   if(name==='payouts')renderPayouts();
   if(name==='calendar')renderOwnerCal();
+  if(name==='hours')loadVenueHours();
+  if(name==='peak')loadPeakPricing();
 }
-async function saveSettings(){
+// ============================================================
+// VENUE HOURS & PEAK PRICING
+// ============================================================
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+async function loadVenueHours(){
+  const{data:hours}=await sb.from('venue_hours').select('*').eq('owner_id',CU.id);
+  const grid=document.getElementById('hoursGrid');
+  if(!grid)return;
+  grid.innerHTML='';
+  DAY_NAMES.forEach((day,i)=>{
+    const existing=hours?.find(h=>h.day_of_week===i);
+    const isOpen=existing?existing.is_open:i>0&&i<7;
+    const from=existing?.open_from?.slice(0,5)||'07:00';
+    const until=existing?.open_until?.slice(0,5)||'22:00';
+    const row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:120px 80px 1fr;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)';
+    row.innerHTML=`
+      <div style="font-size:.88rem;font-weight:500">${day}</div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer">
+        <input type="checkbox" id="hOpen_${i}" ${isOpen?'checked':''} onchange="toggleDayOpen(${i})"/>
+        Open
+      </label>
+      <div id="hTimes_${i}" style="display:${isOpen?'flex':'none'};gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="time" id="hFrom_${i}" value="${from}" style="width:110px;padding:6px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:.82rem"/>
+        <span style="font-size:.8rem;color:var(--grey)">to</span>
+        <input type="time" id="hUntil_${i}" value="${until}" style="width:110px;padding:6px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:.82rem"/>
+      </div>`;
+    grid.appendChild(row);
+  });
+}
+
+function toggleDayOpen(i){
+  const isOpen=document.getElementById(`hOpen_${i}`)?.checked;
+  const times=document.getElementById(`hTimes_${i}`);
+  if(times)times.style.display=isOpen?'flex':'none';
+}
+
+async function saveVenueHours(){
+  const rows=[];
+  for(let i=0;i<7;i++){
+    const isOpen=document.getElementById(`hOpen_${i}`)?.checked||false;
+    const from=document.getElementById(`hFrom_${i}`)?.value||'07:00';
+    const until=document.getElementById(`hUntil_${i}`)?.value||'22:00';
+    rows.push({owner_id:CU.id,day_of_week:i,is_open:isOpen,open_from:from,open_until:until});
+  }
+  const{error}=await sb.from('venue_hours').upsert(rows,{onConflict:'owner_id,day_of_week'});
+  if(!error)toast('Opening hours saved!','ok');
+  else toast('Failed to save hours','err');
+}
+
+async function loadPeakPricing(){
+  const courtId=document.getElementById('peakCourtSel')?.value;
+  const pid=document.getElementById('peakCourtId');
+  if(pid)pid.value=courtId;
+  if(!courtId)return;
+  const{data:peaks}=await sb.from('peak_pricing').select('*').eq('court_id',courtId);
+  const el=document.getElementById('peakPricingList');
+  if(!el)return;
+  if(!peaks?.length){
+    el.innerHTML='<div class="empty-state"><div>💰</div>No peak windows yet for this court.</div>';
+    return;
+  }
+  el.innerHTML=peaks.map(p=>`
+    <div class="cmcard" style="margin-bottom:10px">
+      <div class="cmcard-hdr">
+        <div>
+          <h4 style="margin-bottom:3px">${p.label||'Peak window'}</h4>
+          <p style="font-size:.78rem;color:var(--grey)">${p.day_type} · ${p.start_time?.slice(0,5)} – ${p.end_time?.slice(0,5)} · $${p.price_override}/hr</p>
+        </div>
+        <button class="btn btn-r btn-sm" onclick="deletePeakWindow('${p.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+async function savePeakWindow(){
+  const courtId=document.getElementById('peakCourtSel')?.value;
+  const label=document.getElementById('peakLabel')?.value.trim();
+  const dayType=document.getElementById('peakDayType')?.value;
+  const start=document.getElementById('peakStart')?.value;
+  const end=document.getElementById('peakEnd')?.value;
+  const price=parseFloat(document.getElementById('peakPrice')?.value);
+  if(!courtId||!start||!end||!price){toast('Fill in all fields','err');return}
+  const{error}=await sb.from('peak_pricing').insert({
+    court_id:parseInt(courtId),
+    label,
+    day_type:dayType,
+    start_time:start,
+    end_time:end,
+    price_override:price
+  });
+  if(!error){
+    closeModal('addPeakModal');
+    ['peakLabel','peakPrice'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+    toast('Peak window added!','ok');
+    loadPeakPricing();
+  } else toast('Failed to save','err');
+}
+async function deletePeakWindow(id){
+  if(!confirm('Remove this peak window?'))return;
+  await sb.from('peak_pricing').delete().eq('id',id);
+  toast('Removed','ok');
+  loadPeakPricing();
+}
+  async function saveSettings(){
   const{error}=await sb.from('profiles').update({facility:document.getElementById('sF')?.value.trim(),location:document.getElementById('sL')?.value.trim(),policy:document.getElementById('sP')?.value.trim()}).eq('id',CU.id);
   if(!error){await loadProfile(CU.id);toast('Settings saved!','ok');}else toast('Failed to save','err');
 }
