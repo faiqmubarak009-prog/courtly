@@ -1099,7 +1099,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="info-banner">Set peak pricing windows per court. Players will see peak rates on the timetable.</div>
   <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <select id="peakCourtSel" onchange="loadPeakPricing()" style="padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.88rem"></select>
-    <button class="btn btn-p btn-sm" onclick="openModal('addPeakModal')">+ Add Peak Window</button>
+    <button class="btn btn-p btn-sm" onclick="openAddPeakModal()">+ Add Peak Window</button>
   </div>
   <div id="peakPricingList"></div>
 </div>
@@ -1847,8 +1847,9 @@ async function checkCustomTime(){
   const court=currentVenueCourts.find(c=>c.id===courtId);
   if(!court)return;
   // Convert start time to slot format and find all needed slots
-  const[h,m]=startTime.split(':').map(Number);
-  const startMinutes=h*60+m;
+const[h,m]=startTime.split(':').map(Number);
+const rawMinutes=h*60+m;
+const startMinutes=Math.round(rawMinutes/30)*30;
   const neededSlots=[];
   for(let i=0;i<duration;i+=30){
     const mins=startMinutes+i;
@@ -2918,9 +2919,15 @@ async function loadPeakPricing(){
       </div>
     </div>`).join('');
 }
-
-async function savePeakWindow(){
+function openAddPeakModal(){
   const courtId=document.getElementById('peakCourtSel')?.value;
+  if(!courtId){toast('Please select a court first','err');return}
+  const pid=document.getElementById('peakCourtId');
+  if(pid)pid.value=courtId;
+  openAddPeakModal();
+}
+async function savePeakWindow(){
+  const courtId=document.getElementById('peakCourtId')?.value||document.getElementById('peakCourtSel')?.value;
   const label=document.getElementById('peakLabel')?.value.trim();
   const dayType=document.getElementById('peakDayType')?.value;
   const start=document.getElementById('peakStart')?.value;
