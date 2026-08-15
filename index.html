@@ -2924,7 +2924,7 @@ function openAddPeakModal(){
   if(!courtId){toast('Please select a court first','err');return}
   const pid=document.getElementById('peakCourtId');
   if(pid)pid.value=courtId;
-  openAddPeakModal();
+  openModal('addPeakModal');
 }
 async function savePeakWindow(){
   const courtId=document.getElementById('peakCourtId')?.value||document.getElementById('peakCourtSel')?.value;
