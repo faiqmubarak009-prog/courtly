@@ -1037,10 +1037,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <button class="tab" onclick="showOwnerTab('payouts',this)">Payouts</button>
   <button class="tab" onclick="showOwnerTab('settings',this)">Settings</button>
 </div>
-      <div class="tpane active" id="ot-courts">
-        <div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('oAddModal')">+ Add Court</button></div>
-        <div id="ownerCourtsList"></div>
-      </div>
+<div class="tpane active" id="ot-courts">
+  <div class="toolbar">
+    <button class="btn btn-p btn-sm" onclick="openModal('oAddModal')">+ Add Court</button>
+    <button class="btn btn-g btn-sm" onclick="openModal('csvImportModal')">📥 Import Bookings</button>
+    <a id="csvTemplateLink" style="font-size:.78rem;color:var(--green);cursor:pointer;align-self:center" onclick="downloadCSVTemplate()">Download template →</a>
+  </div>
+  <div id="ownerCourtsList"></div>
+</div>
       <div class="tpane" id="ot-bookings">
         <div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th></th></tr></thead><tbody id="ownerBkBody"></tbody></table></div>
       </div>
@@ -1279,6 +1283,28 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div>
 </div></div>
 
+  <div class="modal-bg" id="csvImportModal"><div class="modal" style="max-width:560px">
+  <h3>Import Existing Bookings</h3>
+  <p style="color:var(--grey);font-size:.84rem;margin-bottom:16px">Upload a CSV file using the Courtly template. Existing bookings from your old system will be imported seamlessly.</p>
+  <div class="info-banner" style="margin-bottom:16px">
+    <strong>Required columns:</strong> Court Name, Date (DD/MM/YYYY), Start Time (HH:MM), End Time (HH:MM), Player Name, Player Email, Amount Paid, Notes
+  </div>
+  <div class="photo-upload-zone" onclick="document.getElementById('csvFile').click()" id="csvDropZone">
+    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="previewCSV(this)"/>
+    📄 Click to upload your CSV file
+  </div>
+  <div id="csvPreview" style="display:none;margin-top:14px">
+    <div style="font-size:.82rem;font-weight:500;margin-bottom:8px" id="csvPreviewLabel"></div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--rs);max-height:200px;overflow-y:auto">
+      <table style="width:100%;font-size:.75rem;border-collapse:collapse" id="csvPreviewTable"></table>
+    </div>
+  </div>
+  <div id="csvImportMsg" style="margin-top:10px;font-size:.82rem;display:none"></div>
+  <div class="modal-btns">
+    <button class="btn btn-g" onclick="closeModal('csvImportModal')">Cancel</button>
+    <button class="btn btn-p" id="csvImportBtn" onclick="importCSV()" style="display:none">Import Bookings →</button>
+  </div>
+</div></div>
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -2920,7 +2946,117 @@ async function deletePeakWindow(id){
   toast('Removed','ok');
   loadPeakPricing();
 }
-  async function saveSettings(){
+  // ============================================================
+// CSV IMPORT
+// ============================================================
+let parsedCSVRows=[];
+
+function downloadCSVTemplate(){
+  const headers=['Court Name','Date (DD/MM/YYYY)','Start Time (HH:MM)','End Time (HH:MM)','Player Name','Player Email','Amount Paid','Notes'];
+  const example=['Court 1','25/08/2026','09:00','10:00','John Smith','john@email.com','30','Regular booking'];
+  const csv=[headers.join(','),example.join(',')].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='courtly_import_template.csv';
+  a.click();
+  toast('Template downloaded!','ok');
+}
+
+function previewCSV(inp){
+  const file=inp.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    const lines=text.trim().split('\n').filter(l=>l.trim());
+    if(lines.length<2){
+      const msg=document.getElementById('csvImportMsg');
+      if(msg){msg.style.display='block';msg.style.color='var(--red)';msg.textContent='CSV must have a header row and at least one data row.';}
+      return;
+    }
+    const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+    const rows=lines.slice(1).map(line=>{
+      const vals=line.split(',').map(v=>v.trim().replace(/"/g,''));
+      const obj={};
+      headers.forEach((h,i)=>obj[h]=vals[i]||'');
+      return obj;
+    });
+    parsedCSVRows=rows;
+    // Preview table
+    const preview=document.getElementById('csvPreview');
+    const table=document.getElementById('csvPreviewTable');
+    const label=document.getElementById('csvPreviewLabel');
+    const btn=document.getElementById('csvImportBtn');
+    if(label)label.textContent=`${rows.length} booking${rows.length!==1?'s':''} found — preview:`;
+    if(table){
+      table.innerHTML=`<thead><tr>${headers.map(h=>`<th style="padding:6px 8px;background:var(--grey-l);border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows.slice(0,5).map(r=>`<tr>${headers.map(h=>`<td style="padding:5px 8px;border-bottom:1px solid var(--border)">${r[h]||''}</td>`).join('')}</tr>`).join('')}${rows.length>5?`<tr><td colspan="${headers.length}" style="padding:6px 8px;color:var(--grey);font-size:.72rem">...and ${rows.length-5} more rows</td></tr>`:''}</tbody>`;
+    }
+    if(preview)preview.style.display='block';
+    if(btn)btn.style.display='inline-flex';
+  };
+  reader.readAsText(file);
+}
+
+async function importCSV(){
+  if(!parsedCSVRows.length){toast('No data to import','err');return}
+  const msg=document.getElementById('csvImportMsg');
+  const btn=document.getElementById('csvImportBtn');
+  if(btn){btn.disabled=true;btn.textContent='Importing…'}
+  if(msg){msg.style.display='block';msg.style.color='var(--grey)';msg.textContent='Importing bookings…'}
+  const{data:myCourts}=await sb.from('courts').select('id,name').eq('owner_id',CU.id);
+  let imported=0;let failed=0;
+  for(const row of parsedCSVRows){
+    try{
+      const courtName=row['Court Name']?.trim();
+      const court=myCourts?.find(c=>c.name.toLowerCase()===courtName?.toLowerCase());
+      if(!court){failed++;continue}
+      // Parse date from DD/MM/YYYY
+      const[dd,mm,yyyy]=row['Date (DD/MM/YYYY)']?.split('/')||[];
+      if(!dd||!mm||!yyyy){failed++;continue}
+      const bookingDate=`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+      // Convert start/end time to slot format
+      const startTime=row['Start Time (HH:MM)']?.trim();
+      const[sh,sm]=startTime?.split(':').map(Number)||[0,0];
+      const startMins=sh*60+(sm||0);
+      const ampm=sh>=12?'PM':'AM';
+      const displayH=sh>12?sh-12:sh===0?12:sh;
+      const timeSlot=`${displayH}:${sm===0?'00':sm} ${ampm}`;
+      const amount=parseFloat(row['Amount Paid'])||0;
+      const booking={
+        id:'BK'+Date.now()+Math.random().toString(36).slice(2,6),
+        user_id:null,
+        court_id:court.id,
+        court_name:court.name,
+        sport:'',
+        player_name:row['Player Name']?.trim()||'Imported',
+        player_email:row['Player Email']?.trim()||'',
+        player_phone:'',
+        booking_date:bookingDate,
+        time_slot:timeSlot,
+        court_fee:amount,
+        platform_fee:0,
+        total:amount,
+        status:'confirmed',
+        paid:true,
+        is_imported:true,
+        import_notes:row['Notes']?.trim()||''
+      };
+      const{error}=await sb.from('bookings').insert(booking);
+      if(!error)imported++;else failed++;
+    }catch(e){failed++}
+  }
+  if(msg){
+    msg.style.color=failed>0?'var(--gold)':'var(--green)';
+    msg.textContent=`✓ ${imported} booking${imported!==1?'s':''} imported successfully${failed>0?` · ${failed} failed (check court names match exactly)`:''}.`;
+  }
+  if(btn){btn.disabled=false;btn.textContent='Import Bookings →'}
+  parsedCSVRows=[];
+  if(imported>0){
+    setTimeout(()=>{closeModal('csvImportModal');renderOwnerCourts();},2000);
+  }
+}
+async function saveSettings(){
   const{error}=await sb.from('profiles').update({facility:document.getElementById('sF')?.value.trim(),location:document.getElementById('sL')?.value.trim(),policy:document.getElementById('sP')?.value.trim()}).eq('id',CU.id);
   if(!error){await loadProfile(CU.id);toast('Settings saved!','ok');}else toast('Failed to save','err');
 }
