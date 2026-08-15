@@ -1856,7 +1856,7 @@ async function checkCustomTime(){
     const slotM=mins%60;
     const ampm=slotH>=12?'PM':'AM';
     const displayH=slotH>12?slotH-12:slotH===0?12:slotH;
-    const slotStr=`${displayH}:${slotM===0?'00':slotM} ${ampm}`;
+    const slotStr=`${displayH}:${String(slotM).padStart(2,'0')} ${ampm}`;
     neededSlots.push(slotStr);
   }
   // Check if all slots are available
@@ -2894,7 +2894,7 @@ async function saveVenueHours(){
 }
 
 async function loadPeakPricing(){
-  const courtId=document.getElementById('peakCourtSel')?.value;
+  const courtId=document.getElementById('peakCourtId')?.value||document.getElementById('peakCourtSel')?.value;
   const pid=document.getElementById('peakCourtId');
   if(pid)pid.value=courtId;
   if(!courtId)return;
