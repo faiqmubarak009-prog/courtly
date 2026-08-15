@@ -2843,7 +2843,7 @@ function showOwnerTab(name,btn){
   if(name==='payouts')renderPayouts();
   if(name==='calendar')renderOwnerCal();
   if(name==='hours')loadVenueHours();
-  if(name==='peak')loadPeakPricing();
+  if(name==='peak'){populatePeakCourtSelect().then(()=>loadPeakPricing());}
 }
 // ============================================================
 // VENUE HOURS & PEAK PRICING
