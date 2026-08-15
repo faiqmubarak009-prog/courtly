@@ -1859,6 +1859,8 @@ async function checkCustomTime(){
     const slotStr=`${displayH}:${String(slotM).padStart(2,'0')} ${ampm}`;
     neededSlots.push(slotStr);
   }
+  console.log('Needed slots:', neededSlots);
+console.log('First SLOT:', SLOTS[0]);
   // Check if all slots are available
   const{data:bks}=await sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',timetableDate).neq('status','cancelled');
   const{data:bls}=await sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',timetableDate);
