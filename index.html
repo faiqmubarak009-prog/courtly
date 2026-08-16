@@ -456,6 +456,18 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 .tslot-cell.drag-selecting{background:var(--green-p);outline:2px solid var(--green)}
 .date-tab{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
 .date-tab:hover,.date-tab.active{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
+/* ANALYTICS */
+.heatmap-grid{display:grid;gap:2px}
+.heatmap-cell{border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:500}
+.perf-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.perf-row:last-child{border-bottom:none}
+.perf-bar-wrap{flex:1;background:var(--grey-l);border-radius:4px;height:8px;overflow:hidden}
+.perf-bar{height:100%;background:var(--green);border-radius:4px;transition:width .4s ease}
+.suggestion-card{background:var(--green-p);border:1px solid #b7e4c7;border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;font-size:.84rem}
+.suggestion-card.warn{background:var(--gold-p);border-color:#fde68a;color:#92400e}
+.rating-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:.82rem}
+.rating-bar-outer{flex:1;background:var(--grey-l);border-radius:4px;height:8px}
+.rating-bar-inner{height:100%;background:var(--gold);border-radius:4px}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1001,8 +1013,88 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     </div>
   </div>
 </div>
+  
+<!-- FULL ANALYTICS DASHBOARD -->
+<div class="page" id="pg-dashboard">
+  <div style="max-width:1240px;margin:0 auto;padding:40px 24px 72px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="sec-label">Analytics</div>
+        <h1 id="dashboardTitle">Venue Dashboard</h1>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="dashFrom" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.84rem"/>
+        <span style="font-size:.84rem;color:var(--grey)">to</span>
+        <input type="date" id="dashTo" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.84rem"/>
+        <button class="btn btn-g btn-sm" onclick="loadDashboard()">Apply</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;background:var(--gold-p);padding:6px 12px;border-radius:var(--rs);color:#92400e">
+          <input type="checkbox" id="dashDemoMode" onchange="loadDashboard()"/>
+          Demo mode
+        </label>
+        <button class="btn btn-g btn-sm" onclick="exportAnalyticsCSV()">Export CSV</button>
+        <button class="btn btn-g btn-sm" onclick="exportAnalyticsPDF()">Export PDF</button>
+        <button class="btn btn-g btn-sm" onclick="nav('owner')">← Back to Portal</button>
+      </div>
+    </div>
 
+    <!-- SUMMARY STATS -->
+    <div class="stats-row" id="dashStats" style="margin-bottom:28px;grid-template-columns:repeat(5,1fr)"></div>
+
+    <!-- REVENUE CHART -->
+    <div class="chart-wrap" style="margin-bottom:24px">
+      <div class="chart-hdr">
+        <h3 style="font-size:1rem">Revenue Over Time</h3>
+        <div class="chart-toggle">
+          <button class="ctgl active" onclick="renderDashRevenueChart('week',this)">7 Days</button>
+          <button class="ctgl" onclick="renderDashRevenueChart('month',this)">30 Days</button>
+        </div>
+      </div>
+      <div class="chart-bars" id="dashRevenueChart" style="height:160px"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+      <!-- COURT PERFORMANCE -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+        <h3 style="font-size:1rem;margin-bottom:16px">Court Performance</h3>
+        <div id="dashCourtPerf"></div>
+      </div>
+      <!-- PLAYER INSIGHTS -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+        <h3 style="font-size:1rem;margin-bottom:16px">Player Insights</h3>
+        <div id="dashPlayerInsights"></div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+      <h3 style="font-size:1rem;margin-bottom:16px">Peak Hours Heatmap</h3>
+      <p style="font-size:.78rem;color:var(--grey);margin-bottom:14px">Darker = more bookings at that time</p>
+      <div id="dashHeatmap"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+      <!-- PRICING SUGGESTIONS -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+        <h3 style="font-size:1rem;margin-bottom:16px">💡 Pricing Suggestions</h3>
+        <div id="dashPricingSuggestions"></div>
+      </div>
+      <!-- RATINGS TREND -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+        <h3 style="font-size:1rem;margin-bottom:16px">Ratings Trend</h3>
+        <div id="dashRatingsTrend"></div>
+      </div>
+    </div>
+
+    <!-- BENCHMARK -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+      <h3 style="font-size:1rem;margin-bottom:16px">📊 Benchmark vs Other Venues</h3>
+      <div id="dashBenchmark"></div>
+    </div>
+  </div>
+  <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
+</div>
 <!-- OWNER PORTAL -->
+  
 <div class="page" id="pg-owner">
   <div class="portal-wrap">
     <div class="portal-hdr">
@@ -1029,6 +1121,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       </div>
     <div class="tabs" id="ownerTabs">
   <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
+  <button class="tab" onclick="showOwnerTab('analytics',this)">📊 Analytics</button>
   <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
   <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
   <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
@@ -1036,6 +1129,72 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <button class="tab" onclick="showOwnerTab('peak',this)">Peak Pricing</button>
   <button class="tab" onclick="showOwnerTab('payouts',this)">Payouts</button>
   <button class="tab" onclick="showOwnerTab('settings',this)">Settings</button>
+</div>
+<!-- ANALYTICS -->
+<div class="tpane" id="ot-analytics">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="date" id="analyticsFrom" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.84rem"/>
+      <span style="font-size:.84rem;color:var(--grey)">to</span>
+      <input type="date" id="analyticsTo" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.84rem"/>
+      <button class="btn btn-g btn-sm" onclick="loadAnalytics()">Apply</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;background:var(--gold-p);padding:6px 12px;border-radius:var(--rs);color:#92400e">
+        <input type="checkbox" id="demoMode" onchange="loadAnalytics()"/>
+        Demo mode
+      </label>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g btn-sm" onclick="exportAnalyticsCSV()">Export CSV</button>
+      <button class="btn btn-g btn-sm" onclick="exportAnalyticsPDF()">Export PDF</button>
+      <button class="btn btn-p btn-sm" onclick="nav('dashboard')">Full Dashboard →</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-row" id="analyticsStats" style="margin-bottom:24px"></div>
+
+  <!-- REVENUE CHART -->
+  <div class="chart-wrap" style="margin-bottom:24px">
+    <div class="chart-hdr">
+      <h3 style="font-size:1rem">Revenue Over Time</h3>
+      <div class="chart-toggle">
+        <button class="ctgl active" onclick="renderRevenueChart('week',this)">7 Days</button>
+        <button class="ctgl" onclick="renderRevenueChart('month',this)">30 Days</button>
+      </div>
+    </div>
+    <div class="chart-bars" id="analyticsRevenueChart" style="height:140px"></div>
+  </div>
+
+  <!-- COURT PERFORMANCE -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+    <h3 style="font-size:1rem;margin-bottom:16px">Court Performance</h3>
+    <div id="courtPerformanceList"></div>
+  </div>
+
+  <!-- HEATMAP -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+    <h3 style="font-size:1rem;margin-bottom:16px">Peak Hours Heatmap</h3>
+    <p style="font-size:.78rem;color:var(--grey);margin-bottom:14px">Darker = more bookings at that time</p>
+    <div id="analyticsHeatmap"></div>
+  </div>
+
+  <!-- PRICING SUGGESTIONS -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+    <h3 style="font-size:1rem;margin-bottom:16px">💡 Pricing Suggestions</h3>
+    <div id="pricingSuggestions"></div>
+  </div>
+
+  <!-- PLAYER INSIGHTS -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+    <h3 style="font-size:1rem;margin-bottom:16px">Player Insights</h3>
+    <div class="stats-row" id="playerInsights" style="grid-template-columns:repeat(3,1fr)"></div>
+  </div>
+
+  <!-- RATINGS TREND -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+    <h3 style="font-size:1rem;margin-bottom:16px">Ratings Trend</h3>
+    <div id="ratingsTrend"></div>
+  </div>
 </div>
 <div class="tpane active" id="ot-courts">
   <div class="toolbar">
