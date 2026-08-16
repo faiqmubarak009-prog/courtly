@@ -1534,6 +1534,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
   // Set date mins
   const t=new Date().toISOString().split('T')[0];
   ['bkDate','availDate','hsDate'].forEach(id=>{const el=document.getElementById(id);if(el){el.min=t;el.value=t}});
+const firstOfMonth=new Date();firstOfMonth.setDate(1);
+const fomStr=firstOfMonth.toISOString().split('T')[0];
+['analyticsFrom','dashFrom'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=fomStr});
+['analyticsTo','dashTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t});
   populateDateSelect();
   showLoad(false);
   nav('home');
@@ -1581,6 +1585,7 @@ function nav(p){
   if(p==='mybookings')renderMyBookings(currentBTab);
 if(p==='favourites')renderFavourites();
 if(p==='referral')initReferralPage();
+if(p==='dashboard')loadDashboard();
 if(p==='profile')initProfile();
 }
 function toggleMenu(){document.getElementById('mobMenu')?.classList.toggle('open')}
@@ -3017,7 +3022,390 @@ async function saveRecurring(){
   await sb.from('recurring_availability').upsert({court_id:cid,open_days:recurSelDays,open_from:document.getElementById('recurFrom')?.value||'07:00',open_until:document.getElementById('recurTo')?.value||'21:00'});
   toast('Recurring hours saved!','ok');
 }
-function showOwnerTab(name,btn){
+// ============================================================
+// ANALYTICS
+// ============================================================
+let analyticsData=null;
+let dashboardData=null;
+
+const DEMO_DATA={
+  bookings:[
+    {id:'BK001',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'john@email.com',booking_date:'2026-08-01',time_slot:'9:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-01T09:00:00'},
+    {id:'BK002',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'sarah@email.com',booking_date:'2026-08-01',time_slot:'11:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-01T11:00:00'},
+    {id:'BK003',court_id:2,court_name:'Court 2',sport:'Badminton',player_email:'mike@email.com',booking_date:'2026-08-02',time_slot:'6:00 PM',court_fee:35,platform_fee:3.5,total:38.5,status:'confirmed',paid:true,created_at:'2026-08-02T18:00:00'},
+    {id:'BK004',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'john@email.com',booking_date:'2026-08-03',time_slot:'9:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-03T09:00:00'},
+    {id:'BK005',court_id:2,court_name:'Court 2',sport:'Badminton',player_email:'emma@email.com',booking_date:'2026-08-04',time_slot:'7:00 PM',court_fee:80,platform_fee:8,total:88,status:'confirmed',paid:true,created_at:'2026-08-04T19:00:00'},
+    {id:'BK006',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'david@email.com',booking_date:'2026-08-05',time_slot:'10:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-05T10:00:00'},
+    {id:'BK007',court_id:2,court_name:'Court 2',sport:'Badminton',player_email:'sarah@email.com',booking_date:'2026-08-06',time_slot:'6:30 PM',court_fee:80,platform_fee:8,total:88,status:'confirmed',paid:true,created_at:'2026-08-06T18:30:00'},
+    {id:'BK008',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'mike@email.com',booking_date:'2026-08-07',time_slot:'9:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-07T09:00:00'},
+    {id:'BK009',court_id:2,court_name:'Court 2',sport:'Badminton',player_email:'john@email.com',booking_date:'2026-08-08',time_slot:'7:30 PM',court_fee:80,platform_fee:8,total:88,status:'confirmed',paid:true,created_at:'2026-08-08T19:30:00'},
+    {id:'BK010',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'emma@email.com',booking_date:'2026-08-09',time_slot:'11:00 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-09T11:00:00'},
+    {id:'BK011',court_id:2,court_name:'Court 2',sport:'Badminton',player_email:'david@email.com',booking_date:'2026-08-10',time_slot:'6:00 PM',court_fee:35,platform_fee:3.5,total:38.5,status:'cancelled',paid:false,created_at:'2026-08-10T18:00:00'},
+    {id:'BK012',court_id:1,court_name:'Court 1',sport:'Tennis',player_email:'sarah@email.com',booking_date:'2026-08-11',time_slot:'9:30 AM',court_fee:50,platform_fee:5,total:55,status:'confirmed',paid:true,created_at:'2026-08-11T09:30:00'},
+  ],
+  courts:[
+    {id:1,name:'Court 1',sport:'Tennis',price_per_hour:50},
+    {id:2,name:'Court 2',sport:'Badminton',price_per_hour:35},
+  ],
+  reviews:[
+    {stars:5,created_at:'2026-08-01T10:00:00',body:'Excellent court!'},
+    {stars:4,created_at:'2026-08-03T10:00:00',body:'Great facilities'},
+    {stars:5,created_at:'2026-08-05T10:00:00',body:'Will book again'},
+    {stars:3,created_at:'2026-08-08T10:00:00',body:'Good but pricey'},
+    {stars:5,created_at:'2026-08-10T10:00:00',body:'Perfect condition'},
+  ]
+};
+
+function isDemoMode(){
+  return document.getElementById('demoMode')?.checked||document.getElementById('dashDemoMode')?.checked;
+}
+
+function getDateRange(fromId,toId){
+  const today=new Date();
+  const from=document.getElementById(fromId)?.value||new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
+  const to=document.getElementById(toId)?.value||today.toISOString().split('T')[0];
+  return{from,to};
+}
+
+async function fetchAnalyticsData(fromId,toId){
+  if(isDemoMode())return DEMO_DATA;
+  const{from,to}=getDateRange(fromId,toId);
+  const{data:courts}=await sb.from('courts').select('*').eq('owner_id',CU.id);
+  const courtIds=(courts||[]).map(c=>c.id);
+  if(!courtIds.length)return{bookings:[],courts:[],reviews:[]};
+  const[{data:bookings},{data:reviews}]=await Promise.all([
+    sb.from('bookings').select('*').in('court_id',courtIds).gte('booking_date',from).lte('booking_date',to),
+    sb.from('reviews').select('*').in('court_id',courtIds).gte('created_at',from).lte('created_at',to),
+  ]);
+  return{bookings:bookings||[],courts:courts||[],reviews:reviews||[]};
+}
+
+async function loadAnalytics(){
+  const data=await fetchAnalyticsData('analyticsFrom','analyticsTo');
+  analyticsData=data;
+  renderAnalyticsSummary(data,'analyticsStats');
+  renderRevenueChart('week',document.querySelector('#ot-analytics .ctgl.active'));
+  renderCourtPerformance(data,'courtPerformanceList');
+  renderHeatmap(data,'analyticsHeatmap');
+  renderPricingSuggestions(data,'pricingSuggestions');
+  renderPlayerInsights(data,'playerInsights');
+  renderRatingsTrend(data,'ratingsTrend');
+}
+
+async function loadDashboard(){
+  const data=await fetchAnalyticsData('dashFrom','dashTo');
+  dashboardData=data;
+  const dt=document.getElementById('dashboardTitle');
+  if(dt)dt.textContent=isDemoMode()?'Demo Venue Dashboard':`${CU?.facility||CU?.name||'Venue'} Dashboard`;
+  renderAnalyticsSummary(data,'dashStats');
+  renderDashRevenueChart('week',document.querySelector('#pg-dashboard .ctgl.active'));
+  renderCourtPerformance(data,'dashCourtPerf');
+  renderHeatmap(data,'dashHeatmap');
+  renderPricingSuggestions(data,'dashPricingSuggestions');
+  renderPlayerInsights(data,'dashPlayerInsights');
+  renderRatingsTrend(data,'dashRatingsTrend');
+  renderBenchmark(data,'dashBenchmark');
+}
+
+function renderAnalyticsSummary(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed'&&b.paid);
+  const revenue=confirmed.reduce((s,b)=>s+Number(b.court_fee||0),0);
+  const cancelled=data.bookings.filter(b=>b.status==='cancelled').length;
+  const totalSlots=data.courts.length*SLOTS.length*30;
+  const bookedSlots=confirmed.length;
+  const occupancy=totalSlots>0?Math.round((bookedSlots/totalSlots)*100):0;
+  const avgPerBk=confirmed.length?revenue/confirmed.length:0;
+  const uniquePlayers=new Set(confirmed.map(b=>b.player_email)).size;
+  el.innerHTML=`
+    <div class="stat-card"><span class="stat-num" style="font-size:1.6rem">$${revenue.toFixed(0)}</span><span class="stat-lbl">Total Revenue</span></div>
+    <div class="stat-card"><span class="stat-num" style="font-size:1.6rem">${confirmed.length}</span><span class="stat-lbl">Confirmed Bookings</span></div>
+    <div class="stat-card"><span class="stat-num" style="font-size:1.6rem">${occupancy}%</span><span class="stat-lbl">Occupancy Rate</span></div>
+    <div class="stat-card"><span class="stat-num" style="font-size:1.6rem">$${avgPerBk.toFixed(0)}</span><span class="stat-lbl">Avg per Booking</span></div>
+    <div class="stat-card"><span class="stat-num" style="font-size:1.6rem">${uniquePlayers}</span><span class="stat-lbl">Unique Players</span></div>`;
+}
+
+function renderRevenueChart(mode,btn){
+  document.querySelectorAll('#ot-analytics .ctgl').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const data=analyticsData||{bookings:[],courts:[],reviews:[]};
+  _renderBarChart(data,mode,'analyticsRevenueChart');
+}
+
+function renderDashRevenueChart(mode,btn){
+  document.querySelectorAll('#pg-dashboard .ctgl').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const data=dashboardData||{bookings:[],courts:[],reviews:[]};
+  _renderBarChart(data,mode,'dashRevenueChart');
+}
+
+function _renderBarChart(data,mode,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const days=mode==='week'?7:30;
+  const buckets={};
+  for(let i=0;i<days;i++){
+    const d=new Date();d.setDate(d.getDate()-(days-1-i));
+    buckets[d.toISOString().split('T')[0]]=0;
+  }
+  data.bookings.filter(b=>b.status==='confirmed'&&b.paid).forEach(b=>{
+    const day=b.booking_date?.split('T')[0]||b.booking_date;
+    if(buckets[day]!==undefined)buckets[day]+=Number(b.court_fee||0);
+  });
+  const values=Object.values(buckets);
+  const labels=Object.keys(buckets).map(d=>new Date(d+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'}));
+  const max=Math.max(...values,1);
+  el.innerHTML='';
+  labels.forEach((lbl,i)=>{
+    const pct=Math.round((values[i]/max)*100);
+    const bw=document.createElement('div');
+    bw.className='chart-bar-wrap';
+    bw.innerHTML=`<div class="chart-bar" style="height:${pct}%" title="$${values[i].toFixed(0)}"><div class="chart-bar-val">$${values[i].toFixed(0)}</div></div><div class="chart-bar-lbl">${mode==='week'?lbl:i%5===0?lbl:''}</div>`;
+    el.appendChild(bw);
+  });
+}
+
+function renderCourtPerformance(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed'&&b.paid);
+  const courtStats={};
+  data.courts.forEach(c=>{courtStats[c.id]={name:c.name,sport:c.sport,revenue:0,bookings:0,price:c.price_per_hour}});
+  confirmed.forEach(b=>{
+    if(courtStats[b.court_id]){courtStats[b.court_id].revenue+=Number(b.court_fee||0);courtStats[b.court_id].bookings++;}
+  });
+  const maxRev=Math.max(...Object.values(courtStats).map(c=>c.revenue),1);
+  el.innerHTML=Object.values(courtStats).map(c=>`
+    <div class="perf-row">
+      <div style="min-width:120px;font-size:.82rem">
+        <div style="font-weight:500">${c.name}</div>
+        <div style="color:var(--grey);font-size:.72rem">${c.sport}</div>
+      </div>
+      <div class="perf-bar-wrap">
+        <div class="perf-bar" style="width:${Math.round((c.revenue/maxRev)*100)}%"></div>
+      </div>
+      <div style="min-width:80px;text-align:right;font-size:.82rem">
+        <div style="font-weight:500">$${c.revenue.toFixed(0)}</div>
+        <div style="color:var(--grey);font-size:.72rem">${c.bookings} bookings</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderHeatmap(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const hours=['7AM','8AM','9AM','10AM','11AM','12PM','1PM','2PM','3PM','4PM','5PM','6PM','7PM','8PM','9PM'];
+  const grid={};
+  days.forEach(d=>hours.forEach(h=>{grid[`${d}-${h}`]=0}));
+  data.bookings.filter(b=>b.status==='confirmed').forEach(b=>{
+    const dow=new Date(b.booking_date+'T00:00:00').getDay();
+    const slotH=parseSlotHour(b.time_slot);
+    const hourLabel=slotH<12?`${slotH}AM`:slotH===12?'12PM':`${slotH-12}PM`;
+    const key=`${days[dow]}-${hourLabel}`;
+    if(grid[key]!==undefined)grid[key]++;
+  });
+  const maxVal=Math.max(...Object.values(grid),1);
+  el.innerHTML=`
+    <div style="overflow-x:auto">
+      <div style="display:grid;grid-template-columns:40px repeat(${hours.length},1fr);gap:2px;min-width:500px">
+        <div></div>
+        ${hours.map(h=>`<div style="font-size:.65rem;color:var(--grey);text-align:center;padding-bottom:4px">${h}</div>`).join('')}
+        ${days.map(d=>`
+          <div style="font-size:.7rem;color:var(--grey);display:flex;align-items:center">${d}</div>
+          ${hours.map(h=>{
+            const val=grid[`${d}-${h}`]||0;
+            const intensity=Math.round((val/maxVal)*100);
+            const bg=intensity===0?'var(--grey-l)':`rgba(30,95,63,${0.1+intensity*0.009})`;
+            return`<div class="heatmap-cell" style="background:${bg}" title="${val} bookings">${val>0?val:''}</div>`;
+          }).join('')}`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderPricingSuggestions(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const suggestions=[];
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed');
+  // Check for consistently full slots
+  const slotCount={};
+  confirmed.forEach(b=>{
+    const key=`${b.court_id}-${b.time_slot}`;
+    slotCount[key]=(slotCount[key]||0)+1;
+  });
+  Object.entries(slotCount).forEach(([key,count])=>{
+    if(count>=3){
+      const[courtId,slot]=key.split('-');
+      const court=data.courts.find(c=>String(c.id)===courtId);
+      if(court)suggestions.push({type:'raise',text:`"${slot}" at ${court.name} has been booked ${count} times — consider raising the price by $5–10.`});
+    }
+  });
+  // Check for empty courts
+  data.courts.forEach(c=>{
+    const courtBks=confirmed.filter(b=>b.court_id===c.id);
+    if(courtBks.length===0)suggestions.push({type:'warn',text:`${c.name} has no bookings in this period — consider a promotional price or featured listing.`});
+  });
+  // Cancellation rate
+  const cancRate=data.bookings.length?Math.round((data.bookings.filter(b=>b.status==='cancelled').length/data.bookings.length)*100):0;
+  if(cancRate>20)suggestions.push({type:'warn',text:`Your cancellation rate is ${cancRate}% — consider adjusting your cancellation policy.`});
+  if(!suggestions.length){el.innerHTML='<p style="color:var(--grey);font-size:.84rem">No suggestions right now — your venue looks well optimised!</p>';return}
+  el.innerHTML=suggestions.map(s=>`<div class="suggestion-card ${s.type==='warn'?'warn':''}">${s.text}</div>`).join('');
+}
+
+function renderPlayerInsights(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed'&&b.paid);
+  const emails=confirmed.map(b=>b.player_email);
+  const uniqueEmails=new Set(emails);
+  const repeatPlayers=[...uniqueEmails].filter(e=>emails.filter(x=>x===e).length>1).length;
+  const repeatRate=uniqueEmails.size?Math.round((repeatPlayers/uniqueEmails.size)*100):0;
+  const cancRate=data.bookings.length?Math.round((data.bookings.filter(b=>b.status==='cancelled').length/data.bookings.length)*100):0;
+  const avgLeadTime=confirmed.length?Math.round(confirmed.reduce((s,b)=>{
+    const bookingDt=new Date(b.created_at);
+    const sessionDt=new Date(b.booking_date+'T00:00:00');
+    return s+(sessionDt-bookingDt)/(1000*60*60*24);
+  },0)/confirmed.length):0;
+  el.innerHTML=`
+    <div class="stat-card" style="margin-bottom:10px"><span class="stat-num" style="font-size:1.4rem;color:var(--green)">${repeatRate}%</span><span class="stat-lbl">Repeat Player Rate</span></div>
+    <div class="stat-card" style="margin-bottom:10px"><span class="stat-num" style="font-size:1.4rem">${avgLeadTime}d</span><span class="stat-lbl">Avg Booking Lead Time</span></div>
+    <div class="stat-card"><span class="stat-num" style="font-size:1.4rem;color:var(--red)">${cancRate}%</span><span class="stat-lbl">Cancellation Rate</span></div>`;
+}
+
+function renderRatingsTrend(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!data.reviews?.length){el.innerHTML='<p style="color:var(--grey);font-size:.84rem">No reviews in this period.</p>';return}
+  const avg=(data.reviews.reduce((s,r)=>s+r.stars,0)/data.reviews.length).toFixed(1);
+  const dist={1:0,2:0,3:0,4:0,5:0};
+  data.reviews.forEach(r=>dist[r.stars]++);
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:700;color:var(--gold)">${avg}</div>
+      <div>
+        <div style="color:var(--gold);font-size:1.1rem">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</div>
+        <div style="font-size:.78rem;color:var(--grey)">${data.reviews.length} review${data.reviews.length!==1?'s':''}</div>
+      </div>
+    </div>
+    ${[5,4,3,2,1].map(s=>`
+      <div class="rating-bar-row">
+        <span style="min-width:20px">${s}★</span>
+        <div class="rating-bar-outer"><div class="rating-bar-inner" style="width:${Math.round((dist[s]/data.reviews.length)*100)}%"></div></div>
+        <span style="min-width:24px;color:var(--grey)">${dist[s]}</span>
+      </div>`).join('')}`;
+}
+
+function renderBenchmark(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed'&&b.paid);
+  const myOccupancy=data.courts.length?Math.round((confirmed.length/(data.courts.length*SLOTS.length*30))*100):0;
+  const myAvgRating=data.reviews?.length?(data.reviews.reduce((s,r)=>s+r.stars,0)/data.reviews.length).toFixed(1):0;
+  // Platform averages (static benchmarks — will update as real data grows)
+  const platformOccupancy=54;
+  const platformRating=4.1;
+  const top25Occupancy=78;
+  const top25Rating=4.6;
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font-size:.82rem;font-weight:500;margin-bottom:10px">Occupancy Rate</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Your venue</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${myOccupancy}%"></div></div>
+          <span style="font-size:.78rem;min-width:36px;font-weight:500">${myOccupancy}%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Platform avg</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${platformOccupancy}%;background:var(--grey)"></div></div>
+          <span style="font-size:.78rem;min-width:36px;color:var(--grey)">${platformOccupancy}%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Top 25%</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${top25Occupancy}%;background:var(--gold)"></div></div>
+          <span style="font-size:.78rem;min-width:36px;color:var(--grey)">${top25Occupancy}%</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.82rem;font-weight:500;margin-bottom:10px">Average Rating</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Your venue</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${Math.round((myAvgRating/5)*100)}%"></div></div>
+          <span style="font-size:.78rem;min-width:36px;font-weight:500">${myAvgRating}★</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Platform avg</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${Math.round((platformRating/5)*100)}%;background:var(--grey)"></div></div>
+          <span style="font-size:.78rem;min-width:36px;color:var(--grey)">${platformRating}★</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:.78rem;min-width:80px;color:var(--grey)">Top 25%</span>
+          <div class="perf-bar-wrap"><div class="perf-bar" style="width:${Math.round((top25Rating/5)*100)}%;background:var(--gold)"></div></div>
+          <span style="font-size:.78rem;min-width:36px;color:var(--grey)">${top25Rating}★</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function exportAnalyticsCSV(){
+  const data=analyticsData||dashboardData;
+  if(!data?.bookings?.length){toast('No data to export','err');return}
+  const rows=[
+    ['Booking ID','Court','Sport','Player Email','Date','Time','Court Fee','Platform Fee','Total','Status'],
+    ...data.bookings.map(b=>[b.id,b.court_name,b.sport,b.player_email,b.booking_date,b.time_slot,'$'+Number(b.court_fee||0).toFixed(2),'$'+Number(b.platform_fee||0).toFixed(2),'$'+Number(b.total||0).toFixed(2),b.status])
+  ];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`courtly_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('CSV exported!','ok');
+}
+
+function exportAnalyticsPDF(){
+  const data=analyticsData||dashboardData;
+  if(!data){toast('Load analytics first','err');return}
+  const confirmed=data.bookings.filter(b=>b.status==='confirmed'&&b.paid);
+  const revenue=confirmed.reduce((s,b)=>s+Number(b.court_fee||0),0);
+  const win=window.open('','_blank');
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Courtly Analytics Report</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:40px;color:#141414;max-width:900px;margin:0 auto}
+        h1{color:#1e5f3f;margin-bottom:4px}
+        .sub{color:#6b7280;font-size:14px;margin-bottom:32px}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+        .stat{background:#f4f4f2;border-radius:8px;padding:16px;text-align:center}
+        .stat strong{display:block;font-size:24px;color:#1e5f3f}
+        .stat span{font-size:12px;color:#6b7280}
+        table{width:100%;border-collapse:collapse;margin-bottom:32px;font-size:13px}
+        th{background:#f4f4f2;padding:8px 12px;text-align:left;border-bottom:1px solid #e8e4df}
+        td{padding:8px 12px;border-bottom:1px solid #e8e4df}
+        .footer{color:#6b7280;font-size:12px;text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #e8e4df}
+        @media print{body{padding:20px}}
+      </style>
+    </head>
+    <body>
+      <h1>Courtly Analytics Report</h1>
+      <div class="sub">Generated ${new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})} · ${isDemoMode()?'Demo Data':CU?.facility||CU?.name||'Venue'}</div>
+      <div class="stats">
+        <div class="stat"><strong>$${revenue.toFixed(0)}</strong><span>Total Revenue</span></div>
+        <div class="stat"><strong>${confirmed.length}</strong><span>Confirmed Bookings</span></div>
+        <div class="stat"><strong>${new Set(confirmed.map(b=>b.player_email)).size}</strong><span>Unique Players</span></div>
+        <div class="stat"><strong>${data.reviews?.length||0}</strong><span>Reviews</span></div>
+      </div>
+      <h2 style="color:#1e5f3f;margin-bottom:12px">Booking Details</h2>
+      <table>
+        <thead><tr><th>Date</th><th>Court</th><th>Time</th><th>Player</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${data.bookings.map(b=>`<tr><td>${b.booking_date}</td><td>${b.court_name}</td><td>${b.time_slot}</td><td>${b.player_email}</td><td>$${Number(b.court_fee||0).toFixed(2)}</td><td>${b.status}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="footer">Courtly · courtlyau2.netlify.app · Report generated automatically</div>
+      <script>window.onload=()=>{window.print()}<\/script>
+    </body>
+    </html>
+  `);
+  win.document.close();
+}
+  function showOwnerTab(name,btn){
   document.querySelectorAll('#ownerBody .tpane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#ownerTabs .tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');const tp=document.getElementById('ot-'+name);if(tp)tp.classList.add('active');
@@ -3025,6 +3413,7 @@ function showOwnerTab(name,btn){
   if(name==='calendar')renderOwnerCal();
   if(name==='hours')loadVenueHours();
   if(name==='peak'){populatePeakCourtSelect().then(()=>loadPeakPricing());}
+  if(name==='analytics')loadAnalytics();
 }
 // ============================================================
 // VENUE HOURS & PEAK PRICING
