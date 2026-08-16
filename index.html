@@ -1891,8 +1891,15 @@ console.log('First SLOT:', SLOTS[0]);
     if(msg){msg.style.color='var(--red)';msg.textContent='One or more slots fall outside available hours.'}
     return;
   }
-  // All clear — select these slots
-  selectedTimetableSlots=neededSlots.map(slot=>({courtId,slot,date:timetableDate,court}));
+// Add endpoint slot for display purposes
+const endMins=startMinutes+duration;
+const endSlotH=Math.floor(endMins/60);
+const endSlotM=endMins%60;
+const endAmpm=endSlotH>=12?'PM':'AM';
+const endDisplayH=endSlotH>12?endSlotH-12:endSlotH===0?12:endSlotH;
+const endSlotStr=`${endDisplayH}:${String(endSlotM).padStart(2,'0')} ${endAmpm}`;
+const allSlots=[...neededSlots,endSlotStr];
+selectedTimetableSlots=allSlots.map(slot=>({courtId,slot,date:timetableDate,court}));
   if(msg){msg.style.color='var(--green)';msg.textContent=`✓ Available! ${neededSlots.length*0.5} hour${neededSlots.length>1?'s':''} selected.`}
   updateSummaryBar();
   await buildTimetable();
