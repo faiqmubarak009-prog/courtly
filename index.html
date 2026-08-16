@@ -2433,7 +2433,29 @@ async function processPayment(){
   if(!first||!email){toast('Please fill in your details','err');return}
   const payBtn=document.getElementById('payBtn');
   payBtn.disabled=true;payBtn.textContent='Confirming…';
-  const cf=parseFloat(bCourt?.price_per_hour||0),pf=Math.round(cf*PLATFORM_FEE)/100;
+// Check peak pricing for this slot
+let basePrice=parseFloat(bCourt?.price_per_hour||0);
+if(bDate&&bTime&&bCourt?.id){
+  const{data:peaks}=await sb.from('peak_pricing')
+    .select('*')
+    .eq('court_id',bCourt.id);
+  if(peaks?.length){
+    const dow=new Date(bDate+'T00:00:00').getDay();
+    const isWeekend=dow===0||dow===6;
+    const slotH=parseSlotHour(bTime.split('–')[0].trim()||bTime);
+    const peak=peaks.find(p=>{
+      const sh=parseInt(p.start_time?.split(':')[0]);
+      const eh=parseInt(p.end_time?.split(':')[0]);
+      const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
+      return dayMatch&&slotH>=sh&&slotH<eh;
+    });
+    if(peak)basePrice=parseFloat(peak.price_override);
+  }
+}
+// Calculate multi-slot total if drag selected
+const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
+const cf=basePrice*slotCount*0.5;
+const pf=Math.round(cf*PLATFORM_FEE)/100;
 const credit=CU?.booking_credit||0;
 const creditApplied=Math.min(credit,cf+pf);
 const total=Math.max(0,(cf+pf)-creditApplied);
