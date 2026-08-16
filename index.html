@@ -1664,6 +1664,7 @@ async function buildTimetable(){
     sb.from('availability_blocks').select('court_id,time_slot').in('court_id',courtIds).eq('block_date',date),
     sb.from('peak_pricing').select('*').in('court_id',courtIds),
   ]);
+  window._currentVenue.peaks=peaks||[];
   const bookedMap={};const blockedMap={};
   (bks||[]).forEach(b=>{if(!bookedMap[b.court_id])bookedMap[b.court_id]=[];bookedMap[b.court_id].push(b.time_slot)});
   (bls||[]).forEach(b=>{if(!blockedMap[b.court_id])blockedMap[b.court_id]=[];blockedMap[b.court_id].push(b.time_slot)});
@@ -1830,8 +1831,22 @@ function updateSummaryBar(){
   bar.style.display='flex';
   const court=selectedTimetableSlots[0].court;
   const slots=selectedTimetableSlots.map(s=>s.slot);
-  const totalHrs=slots.length*0.5;
-  const totalCost=totalHrs*(court?.price_per_hour||0);
+const totalHrs=(slots.length-1)*0.5||0.5;
+// calculate cost accounting for peak pricing
+let totalCost=0;
+const peakData=window._currentVenue?.peaks||[];
+const dow=new Date(timetableDate+'T00:00:00').getDay();
+const isWeekend=dow===0||dow===6;
+slots.slice(0,-1).forEach(slot=>{
+  const slotH=parseSlotHour(slot);
+  const peak=peakData.find(p=>{
+    const sh=parseInt(p.start_time?.split(':')[0]);
+    const eh=parseInt(p.end_time?.split(':')[0]);
+    const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
+    return dayMatch&&slotH>=sh&&slotH<eh&&p.court_id===court?.id;
+  });
+  totalCost+=0.5*(peak?peak.price_override:court?.price_per_hour||0);
+});
   const firstSlot=slots[0];
   const lastSlot=slots[slots.length-1];
   if(txt)txt.textContent=`${court?.name} — ${court?.sport} · ${firstSlot}${slots.length>1?' → '+lastSlot:''}`;
