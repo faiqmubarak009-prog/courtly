@@ -456,6 +456,19 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 .tslot-cell.drag-selecting{background:var(--green-p);outline:2px solid var(--green)}
 .date-tab{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
 .date-tab:hover,.date-tab.active{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
+/* SMART FINDER */
+.finder-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;box-shadow:var(--shadow)}
+.finder-panel h3{font-size:1rem;margin-bottom:16px}
+.finder-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
+.finder-result{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;cursor:pointer;transition:box-shadow .2s,transform .2s}
+.finder-result:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.finder-result-sport{display:inline-block;background:var(--green-p);color:var(--green);font-size:.68rem;padding:2px 10px;border-radius:12px;font-weight:500;margin-bottom:6px}
+.finder-result h4{margin-bottom:3px;font-size:.95rem}
+.finder-result-meta{font-size:.78rem;color:var(--grey);margin-top:4px}
+.finder-result-price{text-align:right}
+.finder-result-price strong{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--green);display:block}
+.finder-result-price span{font-size:.72rem;color:var(--grey)}
+@media(max-width:700px){.finder-row{grid-template-columns:1fr 1fr}}
 /* ANALYTICS */
 .heatmap-grid{display:grid;gap:2px}
 .heatmap-cell{border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;font-weight:500}
@@ -565,6 +578,46 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       </select>
       <select id="cdate" onchange="renderVenues()"><option value="">Any date</option></select>
     </div>
+    <!-- SMART COURT FINDER -->
+<div class="finder-panel">
+  <h3>🔍 Find an available court</h3>
+  <div class="finder-row">
+    <div class="fg" style="margin:0">
+      <label>Sport</label>
+      <select id="finderSport">
+        <option value="">Any sport</option>
+        <option>Tennis</option>
+        <option>Basketball</option>
+        <option>Badminton</option>
+        <option>Pickleball</option>
+        <option>Football</option>
+        <option>Volleyball</option>
+        <option>Cricket</option>
+      </select>
+    </div>
+    <div class="fg" style="margin:0">
+      <label>Date</label>
+      <input type="date" id="finderDate"/>
+    </div>
+    <div class="fg" style="margin:0">
+      <label>Start time</label>
+      <input type="time" id="finderTime" value="09:00"/>
+    </div>
+    <div class="fg" style="margin:0">
+      <label>Duration</label>
+      <select id="finderDuration">
+        <option value="30">30 min</option>
+        <option value="60" selected>1 hour</option>
+        <option value="90">1.5 hours</option>
+        <option value="120">2 hours</option>
+        <option value="150">2.5 hours</option>
+        <option value="180">3 hours</option>
+      </select>
+    </div>
+    <button class="btn btn-p" onclick="findAvailableCourts()">Search →</button>
+  </div>
+  <div id="finderResults" style="margin-top:18px;display:none"></div>
+</div>
     <div class="sport-filter-row">
       <button class="sfbtn active" onclick="setSF('',this)">All Sports</button>
       <button class="sfbtn" onclick="setSF('Tennis',this)">🎾 Tennis</button>
@@ -1557,6 +1610,8 @@ const firstOfMonth=new Date();firstOfMonth.setDate(1);
 const fomStr=firstOfMonth.toISOString().split('T')[0];
 ['analyticsFrom','dashFrom'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=fomStr});
 ['analyticsTo','dashTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t});
+const finderDate=document.getElementById('finderDate');
+if(finderDate)finderDate.value=t;
   populateDateSelect();
   showLoad(false);
   nav('home');
@@ -1681,8 +1736,147 @@ let dragStartCell=null;
 let dragCourtId=null;
 let currentVenueCourts=[];
 let currentVenueRevFilter=0;
+// ============================================================
+// SMART COURT FINDER
+// ============================================================
+async function findAvailableCourts(){
+  const sport=document.getElementById('finderSport')?.value||'';
+  const date=document.getElementById('finderDate')?.value;
+  const startTime=document.getElementById('finderTime')?.value||'09:00';
+  const duration=parseInt(document.getElementById('finderDuration')?.value)||60;
+  const resultsEl=document.getElementById('finderResults');
+  if(!date){toast('Please select a date','err');return}
+  if(!resultsEl)return;
+  resultsEl.style.display='block';
+  resultsEl.innerHTML='<div style="color:var(--grey);font-size:.84rem;padding:12px 0">Searching available courts…</div>';
+  // Generate needed slots
+  const[h,m]=startTime.split(':').map(Number);
+  const rawMinutes=h*60+m;
+  const startMinutes=Math.round(rawMinutes/30)*30;
+  const neededSlots=[];
+  for(let i=0;i<duration;i+=30){
+    const mins=startMinutes+i;
+    const slotH=Math.floor(mins/60);
+    const slotM=mins%60;
+    const ampm=slotH>=12?'PM':'AM';
+    const displayH=slotH>12?slotH-12:slotH===0?12:slotH;
+    neededSlots.push(`${displayH}:${String(slotM).padStart(2,'0')} ${ampm}`);
+  }
+  if(!neededSlots.every(s=>SLOTS.includes(s))){
+    resultsEl.innerHTML='<div style="color:var(--red);font-size:.84rem;padding:12px 0">Selected time falls outside available hours (7:00 AM – 9:30 PM).</div>';
+    return;
+  }
+  // Fetch all courts matching sport
+  let courtQuery=sb.from('courts').select('*,profiles(id,facility,name,location,lat,lng,approval_status)');
+  if(sport)courtQuery=courtQuery.eq('sport',sport);
+  const{data:courts}=await courtQuery;
+  const approvedCourts=(courts||[]).filter(c=>c.profiles?.approval_status==='approved');
+  if(!approvedCourts.length){
+    resultsEl.innerHTML='<div style="color:var(--grey);font-size:.84rem;padding:12px 0">No courts found for that sport.</div>';
+    return;
+  }
+  // Check availability for each court
+  const courtIds=approvedCourts.map(c=>c.id);
+  const[{data:bks},{data:bls}]=await Promise.all([
+    sb.from('bookings').select('court_id,time_slot').in('court_id',courtIds).eq('booking_date',date).neq('status','cancelled'),
+    sb.from('availability_blocks').select('court_id,time_slot').in('court_id',courtIds).eq('block_date',date),
+  ]);
+  const bookedMap={};const blockedMap={};
+  (bks||[]).forEach(b=>{if(!bookedMap[b.court_id])bookedMap[b.court_id]=[];bookedMap[b.court_id].push(b.time_slot)});
+  (bls||[]).forEach(b=>{if(!blockedMap[b.court_id])blockedMap[b.court_id]=[];blockedMap[b.court_id].push(b.time_slot)});
+  // Filter to available courts
+  const available=approvedCourts.filter(c=>{
+    const booked=bookedMap[c.id]||[];
+    const blocked=blockedMap[c.id]||[];
+    return neededSlots.every(s=>!booked.includes(s)&&!blocked.includes(s));
+  });
+  // Check venue hours
+  const ownerIds=[...new Set(available.map(c=>c.profiles?.id).filter(Boolean))];
+  const{data:venueHours}=await sb.from('venue_hours').select('*').in('owner_id',ownerIds);
+  const dow=new Date(date+'T00:00:00').getDay();
+  const finalAvailable=available.filter(c=>{
+    const ownerHours=venueHours?.find(h=>h.owner_id===c.profiles?.id&&h.day_of_week===dow);
+    if(ownerHours&&!ownerHours.is_open)return false;
+    if(ownerHours){
+      const openH=parseInt(ownerHours.open_from?.split(':')[0]);
+      const closeH=parseInt(ownerHours.open_until?.split(':')[0]);
+      const firstSlotH=parseSlotHour(neededSlots[0]);
+      const lastSlotH=parseSlotHour(neededSlots[neededSlots.length-1]);
+      if(firstSlotH<openH||lastSlotH>=closeH)return false;
+    }
+    return true;
+  });
+  if(!finalAvailable.length){
+    resultsEl.innerHTML=`<div style="color:var(--grey);font-size:.84rem;padding:12px 0">No courts available for ${sport||'any sport'} on ${fmtDate(date)} at ${neededSlots[0]}${neededSlots.length>1?` – ${neededSlots[neededSlots.length-1]}`:''}.${playerLat?'<br/>Try expanding your search or choosing a different time.':''}</div>`;
+    return;
+  }
+  // Sort by distance if player location known
+  if(playerLat&&playerLng){
+    finalAvailable.sort((a,b)=>{
+      const dA=a.profiles?.lat&&a.profiles?.lng?haversineDistance(playerLat,playerLng,a.profiles.lat,a.profiles.lng):999;
+      const dB=b.profiles?.lat&&b.profiles?.lng?haversineDistance(playerLat,playerLng,b.profiles.lat,b.profiles.lng):999;
+      return dA-dB;
+    });
+  }
+  // Fetch peak pricing for available courts
+  const{data:peaks}=await sb.from('peak_pricing').select('*').in('court_id',finalAvailable.map(c=>c.id));
+  const isWeekend=dow===0||dow===6;
+  const firstSlotH=parseSlotHour(neededSlots[0]);
+  // Render results
+  resultsEl.innerHTML=`
+    <div style="font-size:.82rem;font-weight:500;color:var(--green);margin-bottom:12px">${finalAvailable.length} court${finalAvailable.length!==1?'s':''} available</div>
+    ${finalAvailable.map(c=>{
+      const peak=peaks?.find(p=>{
+        const sh=parseInt(p.start_time?.split(':')[0]);
+        const eh=parseInt(p.end_time?.split(':')[0]);
+        const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
+        return p.court_id===c.id&&dayMatch&&firstSlotH>=sh&&firstSlotH<eh;
+      });
+      const pricePerHr=peak?peak.price_override:c.price_per_hour;
+      const totalCost=(duration/60)*pricePerHr;
+      const dist=playerLat&&playerLng&&c.profiles?.lat&&c.profiles?.lng
+        ?haversineDistance(playerLat,playerLng,parseFloat(c.profiles.lat),parseFloat(c.profiles.lng))
+        :null;
+      const distStr=dist!==null?dist<1?`${Math.round(dist*1000)}m away`:`${dist.toFixed(1)}km away`:'';
+      return`<div class="finder-result" onclick="openVenueFromFinder('${c.profiles?.id}',${c.id},'${neededSlots[0]}','${date}')">
+        <div>
+          <span class="finder-result-sport">${ICONS[c.sport]||''} ${c.sport}</span>
+          <h4>${c.name}</h4>
+          <div class="finder-result-meta">
+            🏟️ ${c.profiles?.facility||c.profiles?.name||'Venue'}
+            ${c.profiles?.location?' · 📍 '+c.profiles.location:''}
+            ${distStr?' · '+distStr:''}
+            ${peak?' · <span style="color:var(--gold);font-weight:500">⚡ Peak rate</span>':''}
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            ${neededSlots.map(s=>`<span style="background:var(--green-p);color:var(--green);padding:2px 8px;border-radius:12px;font-size:.7rem">${s}</span>`).join('')}
+          </div>
+        </div>
+        <div class="finder-result-price">
+          <strong>$${totalCost.toFixed(0)}</strong>
+          <span>$${pricePerHr}/hr${peak?' (peak)':''}</span>
+          <div style="margin-top:8px"><button class="btn btn-p btn-sm">Book →</button></div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
 
-async function renderVenues(){
+async function openVenueFromFinder(ownerId,courtId,slot,date){
+  await openVenue(ownerId);
+  // Pre-select the date and slot
+  timetableDate=date;
+  selectedTimetableSlots=[];
+  await buildTimetable();
+  // Auto-select the slot for the right court
+  const court=currentVenueCourts.find(c=>c.id===courtId);
+  if(court){
+    const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
+    if(btn&&btn.classList.contains('available')){
+      toggleSlotSelection(courtId,slot,date,court);
+    }
+  }
+}
+  async function renderVenues(){
   const search=(document.getElementById('csearch')?.value||'').toLowerCase();
   const sort=document.getElementById('csort')?.value||'';
   const{data:owners}=await sb.from('profiles')
