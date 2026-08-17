@@ -2402,7 +2402,26 @@ async function goStep(n){
   (document.getElementById('bs'+n)||document.getElementById('bsOK')).classList.add('active');
   [1,2,3,4].forEach(i=>{const d=document.getElementById('d'+i);if(!d)return;d.classList.remove('active','done');if(i<n)d.classList.add('done');if(i===n)d.classList.add('active')});
   if(n===3||n===4){
-    const cf=parseFloat(bCourt?.price_per_hour||0),pf=Math.round(cf*PLATFORM_FEE)/100,total=cf+pf;
+    let basePriceStep=parseFloat(bCourt?.price_per_hour||0);
+if(bDate&&bTime&&bCourt?.id){
+  const{data:stepPeaks}=await sb.from('peak_pricing').select('*').eq('court_id',bCourt.id);
+  if(stepPeaks?.length){
+    const dow=new Date(bDate+'T00:00:00').getDay();
+    const isWeekend=dow===0||dow===6;
+    const slotH=parseSlotHour(bTime.split('–')[0].trim()||bTime);
+    const peak=stepPeaks.find(p=>{
+      const sh=parseInt(p.start_time?.split(':')[0]);
+      const eh=parseInt(p.end_time?.split(':')[0]);
+      const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
+      return dayMatch&&slotH>=sh&&slotH<eh;
+    });
+    if(peak)basePriceStep=parseFloat(peak.price_override);
+  }
+}
+const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
+const cf=basePriceStep*slotCount*0.5;
+const pf=Math.round(cf*PLATFORM_FEE)/100;
+const total=cf+pf;
     const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
     const bs=document.getElementById('bSum');if(bs)bs.innerHTML=html;
     const bs2=document.getElementById('bSum2');if(bs2)bs2.innerHTML=html;
