@@ -575,7 +575,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <button class="sfbtn" onclick="setSF('Volleyball',this)">🏐 Volleyball</button>
       <button class="sfbtn" onclick="setSF('Cricket',this)">🏏 Cricket</button>
     </div>
-    <div class="results-meta"><span id="resultsCount"></span></div>
+    <div class="results-meta">
+  <span id="resultsCount"></span>
+  <button class="btn btn-g btn-sm" id="nearMeBtn" onclick="sortByDistance()">📍 Near Me</button>
+</div>
     <div class="venues-grid" id="venuesGrid"></div>
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span><span>🔒 Stripe</span></div></div></footer>
@@ -1266,15 +1269,30 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 <div class="tpane" id="ot-payouts">
   <div id="payoutContent"></div>
 </div>
-      <div class="tpane" id="ot-settings">
-        <div style="max-width:500px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
-          <h3 style="margin-bottom:16px;font-size:1.1rem">Business Settings</h3>
-          <div class="fg"><label>Facility Name</label><input type="text" id="sF"/></div>
-          <div class="fg"><label>Location</label><input type="text" id="sL"/></div>
-          <div class="fg"><label>Cancellation / Refund Policy</label><textarea id="sP" rows="3"></textarea></div>
-          <button class="btn btn-p" onclick="saveSettings()">Save Changes</button>
-        </div>
+<div class="tpane" id="ot-settings">
+  <div style="max-width:500px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+    <h3 style="margin-bottom:16px;font-size:1.1rem">Business Settings</h3>
+    <div class="fg"><label>Facility Name</label><input type="text" id="sF"/></div>
+    <div class="fg"><label>Location (suburb, city)</label><input type="text" id="sL"/></div>
+    <div class="fg"><label>Cancellation / Refund Policy</label><textarea id="sP" rows="3"></textarea></div>
+    <div class="divider"></div>
+    <h3 style="margin-bottom:8px;font-size:1rem">Venue Location</h3>
+    <p style="font-size:.78rem;color:var(--grey);margin-bottom:12px">Enter your venue address to appear in "Near Me" searches.</p>
+    <div class="fg">
+      <label>Full Address</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="sAddress" placeholder="e.g. 123 Collins St, Melbourne VIC 3000" style="flex:1"/>
+        <button class="btn btn-g btn-sm" onclick="geocodeAddress()">Find →</button>
       </div>
+    </div>
+    <div id="geocodeResult" style="display:none;margin-bottom:14px;padding:10px 14px;background:var(--green-p);border-radius:var(--rs);font-size:.82rem;color:var(--green)"></div>
+    <div class="form-row">
+      <div class="fg"><label>Latitude</label><input type="number" id="sLat" placeholder="e.g. -37.8136" step="0.000001"/></div>
+      <div class="fg"><label>Longitude</label><input type="number" id="sLng" placeholder="e.g. 144.9631" step="0.000001"/></div>
+    </div>
+    <button class="btn btn-p" onclick="saveSettings()">Save Changes</button>
+  </div>
+</div>
     </div>
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
@@ -1690,7 +1708,11 @@ async function renderVenues(){
     const avgRating=ratings.length?(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1):null;
     const featured=courts.some(c=>c.featured);
     const cover=courts.find(c=>c.photo_urls?.length)?.photo_urls[0]||null;
-    venues.push({owner,courts,sports,minPrice,maxPrice,avgRating,featured,cover,courtCount:courts.length});
+    let distance=null;
+if(playerLat&&playerLng&&owner.lat&&owner.lng){
+  distance=haversineDistance(playerLat,playerLng,parseFloat(owner.lat),parseFloat(owner.lng));
+}
+venues.push({owner,courts,sports,minPrice,maxPrice,avgRating,featured,cover,courtCount:courts.length,distance});
   }
   if(search)venues=venues.filter(v=>
     v.owner.facility?.toLowerCase().includes(search)||
@@ -1702,6 +1724,7 @@ async function renderVenues(){
   else if(sort==='price-a')venues.sort((a,b)=>a.minPrice-b.minPrice);
   else if(sort==='price-d')venues.sort((a,b)=>b.minPrice-a.minPrice);
   else if(sort==='featured')venues.sort((a,b)=>b.featured-a.featured);
+  if(playerLat&&playerLng)venues.sort((a,b)=>(a.distance||999)-(b.distance||999));
   const rc=document.getElementById('resultsCount');
   if(rc)rc.textContent=`${venues.length} venue${venues.length!==1?'s':''} found`;
   const el=document.getElementById('venuesGrid');
@@ -1721,7 +1744,7 @@ function venueCardHTML(v){
     </div>
     <div class="venue-card-body">
       <h3>${owner.facility||owner.name}</h3>
-      <div class="venue-location">📍 ${owner.location||'Location not set'}</div>
+      <div class="venue-location">📍 ${owner.location||'Location not set'}${v.distance!==null&&v.distance!==undefined?` <span style="background:var(--blue-p);color:var(--blue);padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:500;margin-left:6px">${v.distance<1?Math.round(v.distance*1000)+'m':v.distance.toFixed(1)+'km'} away</span>`:''}</div>
       <div class="venue-sports">${sports.map(s=>`<span class="venue-sport-tag">${ICONS[s]||''} ${s}</span>`).join('')}</div>
       <div class="venue-meta">
         <div class="venue-price"><strong>${priceStr}</strong></div>
@@ -3008,6 +3031,8 @@ async function initOwner(){
   const sF=document.getElementById('sF');if(sF)sF.value=CU.facility||'';
   const sL=document.getElementById('sL');if(sL)sL.value=CU.location||'';
   const sP=document.getElementById('sP');if(sP)sP.value=CU.policy||'';
+  const sLat=document.getElementById('sLat');if(sLat)sLat.value=CU.lat||'';
+  const sLng=document.getElementById('sLng');if(sLng)sLng.value=CU.lng||'';
   renderOwnerCal();buildRecurDays();renderPayouts();
 }
 async function renderOwnerCourts(){
@@ -3677,8 +3702,80 @@ async function importCSV(){
     setTimeout(()=>{closeModal('csvImportModal');renderOwnerCourts();},2000);
   }
 }
+// ============================================================
+// GEOCODING & NEAR ME
+// ============================================================
+let playerLat=null;
+let playerLng=null;
+
+async function geocodeAddress(){
+  const address=document.getElementById('sAddress')?.value.trim();
+  if(!address){toast('Enter an address first','err');return}
+  const result=document.getElementById('geocodeResult');
+  if(result){result.style.display='block';result.textContent='Searching…';result.style.color='var(--grey)'}
+  try{
+    const encoded=encodeURIComponent(address);
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,{
+      headers:{'User-Agent':'Courtly/1.0'}
+    });
+    const data=await res.json();
+    if(!data?.length){
+      if(result){result.style.color='var(--red)';result.textContent='Address not found. Try a more specific address.'}
+      return;
+    }
+    const{lat,lon,display_name}=data[0];
+    const latEl=document.getElementById('sLat');
+    const lngEl=document.getElementById('sLng');
+    if(latEl)latEl.value=parseFloat(lat).toFixed(6);
+    if(lngEl)lngEl.value=parseFloat(lon).toFixed(6);
+    if(result){
+      result.style.color='var(--green)';
+      result.textContent=`✓ Found: ${display_name.split(',').slice(0,3).join(',')}`;
+    }
+    toast('Location found!','ok');
+  }catch(e){
+    if(result){result.style.color='var(--red)';result.textContent='Failed to find address. Please try again.'}
+  }
+}
+
+function haversineDistance(lat1,lng1,lat2,lng2){
+  const R=6371;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function sortByDistance(){
+  const btn=document.getElementById('nearMeBtn');
+  if(!navigator.geolocation){toast('Geolocation not supported on this device','err');return}
+  if(btn)btn.textContent='📍 Locating…';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      playerLat=pos.coords.latitude;
+      playerLng=pos.coords.longitude;
+      if(btn)btn.textContent='📍 Near Me ✓';
+      renderVenues();
+      toast('Showing venues near you!','ok');
+    },
+    err=>{
+      if(btn)btn.textContent='📍 Near Me';
+      toast('Could not get your location','err');
+    }
+  );
+}
 async function saveSettings(){
-  const{error}=await sb.from('profiles').update({facility:document.getElementById('sF')?.value.trim(),location:document.getElementById('sL')?.value.trim(),policy:document.getElementById('sP')?.value.trim()}).eq('id',CU.id);
+  const lat=parseFloat(document.getElementById('sLat')?.value)||null;
+  const lng=parseFloat(document.getElementById('sLng')?.value)||null;
+  const{error}=await sb.from('profiles').update({
+    facility:document.getElementById('sF')?.value.trim(),
+    location:document.getElementById('sL')?.value.trim(),
+    policy:document.getElementById('sP')?.value.trim(),
+    lat,
+    lng
+  }).eq('id',CU.id);
   if(!error){await loadProfile(CU.id);toast('Settings saved!','ok');}else toast('Failed to save','err');
 }
 async function renderChart(mode,btn){
