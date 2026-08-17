@@ -1838,7 +1838,7 @@ async function findAvailableCourts(){
         ?haversineDistance(playerLat,playerLng,parseFloat(c.profiles.lat),parseFloat(c.profiles.lng))
         :null;
       const distStr=dist!==null?dist<1?`${Math.round(dist*1000)}m away`:`${dist.toFixed(1)}km away`:'';
-      return`<div class="finder-result" onclick="openVenueFromFinder('${c.profiles?.id}',${c.id},'${neededSlots[0]}','${date}')">
+      return`<div class="finder-result" onclick="openVenueFromFinder('${c.profiles?.id}',${c.id},'${JSON.stringify(neededSlots).replace(/"/g,"'")}','${date}')"
         <div>
           <span class="finder-result-sport">${ICONS[c.sport]||''} ${c.sport}</span>
           <h4>${c.name}</h4>
@@ -1861,19 +1861,26 @@ async function findAvailableCourts(){
     }).join('')}`;
 }
 
-async function openVenueFromFinder(ownerId,courtId,slot,date){
+async function openVenueFromFinder(ownerId,courtId,slotsStr,date){
   await openVenue(ownerId);
-  // Pre-select the date and slot
   timetableDate=date;
   selectedTimetableSlots=[];
   await buildTimetable();
-  // Auto-select the slot for the right court
   const court=currentVenueCourts.find(c=>c.id===courtId);
   if(court){
-    const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
-    if(btn&&btn.classList.contains('available')){
-      toggleSlotSelection(courtId,slot,date,court);
-    }
+    // Parse slots - handle both single slot string and JSON array string
+    let slots=[];
+    try{slots=JSON.parse(slotsStr.replace(/'/g,'"'));}
+    catch(e){slots=[slotsStr];}
+    // Add endpoint slot for correct hour display
+    slots.forEach(slot=>{
+      const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
+      if(btn&&btn.classList.contains('available')){
+        selectedTimetableSlots.push({courtId,slot,date,court});
+        btn.className='tslot-cell selected';
+      }
+    });
+    updateSummaryBar();
   }
 }
   async function renderVenues(){
