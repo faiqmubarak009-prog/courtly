@@ -2629,38 +2629,38 @@ async function goStep(n){
   [1,2,3,4].forEach(i=>{const d=document.getElementById('d'+i);if(!d)return;d.classList.remove('active','done');if(i<n)d.classList.add('done');if(i===n)d.classList.add('active')});
   if(n===3||n===4){
     let basePriceStep=parseFloat(bCourt?.price_per_hour||0);
-if(bDate&&bTime&&bCourt?.id){
-  const{data:stepPeaks}=await sb.from('peak_pricing').select('*').eq('court_id',bCourt.id);
-  if(stepPeaks?.length){
-    const dow=new Date(bDate+'T00:00:00').getDay();
-    const isWeekend=dow===0||dow===6;
-    const slotH=parseSlotHour(bTime.split('–')[0].trim()||bTime);
-    const peak=stepPeaks.find(p=>{
-      const sh=parseInt(p.start_time?.split(':')[0]);
-      const eh=parseInt(p.end_time?.split(':')[0]);
-      const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
-      return dayMatch&&slotH>=sh&&slotH<eh;
-    });
-    if(peak)basePriceStep=parseFloat(peak.price_override);
-  }
-}
-const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
-const cf=basePriceStep*slotCount*0.5;
-const pf=Math.round(cf*PLATFORM_FEE)/100;
-const total=cf+pf;
+    if(bDate&&bTime&&bCourt?.id){
+      const{data:stepPeaks}=await sb.from('peak_pricing').select('*').eq('court_id',bCourt.id);
+      if(stepPeaks?.length){
+        const dow=new Date(bDate+'T00:00:00').getDay();
+        const isWeekend=dow===0||dow===6;
+        const slotH=parseSlotHour(bTime.split('–')[0].trim()||bTime);
+        const peak=stepPeaks.find(p=>{
+          const sh=parseInt(p.start_time?.split(':')[0]);
+          const eh=parseInt(p.end_time?.split(':')[0]);
+          const dayMatch=p.day_type==='all'||(p.day_type==='weekend'&&isWeekend)||(p.day_type==='weekday'&&!isWeekend);
+          return dayMatch&&slotH>=sh&&slotH<eh;
+        });
+        if(peak)basePriceStep=parseFloat(peak.price_override);
+      }
+    }
+    const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
+    const cf=basePriceStep*slotCount*0.5;
+    const pf=Math.round(cf*PLATFORM_FEE)/100;
+    const total=cf+pf;
     const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
     const bs=document.getElementById('bSum');if(bs)bs.innerHTML=html;
     const bs2=document.getElementById('bSum2');if(bs2)bs2.innerHTML=html;
-const credit=CU?.booking_credit||0;
-const creditApplied=Math.min(credit,total);
-const finalTotal=Math.max(0,total-creditApplied);
-const fb=document.getElementById('feeBreakdown');
-if(fb)fb.innerHTML=`
-  <div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div>
-  <div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div>
-  ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
-  <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
-const pa=document.getElementById('payAmt');if(pa)pa.textContent=finalTotal.toFixed(2);
+    const credit=CU?.booking_credit||0;
+    const creditApplied=Math.min(credit,total);
+    const finalTotal=Math.max(0,total-creditApplied);
+    const fb=document.getElementById('feeBreakdown');
+    if(fb)fb.innerHTML=`
+      <div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div>
+      <div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div>
+      ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
+      <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
+    const pa=document.getElementById('payAmt');if(pa)pa.textContent=finalTotal.toFixed(2);
     const owner=window._currentCourt?.profiles;
     const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
     if(CU&&n===3){
