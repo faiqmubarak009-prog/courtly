@@ -1838,7 +1838,7 @@ async function findAvailableCourts(){
         ?haversineDistance(playerLat,playerLng,parseFloat(c.profiles.lat),parseFloat(c.profiles.lng))
         :null;
       const distStr=dist!==null?dist<1?`${Math.round(dist*1000)}m away`:`${dist.toFixed(1)}km away`:'';
-      return`<div class="finder-result" onclick="openVenueFromFinder(${c.id},'${neededSlots[0]}','${date}',${duration})"
+      return`<div class="finder-result" id="fr_${c.id}_${date}">
         <div>
           <span class="finder-result-sport">${ICONS[c.sport]||''} ${c.sport}</span>
           <h4>${c.name}</h4>
@@ -1859,6 +1859,11 @@ async function findAvailableCourts(){
         </div>
       </div>`;
     }).join('')}`;
+    // Wire up click handlers after HTML is rendered
+  finalAvailable.forEach(c=>{
+    const el=document.getElementById(`fr_${c.id}_${date}`);
+    if(el)el.onclick=()=>openVenueFromFinder(c.id,neededSlots[0],date,duration);
+  });
 }
 async function openVenueFromFinder(courtId,startSlot,date,duration){
   if(!CU){toast('Please log in to book','err');nav('login');return}
