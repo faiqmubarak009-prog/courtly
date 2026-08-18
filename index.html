@@ -1838,7 +1838,7 @@ async function findAvailableCourts(){
         ?haversineDistance(playerLat,playerLng,parseFloat(c.profiles.lat),parseFloat(c.profiles.lng))
         :null;
       const distStr=dist!==null?dist<1?`${Math.round(dist*1000)}m away`:`${dist.toFixed(1)}km away`:'';
-      return`<div class="finder-result" onclick="openVenueFromFinder('${c.profiles?.id}',${c.id},'${JSON.stringify(neededSlots).replace(/"/g,"'")}','${date}')"
+      return`<div class="finder-result" onclick="openVenueFromFinder(${c.id},'${neededSlots[0]}','${date}',${duration})"
         <div>
           <span class="finder-result-sport">${ICONS[c.sport]||''} ${c.sport}</span>
           <h4>${c.name}</h4>
@@ -1860,25 +1860,22 @@ async function findAvailableCourts(){
       </div>`;
     }).join('')}`;
 }
-
-async function openVenueFromFinder(ownerId,courtId,slotsStr,date){
-  await openVenue(ownerId);
-  timetableDate=date;
-  selectedTimetableSlots=[];
-  await buildTimetable();
-  const court=currentVenueCourts.find(c=>c.id===courtId);
-  if(court){
-    // Parse slots - handle both single slot string and JSON array string
-    let slots=[];
-    try{slots=JSON.parse(slotsStr.replace(/'/g,'"'));}
-    catch(e){slots=[slotsStr];}
-    // Add endpoint slot for correct hour display
-    slots.forEach(slot=>{
-      const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
-      if(btn&&btn.classList.contains('available')){
-        selectedTimetableSlots.push({courtId,slot,date,court});
-        btn.className='tslot-cell selected';
-      }
+async function openVenueFromFinder(courtId,startSlot,date,duration){
+  if(!CU){toast('Please log in to book','err');nav('login');return}
+  const{data:court}=await sb.from('courts').select('*').eq('id',courtId).single();
+  if(!court)return;
+  bCourt=court;
+  bSport=court.sport;
+  bDate=date;
+  // Build time range string from start slot and duration
+  const slotIdx=SLOTS.indexOf(startSlot);
+  const numSlots=Math.ceil(duration/30);
+  const endSlotIdx=slotIdx+numSlots;
+  const endSlot=SLOTS[endSlotIdx]||SLOTS[SLOTS.length-1];
+  bTime=duration>30?`${startSlot} – ${endSlot}`:startSlot;
+  nav('book');
+  setTimeout(()=>goStep(3),100);
+}
     });
     updateSummaryBar();
   }
