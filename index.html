@@ -1880,11 +1880,7 @@ async function openVenueFromFinder(courtId,startSlot,date,duration){
   bTime=duration>30?`${startSlot} – ${endSlot}`:startSlot;
   nav('book');
   setTimeout(()=>goStep(3),100);
-}
-    });
-    updateSummaryBar();
   }
-}
   async function renderVenues(){
   const search=(document.getElementById('csearch')?.value||'').toLowerCase();
   const sort=document.getElementById('csort')?.value||'';
