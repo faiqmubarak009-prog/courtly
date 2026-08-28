@@ -903,7 +903,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
           <h4>Card Details <span class="stripe-badge">🔒 Stripe</span></h4>
           <div id="card-element"></div><div id="card-errors"></div>
           <div class="secure-note">🔒 Encrypted & processed securely by Stripe.</div>
-          <div class="test-cards"><strong>Test Mode:</strong> Success: <code>4242 4242 4242 4242</code> · Decline: <code>4000 0000 0000 0002</code> · Any future expiry/CVC</div>
         </div>
         <div class="row2"><button class="btn btn-g" onclick="goStep(3)">← Back</button><button class="btn btn-p" onclick="processPayment()" id="payBtn">Pay $<span id="payAmt">0</span> →</button></div>
       </div>
@@ -1677,6 +1676,14 @@ function showLoad(show){
 async function loadProfile(uid){
   const{data}=await sb.from('profiles').select('*').eq('id',uid).single();
   CU=data;
+  if(CU){
+    const{data:refCode}=await sb.from('referral_codes')
+      .select('id')
+      .eq('holder_user_id',uid)
+      .eq('is_active',true)
+      .single();
+    CU.hasReferralCode=!!refCode;
+  }
 }
 async function loadFee(){
   const{data}=await sb.from('platform_settings').select('value').eq('key','platform_fee_percent').single();
@@ -1711,7 +1718,7 @@ function updateNav(){
   const role=CU?.role;
   const portalLinks=role==='admin'?`<a onclick="nav('admin')">Admin</a>`:
     role==='owner'?`<a onclick="nav('owner')">Portal</a>`:
-    CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a><a onclick="nav('referral')">💰 Referrals</a>`:'';
+    CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a>${CU.hasReferralCode?'<a onclick="nav(\'referral\')">💰 Referrals</a>':''}`:''
   const logBtn=CU
     ?`<a onclick="doLogout()" class="btn btn-g btn-sm" style="margin-left:4px">Logout</a>`
     :`<a onclick="nav('login')" class="btn btn-g btn-sm" style="margin-left:4px">Login</a><a onclick="nav('register')" class="btn btn-p btn-sm" style="margin-left:4px">Sign Up</a>`;
@@ -2732,11 +2739,9 @@ async function goStep(n){
     const creditApplied=Math.min(credit,total);
     const finalTotal=Math.max(0,total-creditApplied);
     const fb=document.getElementById('feeBreakdown');
-    if(fb)fb.innerHTML=`
-      <div class="fee-row"><span>Court fee</span><span>$${cf.toFixed(2)}</span></div>
-      <div class="fee-row"><span>Courtly fee (${PLATFORM_FEE}%)</span><span>$${pf.toFixed(2)}</span></div>
-      ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
-      <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
+if(fb)fb.innerHTML=`
+  ${creditApplied>0?`<div class="fee-row" style="color:var(--green)"><span>🎁 Booking credit applied</span><span>-$${creditApplied.toFixed(2)}</span></div>`:''}
+  <div class="fee-row total"><span>Total</span><span>$${finalTotal.toFixed(2)}</span></div>`;
     const pa=document.getElementById('payAmt');if(pa)pa.textContent=finalTotal.toFixed(2);
     const owner=window._currentCourt?.profiles;
     const pb=document.getElementById('step3Policy');if(pb){if(owner?.policy){pb.innerHTML='📋 <strong>Cancellation:</strong> '+owner.policy;pb.style.display='block'}else pb.style.display='none'}
