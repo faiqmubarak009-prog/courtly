@@ -72,7 +72,7 @@ button:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shad
 .hero-stats{display:flex;gap:32px;flex-wrap:wrap}
 .hero-stat strong{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#fff;display:block}
 .hero-stat span{font-size:.78rem;color:rgba(255,255,255,.65)}
-@media(max-width:700px){.hero-search{grid-template-columns:1fr;gap:2px}.hs-divider{display:none}.hero{padding:48px 24px 56px}}
+@media(max-width:700px){.hero-search{grid-template-columns:1fr!important;gap:2px}.hs-divider{display:none}.hero{padding:48px 24px 56px}}
 
 /* SECTION */
 .section{max-width:1240px;margin:0 auto;padding:64px 24px}
@@ -493,7 +493,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     <div class="nav-links">
       <a onclick="nav('home')" id="nl-home" class="active">Home</a>
       <a onclick="nav('courts')" id="nl-courts">Venues</a>
-      <a onclick="nav('book')" id="nl-book">Book</a>
       <span id="navAuth"></span>
     </div>
     <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
@@ -501,7 +500,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <div class="mob-menu" id="mobMenu">
     <a onclick="nav('home');cm()">Home</a>
     <a onclick="nav('courts');cm()">Venues</a>
-    <a onclick="nav('book');cm()">Book</a>
     <div id="mobAuth"></div>
   </div>
 </nav>
@@ -516,14 +514,57 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <div class="hero-eyebrow">● Book. Play. Review.</div>
       <h1>Your court,<br/><em>your schedule.</em></h1>
       <p class="hero-sub">Find and book tennis, basketball, badminton, pickleball courts and more — confirmed instantly, paid securely.</p>
-      <div class="hero-search">
-        <div class="hs-field"><label>Where</label><input type="text" id="hsSearch" placeholder="Any location…"/></div>
-        <div class="hs-divider"></div>
-        <div class="hs-field"><label>Sport</label><select id="hsSport"><option value="">Any sport</option><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option></select></div>
-        <div class="hs-divider"></div>
-        <div class="hs-field"><label>Date</label><input type="date" id="hsDate"/></div>
-        <button class="hs-btn" onclick="heroSearch()">Search</button>
-      </div>
+<div class="hero-search" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+  <div class="hs-field">
+    <label>Where</label>
+    <div style="display:flex;align-items:center;gap:6px">
+      <input type="text" id="hsSearch" placeholder="Any location…" style="flex:1"/>
+      <button onclick="heroNearMe()" style="background:none;border:none;cursor:pointer;padding:0;color:var(--green);font-size:.78rem;white-space:nowrap;font-family:'DM Sans',sans-serif">📍 Near me</button>
+    </div>
+  </div>
+  <div class="hs-divider"></div>
+  <div class="hs-field">
+    <label>Sport</label>
+    <select id="hsSport">
+      <option value="">Any sport</option>
+      <option>Tennis</option>
+      <option>Basketball</option>
+      <option>Badminton</option>
+      <option>Pickleball</option>
+      <option>Football</option>
+      <option>Volleyball</option>
+      <option>Cricket</option>
+    </select>
+  </div>
+  <div class="hs-divider"></div>
+  <div class="hs-field">
+    <label>Date</label>
+    <input type="date" id="hsDate"/>
+  </div>
+  <div class="hs-divider"></div>
+  <div class="hs-field">
+    <label>Start time</label>
+    <select id="hsTime">
+      <option value="">Any time</option>
+      <option value="07:00">7:00 AM</option>
+      <option value="08:00">8:00 AM</option>
+      <option value="09:00">9:00 AM</option>
+      <option value="10:00">10:00 AM</option>
+      <option value="11:00">11:00 AM</option>
+      <option value="12:00">12:00 PM</option>
+      <option value="13:00">1:00 PM</option>
+      <option value="14:00">2:00 PM</option>
+      <option value="15:00">3:00 PM</option>
+      <option value="16:00">4:00 PM</option>
+      <option value="17:00">5:00 PM</option>
+      <option value="18:00">6:00 PM</option>
+      <option value="19:00">7:00 PM</option>
+      <option value="20:00">8:00 PM</option>
+      <option value="21:00">9:00 PM</option>
+    </select>
+  </div>
+  <button class="hs-btn" onclick="heroSearch()">Search →</button>
+</div>
       <div class="hero-stats">
         <div class="hero-stat"><strong id="hSC">12</strong><span>Courts listed</span></div>
         <div class="hero-stat"><strong id="hSB">0</strong><span>Bookings made</span></div>
@@ -553,7 +594,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <footer class="footer"><div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand"><span class="flogo" onclick="nav('home')">Courtly</span><p>The easiest way to find, book and pay for sports courts online.</p></div>
-      <div class="footer-col"><h4>Product</h4><a onclick="nav('courts')">Browse Venues</a><a onclick="nav('book')">Book a Court</a><a onclick="nav('register')">List Courts</a></div>
+      <div class="footer-col"><h4>Product</h4><a onclick="nav('courts')">Browse Venues</a><a onclick="nav('register')">List Courts</a></div>
       <div class="footer-col"><h4>Account</h4><a onclick="nav('login')">Login</a><a onclick="nav('register')">Sign Up</a><a onclick="nav('mybookings')">My Bookings</a><a onclick="nav('profile')">My Profile</a></div>
       <div class="footer-col"><h4>Company</h4><a>About</a><a>Contact</a><a>Privacy Policy</a><a>Terms of Service</a></div>
     </div>
@@ -1700,14 +1741,54 @@ async function initHome(){
 }
 function heroSearch(){
   const sport=document.getElementById('hsSport')?.value||'';
-  sportFilter=sport;
-  nav('courts');
-  setTimeout(()=>{
-    const s=document.getElementById('hsSearch')?.value;
-    const cs=document.getElementById('csearch');if(cs&&s)cs.value=s;
-    if(sport)document.querySelectorAll('.sfbtn').forEach(b=>{if(b.textContent.includes(sport)||(sport===''&&b.textContent.trim()==='All Sports'))b.click();});
-    renderCourts();
-  },100);
+  const date=document.getElementById('hsDate')?.value||'';
+  const time=document.getElementById('hsTime')?.value||'';
+  const location=document.getElementById('hsSearch')?.value||'';
+  // If time is selected use smart finder
+  if(time&&date){
+    nav('courts');
+    setTimeout(()=>{
+      const fs=document.getElementById('finderSport');if(fs)fs.value=sport;
+      const fd=document.getElementById('finderDate');if(fd)fd.value=date;
+      const ft=document.getElementById('finderTime');if(ft)ft.value=time;
+      findAvailableCourts();
+      // Scroll to finder results
+      document.getElementById('finderResults')?.scrollIntoView({behavior:'smooth'});
+    },200);
+  } else {
+    // Otherwise go to venues page with filters
+    sportFilter=sport;
+    nav('courts');
+    setTimeout(()=>{
+      const cs=document.getElementById('csearch');
+      if(cs&&location)cs.value=location;
+      if(sport)document.querySelectorAll('.sfbtn').forEach(b=>{
+        if(b.textContent.includes(sport)||(sport===''&&b.textContent.trim()==='All Sports'))b.click();
+      });
+      renderVenues();
+    },200);
+  }
+}
+
+function heroNearMe(){
+  if(!navigator.geolocation){toast('Geolocation not supported','err');return}
+  const btn=document.querySelector('.hs-field button');
+  if(btn)btn.textContent='📍 Locating…';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      playerLat=pos.coords.latitude;
+      playerLng=pos.coords.longitude;
+      if(btn)btn.textContent='📍 Near me ✓';
+      // Clear location text field since we're using GPS
+      const hs=document.getElementById('hsSearch');
+      if(hs)hs.placeholder='Using your location…';
+      toast('Location found! Search to see nearby courts.','ok');
+    },
+    ()=>{
+      if(btn)btn.textContent='📍 Near me';
+      toast('Could not get your location','err');
+    }
+  );
 }
 
 // ============================================================
