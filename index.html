@@ -2855,7 +2855,7 @@ async function reBook(courtId){
 async function showReceipt(id){
   const{data:bk}=await sb.from('bookings').select('*').eq('id',id).single();if(!bk)return;
   const el=document.getElementById('receiptContent');
-  if(el)el.innerHTML=`<div style="text-align:center;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--border)"><div class="ok-icon" style="width:50px;height:50px;font-size:1.3rem;margin:0 auto 12px">✓</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Courtly</div><div style="font-size:.72rem;color:var(--grey)">Booking Receipt</div></div>${[['Booking ID',bk.id],['Court',bk.court_name],['Sport',bk.sport],['Date',fmtDateLong(bk.booking_date)],['Time',bk.time_slot],['Name',bk.player_name],['Email',bk.player_email],['Court Fee','$'+Number(bk.court_fee||0).toFixed(2)],['Platform Fee','$'+Number(bk.platform_fee||0).toFixed(2)],['Status',bk.status]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--grey-l);font-size:.84rem"><span>${k}</span><span>${v}</span></div>`).join('')}<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;font-size:.92rem"><span>Total Paid</span><span>$${Number(bk.total||bk.court_fee||0).toFixed(2)}</span></div><p style="font-size:.7rem;color:var(--grey);text-align:center;margin-top:14px">courtly.com · Powered by Stripe 🔒</p>`;
+  if(el)el.innerHTML=`<div style="text-align:center;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--border)"><div class="ok-icon" style="width:50px;height:50px;font-size:1.3rem;margin:0 auto 12px">✓</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Courtly</div><div style="font-size:.72rem;color:var(--grey)">Booking Receipt</div></div>${[['Booking ID',bk.id],['Court',bk.court_name],['Sport',bk.sport],['Date',fmtDateLong(bk.booking_date)],['Time',bk.time_slot],['Name',bk.player_name],['Email',bk.player_email],['Court Fee','$'+Number(bk.court_fee||0).toFixed(2)],['Platform Fee','$'+Number(bk.platform_fee||0).toFixed(2)],['Status',bk.status]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--grey-l);font-size:.84rem"><span>${k}</span><span>${v}</span></div>`).join('')}<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;font-size:.92rem"><span>Total Paid</span><span>$${Number(bk.total||bk.court_fee||0).toFixed(2)}</span></div><p style="font-size:.7rem;color:var(--grey);text-align:center;margin-top:14px">bookcourtly.com · Powered by Stripe 🔒</p>`;
   openModal('receiptModal');
 }
 function openDisputeModal(bkId,courtName){
@@ -3668,7 +3668,7 @@ function exportAnalyticsPDF(){
           ${data.bookings.map(b=>`<tr><td>${b.booking_date}</td><td>${b.court_name}</td><td>${b.time_slot}</td><td>${b.player_email}</td><td>$${Number(b.court_fee||0).toFixed(2)}</td><td>${b.status}</td></tr>`).join('')}
         </tbody>
       </table>
-      <div class="footer">Courtly · courtlyau2.netlify.app · Report generated automatically</div>
+     <div class="footer">Courtly · bookcourtly.com · Report generated automatically</div>
       <script>window.onload=()=>{window.print()}<\/script>
     </body>
     </html>
