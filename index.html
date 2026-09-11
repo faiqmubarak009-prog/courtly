@@ -2312,7 +2312,7 @@ function toggleSlotSelection(courtId,slot,date,court){
     });
     selectedTimetableSlots=[];
     // Select all slots in range including endpoint
-    for(let i=from;i<=to+1;i++){
+    for(let i=from;i<=to;i++){
       if(!SLOTS[i])break;
       const rangeSlot=SLOTS[i];
       const rangeBtn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${rangeSlot}"]`);
