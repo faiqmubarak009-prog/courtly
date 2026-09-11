@@ -2277,20 +2277,55 @@ function endDrag(){
 
 function toggleSlotSelection(courtId,slot,date,court){
   if(isDragging)return;
-  const idx=selectedTimetableSlots.findIndex(s=>s.courtId===courtId&&s.slot===slot);
   const btn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${slot}"]`);
+  // If clicking on already selected slot — deselect all
+  const idx=selectedTimetableSlots.findIndex(s=>s.courtId===courtId&&s.slot===slot);
   if(idx>-1){
-    selectedTimetableSlots.splice(idx,1);
-    if(btn)btn.className='tslot-cell available';
-  } else {
-    // clear other court selections if switching courts
-    if(selectedTimetableSlots.length&&selectedTimetableSlots[0].courtId!==courtId){
-      selectedTimetableSlots.forEach(s=>{
-        const b=document.querySelector(`[data-court-id="${s.courtId}"][data-slot="${s.slot}"]`);
-        if(b)b.className='tslot-cell available';
-      });
-      selectedTimetableSlots=[];
+    // Deselect all slots for this court
+    selectedTimetableSlots.forEach(s=>{
+      const b=document.querySelector(`[data-court-id="${s.courtId}"][data-slot="${s.slot}"]`);
+      if(b)b.className='tslot-cell available';
+    });
+    selectedTimetableSlots=[];
+    updateSummaryBar();
+    return;
+  }
+  // Clear other court selections if switching courts
+  if(selectedTimetableSlots.length&&selectedTimetableSlots[0].courtId!==courtId){
+    selectedTimetableSlots.forEach(s=>{
+      const b=document.querySelector(`[data-court-id="${s.courtId}"][data-slot="${s.slot}"]`);
+      if(b)b.className='tslot-cell available';
+    });
+    selectedTimetableSlots=[];
+  }
+  // If this is the second click on the same court — fill the range
+  if(selectedTimetableSlots.length>0&&selectedTimetableSlots[0].courtId===courtId){
+    const firstSlot=selectedTimetableSlots[0].slot;
+    const firstIdx=SLOTS.indexOf(firstSlot);
+    const newIdx=SLOTS.indexOf(slot);
+    const from=Math.min(firstIdx,newIdx);
+    const to=Math.max(firstIdx,newIdx);
+    // Clear existing selections
+    selectedTimetableSlots.forEach(s=>{
+      const b=document.querySelector(`[data-court-id="${s.courtId}"][data-slot="${s.slot}"]`);
+      if(b)b.className='tslot-cell available';
+    });
+    selectedTimetableSlots=[];
+    // Select all slots in range including endpoint
+    for(let i=from;i<=to+1;i++){
+      if(!SLOTS[i])break;
+      const rangeSlot=SLOTS[i];
+      const rangeBtn=document.querySelector(`[data-court-id="${courtId}"][data-slot="${rangeSlot}"]`);
+      if(rangeBtn&&(rangeBtn.classList.contains('available')||rangeBtn.classList.contains('selected'))){
+        selectedTimetableSlots.push({courtId,slot:rangeSlot,date,court});
+        rangeBtn.className='tslot-cell selected';
+      } else if(rangeBtn&&!rangeBtn.classList.contains('available')&&i!==to+1){
+        // Hit a booked/blocked slot — stop range
+        break;
+      }
     }
+  } else {
+    // First click — just select this slot
     selectedTimetableSlots.push({courtId,slot,date,court});
     if(btn)btn.className='tslot-cell selected';
   }
