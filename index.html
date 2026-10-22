@@ -2342,7 +2342,6 @@ function updateSummaryBar(){
   const court=selectedTimetableSlots[0].court;
   const slots=selectedTimetableSlots.map(s=>s.slot);
 const totalHrs=(slots.length-1)*0.5||0.5;
-// calculate cost accounting for peak pricing
 let totalCost=0;
 const peakData=window._currentVenue?.peaks||[];
 const dow=new Date(timetableDate+'T00:00:00').getDay();
@@ -2357,6 +2356,7 @@ slots.slice(0,-1).forEach(slot=>{
   });
   totalCost+=0.5*(peak?peak.price_override:court?.price_per_hour||0);
 });
+// price shown to player is already inclusive — no additional fee on top
   const firstSlot=slots[0];
   const lastSlot=slots[slots.length-1];
   if(txt)txt.textContent=`${court?.name} — ${court?.sport} · ${firstSlot}${slots.length>1?' → '+lastSlot:''}`;
@@ -2764,9 +2764,9 @@ async function goStep(n){
       }
     }
     const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
-    const cf=basePriceStep*slotCount*0.5;
-    const pf=Math.round(cf*PLATFORM_FEE)/100;
-    const total=cf+pf;
+    const total=basePriceStep*slotCount*0.5;
+    const pf=Math.round(total*(PLATFORM_FEE/(100+PLATFORM_FEE))*100)/100;
+    const cf=total-pf;
     const html=`<strong>Sport:</strong> ${bSport}<br><strong>Court:</strong> ${bCourt?.name}<br><strong>Date:</strong> ${fmtDate(bDate)}<br><strong>Time:</strong> ${bTime}`;
     const bs=document.getElementById('bSum');if(bs)bs.innerHTML=html;
     const bs2=document.getElementById('bSum2');if(bs2)bs2.innerHTML=html;
@@ -2817,11 +2817,12 @@ if(bDate&&bTime&&bCourt?.id){
 }
 // Calculate multi-slot total if drag selected
 const slotCount=selectedTimetableSlots.length>1?Math.max(1,selectedTimetableSlots.length-1):1;
-const cf=basePrice*slotCount*0.5;
-const pf=Math.round(cf*PLATFORM_FEE)/100;
+const total=basePrice*slotCount*0.5;
+const pf=Math.round(total*(PLATFORM_FEE/(100+PLATFORM_FEE))*100)/100;
+const cf=total-pf;
 const credit=CU?.booking_credit||0;
-const creditApplied=Math.min(credit,cf+pf);
-const total=Math.max(0,(cf+pf)-creditApplied);
+const creditApplied=Math.min(credit,total);
+const finalTotal=Math.max(0,total-creditApplied);
 if(creditApplied>0&&CU){
     const remaining=Math.max(0,(CU.booking_credit||0)-creditApplied);
     await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
