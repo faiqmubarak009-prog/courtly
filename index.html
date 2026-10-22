@@ -1221,6 +1221,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
   <button class="tab" onclick="showOwnerTab('analytics',this)">📊 Analytics</button>
   <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
+  <button class="tab" onclick="showOwnerTab('checkin',this)">📷 Check-in</button>
   <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
   <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
   <button class="tab" onclick="showOwnerTab('hours',this)">Opening Hours</button>
@@ -1302,7 +1303,20 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div>
   <div id="ownerCourtsList"></div>
 </div>
-      <div class="tpane" id="ot-bookings">
+  <!-- CHECK-IN SCANNER -->
+<div class="tpane" id="ot-checkin">
+  <div class="info-banner">Scan the QR code on a player's booking to check them in. Works best on a phone or tablet.</div>
+  <div style="max-width:420px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
+    <div id="qrReader" style="width:100%;display:none;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" id="scanStartBtn" onclick="startScanner()">📷 Start scanning</button>
+      <button class="btn btn-g" id="scanStopBtn" onclick="stopScanner()" style="display:none">Stop</button>
+    </div>
+    <div id="checkinResult" style="margin-top:16px"></div>
+  </div>
+</div>
+      
+<div class="tpane" id="ot-bookings">
         <div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th></th></tr></thead><tbody id="ownerBkBody"></tbody></table></div>
       </div>
       <div class="tpane" id="ot-calendar">
@@ -3823,6 +3837,7 @@ function exportAnalyticsPDF(){
   if(name==='hours')loadVenueHours();
   if(name==='peak'){populatePeakCourtSelect().then(()=>loadPeakPricing());}
   if(name==='analytics')loadAnalytics();
+  if(name!=='checkin')stopScanner();
 }
 // ============================================================
 // VENUE HOURS & PEAK PRICING
@@ -4107,6 +4122,123 @@ function sortByDistance(){
       toast('Could not get your location','err');
     }
   );
+}
+// ============================================================
+// STAFF CHECK-IN SCANNER
+// ============================================================
+let qrScanner=null;
+let scannerRunning=false;
+let pendingCheckinId=null;
+let pendingCheckinBooking=null;
+
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function slotToMinutes(s){
+  const m=/(\d+):(\d+)\s*(AM|PM)/i.exec(s||'');
+  if(!m)return null;
+  let h=parseInt(m[1]);const min=parseInt(m[2]);
+  const pm=m[3].toUpperCase()==='PM';
+  if(pm&&h!==12)h+=12;
+  if(!pm&&h===12)h=0;
+  return h*60+min;
+}
+
+function setScannerButtons(running){
+  const a=document.getElementById('scanStartBtn');
+  const b=document.getElementById('scanStopBtn');
+  if(a)a.style.display=running?'none':'inline-flex';
+  if(b)b.style.display=running?'inline-flex':'none';
+  const box=document.getElementById('qrReader');
+  if(box)box.style.display=running?'block':'none';
+}
+
+async function startScanner(){
+  if(scannerRunning)return;
+  if(typeof Html5Qrcode==='undefined'){toast('Scanner failed to load. Refresh and try again.','err');return}
+  const res=document.getElementById('checkinResult');if(res)res.innerHTML='';
+  setScannerButtons(true);
+  qrScanner=new Html5Qrcode('qrReader');
+  try{
+    await qrScanner.start({facingMode:'environment'},{fps:10,qrbox:220},onScanSuccess,()=>{});
+    scannerRunning=true;
+  }catch(e){
+    qrScanner=null;
+    scannerRunning=false;
+    setScannerButtons(false);
+    toast('Could not open the camera. Allow camera access and try again.','err');
+  }
+}
+
+async function stopScanner(){
+  if(qrScanner&&scannerRunning){
+    try{await qrScanner.stop();qrScanner.clear()}catch(e){}
+  }
+  scannerRunning=false;
+  qrScanner=null;
+  setScannerButtons(false);
+}
+
+async function onScanSuccess(text){
+  await stopScanner();
+  await lookupCheckin((text||'').trim());
+}
+
+function checkinMsg(color,bg,html){
+  const el=document.getElementById('checkinResult');
+  if(el)el.innerHTML='<div style="padding:14px 16px;border-radius:var(--rs);background:'+bg+';color:'+color+';font-size:.86rem">'+html+'</div><button class="btn btn-g btn-sm" style="margin-top:12px" onclick="startScanner()">Scan next</button>';
+}
+
+async function lookupCheckin(id){
+  const el=document.getElementById('checkinResult');
+  if(!el)return;
+  pendingCheckinId=null;
+  pendingCheckinBooking=null;
+  el.innerHTML='<p style="color:var(--grey);font-size:.86rem">Looking up booking…</p>';
+  const{data:bk}=await sb.from('bookings').select('*').eq('id',id).maybeSingle();
+  if(!bk){checkinMsg('var(--red)','var(--red-p)','Booking not found. Ask the player to open the QR from My Bookings.');return}
+  const{data:court}=await sb.from('courts').select('id').eq('id',bk.court_id).eq('owner_id',CU.id).maybeSingle();
+  if(!court){checkinMsg('var(--red)','var(--red-p)','This booking is for a different venue.');return}
+  if(bk.status==='cancelled'){checkinMsg('var(--red)','var(--red-p)','This booking was cancelled.');return}
+  if(bk.check_in_status==='checked_in'){
+    const when=bk.checked_in_at?new Date(bk.checked_in_at).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):'earlier';
+    checkinMsg('#92400e','var(--gold-p)','Already checked in at '+escHtml(when)+'.<br><strong>'+escHtml(bk.player_name)+'</strong> · '+escHtml(bk.court_name));
+    return;
+  }
+  pendingCheckinId=bk.id;
+  pendingCheckinBooking=bk;
+  const today=new Date().toLocaleDateString('en-CA');
+  const notToday=bk.booking_date!==today;
+  el.innerHTML=
+    '<div style="padding:14px 16px;border-radius:var(--rs);background:var(--green-p);font-size:.86rem">'+
+    '<div style="font-weight:600;font-size:.95rem;margin-bottom:4px">'+escHtml(bk.player_name)+'</div>'+
+    '<div>'+escHtml(bk.court_name)+'</div>'+
+    '<div>'+escHtml(fmtDate(bk.booking_date))+' · '+escHtml(bk.time_slot)+'</div></div>'+
+    (notToday?'<div style="margin-top:10px;padding:10px 14px;border-radius:var(--rs);background:var(--gold-p);color:#92400e;font-size:.82rem">⚠️ This booking is not for today.</div>':'')+
+    '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-p" onclick="confirmCheckin()">✓ Confirm check-in</button><button class="btn btn-g" onclick="startScanner()">Cancel</button></div>';
+}
+
+async function confirmCheckin(){
+  if(!pendingCheckinId)return;
+  const bk=pendingCheckinBooking;
+  const now=new Date();
+  const{error}=await sb.from('bookings').update({
+    checked_in_at:now.toISOString(),
+    check_in_status:'checked_in',
+    check_in_method:'staff_scan'
+  }).eq('id',pendingCheckinId).neq('check_in_status','checked_in');
+  if(error){toast('Check-in failed. Try again.','err');return}
+  let variance='';
+  const startMins=slotToMinutes(bk?.time_slot);
+  if(startMins!==null&&bk.booking_date===now.toLocaleDateString('en-CA')){
+    const diff=now.getHours()*60+now.getMinutes()-startMins;
+    variance=diff===0?' · on time':diff>0?' · '+diff+' min late':' · '+Math.abs(diff)+' min early';
+  }
+  const time=now.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'});
+  checkinMsg('var(--green)','var(--green-p)','✓ <strong>'+escHtml(bk?.player_name)+'</strong> checked in at '+escHtml(time)+escHtml(variance));
+  pendingCheckinId=null;
+  pendingCheckinBooking=null;
 }
 async function saveSettings(){
   const lat=parseFloat(document.getElementById('sLat')?.value)||null;
