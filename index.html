@@ -1221,6 +1221,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   <button class="tab active" onclick="showOwnerTab('courts',this)">My Courts</button>
   <button class="tab" onclick="showOwnerTab('analytics',this)">📊 Analytics</button>
   <button class="tab" onclick="showOwnerTab('bookings',this)">Bookings</button>
+  <button class="tab" onclick="showOwnerTab('today',this)">📅 Today</button>
   <button class="tab" onclick="showOwnerTab('checkin',this)">📷 Check-in</button>
   <button class="tab" onclick="showOwnerTab('calendar',this)">Calendar</button>
   <button class="tab" onclick="showOwnerTab('avail',this)">Availability</button>
@@ -1303,7 +1304,19 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
   </div>
   <div id="ownerCourtsList"></div>
 </div>
-  <!-- CHECK-IN SCANNER -->
+<!-- TODAY VIEW -->
+<div class="tpane" id="ot-today">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div>
+      <h3 id="todayLabel" style="font-size:1.1rem"></h3>
+      <div id="todaySummary" style="font-size:.82rem;color:var(--grey);margin-top:2px"></div>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="loadToday()">↻ Refresh</button>
+  </div>
+  <div id="todayList"></div>
+</div>
+      
+<!-- CHECK-IN SCANNER -->
 <div class="tpane" id="ot-checkin">
   <div class="info-banner">Scan the QR code on a player's booking to check them in. Works best on a phone or tablet.</div>
   <div style="max-width:420px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
@@ -3838,6 +3851,7 @@ function exportAnalyticsPDF(){
   if(name==='peak'){populatePeakCourtSelect().then(()=>loadPeakPricing());}
   if(name==='analytics')loadAnalytics();
   if(name!=='checkin')stopScanner();
+  if(name==='today')loadToday();
 }
 // ============================================================
 // VENUE HOURS & PEAK PRICING
@@ -4239,6 +4253,80 @@ async function confirmCheckin(){
   checkinMsg('var(--green)','var(--green-p)','✓ <strong>'+escHtml(bk?.player_name)+'</strong> checked in at '+escHtml(time)+escHtml(variance));
   pendingCheckinId=null;
   pendingCheckinBooking=null;
+}
+// ============================================================
+// TODAY VIEW
+// ============================================================
+async function loadToday(){
+  const el=document.getElementById('todayList');
+  if(!el)return;
+  const now=new Date();
+  const today=now.toLocaleDateString('en-CA');
+  const lbl=document.getElementById('todayLabel');
+  if(lbl)lbl.textContent=now.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+  el.innerHTML='<p style="color:var(--grey);font-size:.86rem">Loading…</p>';
+  const{data:courts}=await sb.from('courts').select('id').eq('owner_id',CU.id);
+  const ids=(courts||[]).map(c=>c.id);
+  if(!ids.length){el.innerHTML='<div class="empty-state"><div>🏟️</div>No courts yet.</div>';return}
+  const{data:bks}=await sb.from('bookings').select('*').in('court_id',ids).eq('booking_date',today).neq('status','cancelled');
+  const sum=document.getElementById('todaySummary');
+  if(!bks?.length){
+    if(sum)sum.textContent='';
+    el.innerHTML='<div class="empty-state"><div>📅</div>No bookings today.</div>';
+    return;
+  }
+  bks.sort((a,b)=>(slotToMinutes(a.time_slot)||0)-(slotToMinutes(b.time_slot)||0));
+  const nowMins=now.getHours()*60+now.getMinutes();
+  const checkedIn=bks.filter(b=>b.check_in_status==='checked_in').length;
+  const noShows=bks.filter(b=>b.check_in_status==='no_show').length;
+  if(sum)sum.textContent=bks.length+' booking'+(bks.length!==1?'s':'')+' · '+checkedIn+' checked in · '+noShows+' no-show';
+  el.innerHTML='<div class="twrap"><table><thead><tr><th>Time</th><th>Court</th><th>Player</th><th>Status</th><th></th></tr></thead><tbody>'+
+    bks.map(b=>{
+      const start=slotToMinutes(b.time_slot);
+      const started=start!==null&&nowMins>=start;
+      const id=escHtml(b.id);
+      let badge,actions;
+      if(b.check_in_status==='checked_in'){
+        const t=b.checked_in_at?new Date(b.checked_in_at).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):'';
+        badge='<span class="sb sb-g">Checked in '+escHtml(t)+'</span>';
+        actions='<button class="ab" onclick="undoCheckin(\''+id+'\')">Undo</button>';
+      }else if(b.check_in_status==='no_show'){
+        badge='<span class="sb sb-r">No-show</span>';
+        actions='<button class="ab ok" onclick="manualCheckin(\''+id+'\')">Check in</button><button class="ab" onclick="undoCheckin(\''+id+'\')">Undo</button>';
+      }else{
+        badge=started?'<span class="sb sb-gold">Not arrived</span>':'<span class="sb sb-b">Upcoming</span>';
+        actions='<button class="ab ok" onclick="manualCheckin(\''+id+'\')">Check in</button>'+(started?'<button class="ab rej" onclick="markNoShow(\''+id+'\')">No-show</button>':'');
+      }
+      return '<tr><td>'+escHtml(b.time_slot)+'</td><td>'+escHtml(b.court_name)+'</td><td>'+escHtml(b.player_name)+'</td><td>'+badge+'</td><td>'+actions+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+async function manualCheckin(id){
+  const{error}=await sb.from('bookings').update({
+    checked_in_at:new Date().toISOString(),
+    check_in_status:'checked_in',
+    check_in_method:'staff_manual'
+  }).eq('id',id);
+  if(error){toast('Could not check in. Try again.','err');return}
+  toast('Checked in','ok');
+  loadToday();
+}
+
+async function markNoShow(id){
+  if(!confirm('Mark this booking as a no-show?'))return;
+  const{error}=await sb.from('bookings').update({check_in_status:'no_show'}).eq('id',id);
+  if(error){toast('Could not update. Try again.','err');return}
+  loadToday();
+}
+
+async function undoCheckin(id){
+  const{error}=await sb.from('bookings').update({
+    checked_in_at:null,
+    check_in_status:'not_arrived',
+    check_in_method:null
+  }).eq('id',id);
+  if(error){toast('Could not undo. Try again.','err');return}
+  loadToday();
 }
 async function saveSettings(){
   const lat=parseFloat(document.getElementById('sLat')?.value)||null;
