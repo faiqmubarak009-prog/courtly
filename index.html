@@ -483,6 +483,8 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 .rating-bar-inner{height:100%;background:var(--gold);border-radius:4px}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
 
@@ -1575,6 +1577,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     <button class="btn btn-p" id="csvImportBtn" onclick="importCSV()" style="display:none">Import Bookings →</button>
   </div>
 </div></div>
+<div class="modal-bg" id="qrModal"><div class="modal" style="max-width:340px;text-align:center">
+  <h3>Check-in code</h3>
+  <p id="qrBookingInfo" style="font-size:.84rem;color:var(--grey)"></p>
+  <div id="qrBox" style="display:flex;justify-content:center;margin:16px 0"></div>
+  <p style="font-size:.76rem;color:var(--grey)">Show this to venue staff when you arrive.</p>
+  <div class="modal-btns" style="justify-content:center"><button class="btn btn-g" onclick="closeModal('qrModal')">Close</button></div>
+</div></div>
+  
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -2943,6 +2953,7 @@ async function renderMyBookings(tab){
       </div>
       <div class="booking-actions">
         <button class="receipt-btn" onclick="showReceipt('${b.id}')">🧾 Receipt</button>
+        ${!isPast&&b.status!=='cancelled'?`<button class="btn btn-p btn-sm" onclick="showCheckinQR('${b.id}')">QR check-in</button>`:''}
         ${!isPast&&b.status!=='cancelled'?`<button class="btn btn-r btn-sm" onclick="openCancelModal('${b.id}','${b.court_id}')">Cancel</button>`:''}
         ${isPast&&b.status==='confirmed'&&!hasRv?`<button class="btn btn-gold btn-sm" onclick="openDetail(${b.court_id})">★ Review</button>`:''}
         ${isPast&&b.status==='confirmed'?`<button class="btn btn-g btn-sm" onclick="reBook(${b.court_id})">Rebook</button>`:''}
@@ -2970,6 +2981,16 @@ async function reBook(courtId){
   if(!c)return;bCourt=c;bSport=c.sport;nav('book');
   setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.textContent.includes(c.sport)){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
 }
+async function showCheckinQR(id){
+  const{data:bk}=await sb.from('bookings').select('id,court_name,booking_date,time_slot').eq('id',id).single();
+  if(!bk){toast('Booking not found','err');return}
+  const box=document.getElementById('qrBox');
+  if(box){box.innerHTML='';new QRCode(box,{text:bk.id,width:200,height:200})}
+  const info=document.getElementById('qrBookingInfo');
+  if(info)info.textContent=`${bk.court_name} · ${fmtDate(bk.booking_date)} · ${bk.time_slot}`;
+  openModal('qrModal');
+}
+  
 async function showReceipt(id){
   const{data:bk}=await sb.from('bookings').select('*').eq('id',id).single();if(!bk)return;
   const el=document.getElementById('receiptContent');
