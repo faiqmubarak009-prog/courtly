@@ -1185,7 +1185,14 @@ body.owner-mode .player-only{display:none!important}
       </div>
     </div>
 
-    <!-- BENCHMARK -->
+    <!-- CHECK-IN INSIGHTS -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+  <h3 style="font-size:1rem;margin-bottom:6px">Arrival vs Booked Time</h3>
+  <p style="font-size:.78rem;color:var(--grey);margin-bottom:16px">Based on check-ins recorded at your venue.</p>
+  <div id="dashCheckinInsights"></div>
+</div>
+    
+<!-- BENCHMARK -->
     <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
       <h3 style="font-size:1rem;margin-bottom:16px">📊 Benchmark vs Other Venues</h3>
       <div id="dashBenchmark"></div>
@@ -1292,7 +1299,14 @@ body.owner-mode .player-only{display:none!important}
     <div class="stats-row" id="playerInsights" style="grid-template-columns:repeat(3,1fr)"></div>
   </div>
 
-  <!-- RATINGS TREND -->
+  <!-- CHECK-IN INSIGHTS -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px">
+  <h3 style="font-size:1rem;margin-bottom:6px">Arrival vs Booked Time</h3>
+  <p style="font-size:.78rem;color:var(--grey);margin-bottom:16px">Based on check-ins recorded at your venue.</p>
+  <div id="checkinInsights"></div>
+</div>
+  
+<!-- RATINGS TREND -->
   <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px">
     <h3 style="font-size:1rem;margin-bottom:16px">Ratings Trend</h3>
     <div id="ratingsTrend"></div>
@@ -3496,7 +3510,22 @@ const DEMO_DATA={
   ]
 };
 
-function isDemoMode(){
+(function(){
+  const offs=[-4,2,0,7,-1,12,3,-6,5,null,0,9];
+  DEMO_DATA.bookings.forEach((b,i)=>{
+    if(b.status!=='confirmed')return;
+    const off=offs[i];
+    if(off===null||off===undefined){b.check_in_status='no_show';return}
+    const m=slotToMinutes(b.time_slot);
+    const[y,mo,d]=b.booking_date.split('-').map(Number);
+    const t=new Date(y,mo-1,d,Math.floor(m/60),m%60+off);
+    b.check_in_status='checked_in';
+    b.checked_in_at=t.toISOString();
+    b.check_in_method='staff_scan';
+  });
+})();
+  
+  function isDemoMode(){
   return document.getElementById('demoMode')?.checked||document.getElementById('dashDemoMode')?.checked;
 }
 
@@ -3530,6 +3559,7 @@ async function loadAnalytics(){
   renderPricingSuggestions(data,'pricingSuggestions');
   renderPlayerInsights(data,'playerInsights');
   renderRatingsTrend(data,'ratingsTrend');
+  renderCheckinInsights(data,'checkinInsights');
 }
 
 async function loadDashboard(){
@@ -3544,6 +3574,7 @@ async function loadDashboard(){
   renderPricingSuggestions(data,'dashPricingSuggestions');
   renderPlayerInsights(data,'dashPlayerInsights');
   renderRatingsTrend(data,'dashRatingsTrend');
+  renderCheckinInsights(data,'dashCheckinInsights');
   renderBenchmark(data,'dashBenchmark');
 }
 
@@ -3781,7 +3812,74 @@ function renderBenchmark(data,elId){
     </div>`;
 }
 
-function exportAnalyticsCSV(){
+function renderCheckinInsights(data,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  const now=new Date();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const byDay=days.map(()=>({n:0,sum:0,tracked:0,ns:0}));
+  const dist={early:0,onTime:0,late:0};
+  let pastConfirmed=0,checkedIn=0,noShow=0,varSum=0,varN=0;
+  data.bookings.forEach(b=>{
+    if(b.status!=='confirmed'||b.is_imported||!b.booking_date)return;
+    const startMins=slotToMinutes(b.time_slot);
+    if(startMins===null)return;
+    const[y,mo,d]=b.booking_date.split('T')[0].split('-').map(Number);
+    const start=new Date(y,mo-1,d,Math.floor(startMins/60),startMins%60);
+    if(start>now)return;
+    pastConfirmed++;
+    const dow=start.getDay();
+    if(b.check_in_status==='checked_in'&&b.checked_in_at){
+      checkedIn++;
+      byDay[dow].tracked++;
+      const diff=Math.round((new Date(b.checked_in_at)-start)/60000);
+      if(Math.abs(diff)<=180){
+        varSum+=diff;varN++;
+        byDay[dow].n++;byDay[dow].sum+=diff;
+        if(diff<-5)dist.early++;else if(diff<=5)dist.onTime++;else dist.late++;
+      }
+    }else if(b.check_in_status==='no_show'){
+      noShow++;
+      byDay[dow].tracked++;
+      byDay[dow].ns++;
+    }
+  });
+  const tracked=checkedIn+noShow;
+  if(!tracked){
+    el.innerHTML='<p style="color:var(--grey);font-size:.84rem">No check-ins recorded in this period yet. Scan player QR codes or use the Today tab to start collecting arrival data.</p>';
+    return;
+  }
+  const coverage=Math.round(tracked/pastConfirmed*100);
+  const nsRate=Math.round(noShow/tracked*100);
+  const avg=varN?varSum/varN:null;
+  const fmtVar=v=>v===null?'—':Math.abs(v)<0.5?'On time':Math.abs(Math.round(v))+' min '+(v>0?'late':'early');
+  const bar=(label,count,color)=>{
+    const pct=varN?Math.round(count/varN*100):0;
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:.78rem;min-width:110px;color:var(--grey)">'+label+'</span><div class="perf-bar-wrap"><div class="perf-bar" style="width:'+pct+'%;background:'+color+'"></div></div><span style="font-size:.78rem;min-width:36px;font-weight:500">'+pct+'%</span></div>';
+  };
+  let html='<div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">'+
+    '<div class="stat-card"><span class="stat-num" style="font-size:1.4rem">'+fmtVar(avg)+'</span><span class="stat-lbl">Avg arrival vs booked</span></div>'+
+    '<div class="stat-card"><span class="stat-num" style="font-size:1.4rem;color:var(--red)">'+nsRate+'%</span><span class="stat-lbl">No-show rate</span></div>'+
+    '<div class="stat-card"><span class="stat-num" style="font-size:1.4rem">'+checkedIn+'</span><span class="stat-lbl">Players checked in</span></div>'+
+    '<div class="stat-card"><span class="stat-num" style="font-size:1.4rem">'+coverage+'%</span><span class="stat-lbl">Check-in coverage</span></div>'+
+    '</div>';
+  if(varN){
+    html+='<div style="font-size:.82rem;font-weight:500;margin-bottom:10px">When players arrive</div>'+
+      bar('Early (5+ min)',dist.early,'var(--blue)')+
+      bar('On time (±5 min)',dist.onTime,'var(--green)')+
+      bar('Late (5+ min)',dist.late,'var(--gold)');
+  }
+  const dayRows=byDay.map((x,i)=>x.tracked?'<tr><td>'+days[i]+'</td><td>'+fmtVar(x.n?x.sum/x.n:null)+'</td><td>'+Math.round(x.ns/x.tracked*100)+'%</td><td>'+x.tracked+'</td></tr>':'').join('');
+  if(dayRows){
+    html+='<div style="font-size:.82rem;font-weight:500;margin:18px 0 10px">By day of week</div>'+
+      '<div class="twrap"><table><thead><tr><th>Day</th><th>Avg arrival</th><th>No-show rate</th><th>Bookings tracked</th></tr></thead><tbody>'+dayRows+'</tbody></table></div>';
+  }
+  if(coverage<100){
+    html+='<p style="font-size:.76rem;color:var(--grey);margin-top:14px">'+(pastConfirmed-tracked)+' past booking'+(pastConfirmed-tracked!==1?'s have':' has')+' no check-in or no-show recorded and '+(pastConfirmed-tracked!==1?'are':'is')+' excluded from these figures. Mark no-shows in the Today tab for accurate rates.</p>';
+  }
+  html+='<p style="font-size:.72rem;color:var(--grey);margin-top:8px">Arrival time is the moment of check-in at the venue, so it can run slightly later than when the player actually reached the court.</p>';
+  el.innerHTML=html;
+}
+  function exportAnalyticsCSV(){
   const data=analyticsData||dashboardData;
   if(!data?.bookings?.length){toast('No data to export','err');return}
   const rows=[
