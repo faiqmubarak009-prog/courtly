@@ -456,7 +456,9 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
 .tslot-cell.drag-selecting{background:var(--green-p);outline:2px solid var(--green)}
 .date-tab{border:1.5px solid var(--border);background:#fff;border-radius:20px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
 .date-tab:hover,.date-tab.active{border-color:var(--green);background:var(--green-p);color:var(--green);font-weight:500}
-/* SMART FINDER */
+/* OWNER MODE */
+body.owner-mode .player-only{display:none!important}
+ /* SMART FINDER */
 .finder-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:28px;box-shadow:var(--shadow)}
 .finder-panel h3{font-size:1rem;margin-bottom:16px}
 .finder-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
@@ -494,14 +496,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
     <span class="logo" onclick="nav('home')">Court<span>ly</span></span>
     <div class="nav-links">
       <a onclick="nav('home')" id="nl-home" class="active">Home</a>
-      <a onclick="nav('courts')" id="nl-courts">Venues</a>
+      <a onclick="nav('courts')" id="nl-courts" class="player-only">Venues</a>
       <span id="navAuth"></span>
     </div>
     <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
   </div>
   <div class="mob-menu" id="mobMenu">
     <a onclick="nav('home');cm()">Home</a>
-    <a onclick="nav('courts');cm()">Venues</a>
+    <a onclick="nav('courts');cm()" class="player-only">Venues</a>
     <div id="mobAuth"></div>
   </div>
 </nav>
@@ -516,7 +518,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <div class="hero-eyebrow">● Book. Play. Review.</div>
       <h1>Your court,<br/><em>your schedule.</em></h1>
       <p class="hero-sub">Find and book tennis, basketball, badminton, pickleball courts and more — confirmed instantly, paid securely.</p>
-<div class="hero-search" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+<div class="hero-search player only" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
   <div class="hs-field">
     <label>Where</label>
     <div style="display:flex;align-items:center;gap:6px">
@@ -622,7 +624,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#fafaf8}
       <select id="cdate" onchange="renderVenues()"><option value="">Any date</option></select>
     </div>
     <!-- SMART COURT FINDER -->
-<div class="finder-panel">
+<div class="finder-panel player-only">
   <h3>🔍 Find an available court</h3>
   <div class="finder-row">
     <div class="fg" style="margin:0">
@@ -1731,6 +1733,7 @@ async function loadFee(){
 // NAV
 // ============================================================
 function nav(p){
+  if(CU?.role==='owner'&&(p==='courts'||p==='venue'||p==='book'))p='owner';
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   const pg=document.getElementById('pg-'+p);if(pg)pg.classList.add('active');
   document.querySelectorAll('[id^="nl-"]').forEach(a=>a.classList.remove('active'));
@@ -1753,6 +1756,7 @@ function cm(){document.getElementById('mobMenu')?.classList.remove('open')}
 function updateNav(){
   CU=CU||null;
   const role=CU?.role;
+  document.body.classList.toggle('owner-mode',role==='owner');
   const portalLinks=role==='admin'?`<a onclick="nav('admin')">Admin</a>`:
     role==='owner'?`<a onclick="nav('owner')">Portal</a>`:
     CU?`<a onclick="nav('mybookings')">Bookings</a><a onclick="nav('profile')">Profile</a><a onclick="nav('favourites')">♡</a>${CU.hasReferralCode?'<a onclick="nav(\'referral\')">💰 Referrals</a>':''}`:''
