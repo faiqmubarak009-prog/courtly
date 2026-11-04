@@ -1920,12 +1920,12 @@ async function findAvailableCourts(){
   }
   // Check availability for each court
   const courtIds=approvedCourts.map(c=>c.id);
-  const[{data:bks},{data:bls}]=await Promise.all([
-    sb.from('bookings').select('court_id,time_slot').in('court_id',courtIds).eq('booking_date',date).neq('status','cancelled'),
+  const[bookedAll,{data:bls}]=await Promise.all([
+    fetchBookedSlots(courtIds,date,date),
     sb.from('availability_blocks').select('court_id,time_slot').in('court_id',courtIds).eq('block_date',date),
   ]);
   const bookedMap={};const blockedMap={};
-  (bks||[]).forEach(b=>{if(!bookedMap[b.court_id])bookedMap[b.court_id]=[];bookedMap[b.court_id].push(b.time_slot)});
+  courtIds.forEach(id=>{bookedMap[id]=bookedFor(bookedAll,id,date)});
   (bls||[]).forEach(b=>{if(!blockedMap[b.court_id])blockedMap[b.court_id]=[];blockedMap[b.court_id].push(b.time_slot)});
   // Filter to available courts
   const available=approvedCourts.filter(c=>{
@@ -2164,7 +2164,44 @@ async function openVenue(ownerId){
   }
   nav('venue');
 }
+// ============================================================
+// SHARED AVAILABILITY HELPERS
+// ============================================================
+function minutesToSlot(m){
+  const h=Math.floor(m/60),mm=m%60;
+  const ampm=h>=12?'PM':'AM';
+  const dh=h>12?h-12:h===0?12:h;
+  return dh+':'+String(mm).padStart(2,'0')+' '+ampm;
+}
 
+// "6:00 PM – 7:00 PM" -> ["6:00 PM","6:30 PM"]; a single "6:00 PM" -> ["6:00 PM"]
+function expandSlots(timeSlot){
+  const times=String(timeSlot||'').match(/\d+:\d+\s*(?:AM|PM)/gi)||[];
+  if(!times.length)return[];
+  const start=slotToMinutes(times[0]);
+  if(start===null)return[];
+  let end=times[1]?slotToMinutes(times[1]):null;
+  if(end===null||end<=start)end=start+30;
+  const out=[];
+  for(let m=Math.floor(start/30)*30;m<end;m+=30)out.push(minutesToSlot(m));
+  return out;
+}
+
+async function fetchBookedSlots(courtIds,fromDate,toDate){
+  const map={};
+  if(!courtIds||!courtIds.length)return map;
+  const{data,error}=await sb.rpc('get_booked_slots',{p_court_ids:courtIds,p_from:fromDate,p_to:toDate||fromDate});
+  if(error){console.error('get_booked_slots failed',error);toast('Could not load availability. Please refresh.','err');return map}
+  (data||[]).forEach(b=>{
+    const key=b.court_id+'|'+String(b.booking_date).slice(0,10);
+    if(!map[key])map[key]=[];
+    expandSlots(b.time_slot).forEach(s=>{if(!map[key].includes(s))map[key].push(s)});
+  });
+  return map;
+}
+
+function bookedFor(map,courtId,date){return map[courtId+'|'+date]||[]}
+  
 async function buildTimetable(){
   const venue=window._currentVenue;
   if(!venue)return;
@@ -2189,14 +2226,14 @@ async function buildTimetable(){
   });
   // Fetch bookings and blocks for all courts on this date
   const courtIds=courts.map(c=>c.id);
-  const[{data:bks},{data:bls},{data:peaks}]=await Promise.all([
-    sb.from('bookings').select('court_id,time_slot').in('court_id',courtIds).eq('booking_date',date).neq('status','cancelled'),
+  const[bookedAll,{data:bls},{data:peaks}]=await Promise.all([
+    fetchBookedSlots(courtIds,date,date),
     sb.from('availability_blocks').select('court_id,time_slot').in('court_id',courtIds).eq('block_date',date),
     sb.from('peak_pricing').select('*').in('court_id',courtIds),
   ]);
   window._currentVenue.peaks=peaks||[];
   const bookedMap={};const blockedMap={};
-  (bks||[]).forEach(b=>{if(!bookedMap[b.court_id])bookedMap[b.court_id]=[];bookedMap[b.court_id].push(b.time_slot)});
+  courtIds.forEach(id=>{bookedMap[id]=bookedFor(bookedAll,id,date)});
   (bls||[]).forEach(b=>{if(!blockedMap[b.court_id])blockedMap[b.court_id]=[];blockedMap[b.court_id].push(b.time_slot)});
   // Build header row
   const header=document.getElementById('timetableHeader');
@@ -2443,9 +2480,9 @@ const startMinutes=Math.round(rawMinutes/30)*30;
   console.log('Needed slots:', neededSlots);
 console.log('First SLOT:', SLOTS[0]);
   // Check if all slots are available
-  const{data:bks}=await sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',timetableDate).neq('status','cancelled');
+ const bookedAll=await fetchBookedSlots([courtId],timetableDate,timetableDate);
   const{data:bls}=await sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',timetableDate);
-  const taken=[...(bks||[]).map(b=>b.time_slot),...(bls||[]).map(b=>b.time_slot)];
+  const taken=[...bookedFor(bookedAll,courtId,timetableDate),...(bls||[]).map(b=>b.time_slot)];
   const conflicts=neededSlots.filter(s=>taken.includes(s));
   if(msg)msg.style.display='block';
   if(conflicts.length){
@@ -2616,21 +2653,27 @@ async function openDetail(id){
 }
 
 async function build7DayCal(courtId){
-  const today=new Date();const wrap=document.getElementById('calDays');if(!wrap)return;wrap.innerHTML='';
-  for(let i=0;i<7;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);const dStr=d.toISOString().split('T')[0];
-    const[{data:bk},{data:bl}]=await Promise.all([
-      sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',dStr).neq('status','cancelled'),
-      sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',dStr),
-    ]);
-    const avail=SLOTS.length-(bk||[]).length-(bl||[]).length;
+  const wrap=document.getElementById('calDays');if(!wrap)return;
+  wrap.innerHTML='';
+  const today=new Date();
+  const dates=[];
+  for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);dates.push({d,dStr:d.toISOString().split('T')[0]})}
+  const[bookedAll,{data:bl}]=await Promise.all([
+    fetchBookedSlots([courtId],dates[0].dStr,dates[6].dStr),
+    sb.from('availability_blocks').select('block_date,time_slot').eq('court_id',courtId).gte('block_date',dates[0].dStr).lte('block_date',dates[6].dStr),
+  ]);
+  dates.forEach(({d,dStr},i)=>{
+    const bookedSlots=bookedFor(bookedAll,courtId,dStr);
+    const blockedSlots=(bl||[]).filter(b=>String(b.block_date).slice(0,10)===dStr).map(b=>b.time_slot);
+    const avail=SLOTS.filter(s=>!bookedSlots.includes(s)&&!blockedSlots.includes(s)).length;
     const btn=document.createElement('div');
     btn.className='cal-day-btn'+(i===0?' today':'')+(calDetailDate===dStr?' active':'');
     btn.innerHTML=`<span class="cd-date">${DAYS[d.getDay()]} ${d.getDate()}</span><span class="cd-slots" style="color:${avail>0?'var(--green)':'var(--red)'}">${avail>0?avail+' open':'Full'}</span>`;
-    const bookedSlots=(bk||[]).map(b=>b.time_slot),blockedSlots=(bl||[]).map(b=>b.time_slot);
     btn.onclick=()=>{calDetailDate=dStr;document.querySelectorAll('.cal-day-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');showCalSlots(courtId,dStr,bookedSlots,blockedSlots)};
     wrap.appendChild(btn);
-  }
+    if(dStr===calDetailDate)showCalSlots(courtId,dStr,bookedSlots,blockedSlots);
+  });
+}
   // auto show today
   const{data:bk}=await sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',calDetailDate).neq('status','cancelled');
   const{data:bl}=await sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',calDetailDate);
@@ -2785,11 +2828,11 @@ async function loadCourtsForSport(sport){
 function chk1(){const btn=document.getElementById('s1n');if(btn)btn.disabled=!(bSport&&bCourt)}
 async function loadSlots(){
   const di=document.getElementById('bkDate');bDate=di?.value;if(!bDate||!bCourt)return;
-  const[{data:bk},{data:bl}]=await Promise.all([
-    sb.from('bookings').select('time_slot').eq('court_id',bCourt.id).eq('booking_date',bDate).neq('status','cancelled'),
+const[bookedAll,{data:bl}]=await Promise.all([
+    fetchBookedSlots([bCourt.id],bDate,bDate),
     sb.from('availability_blocks').select('time_slot').eq('court_id',bCourt.id).eq('block_date',bDate),
   ]);
-  const booked=(bk||[]).map(b=>b.time_slot),blocked=(bl||[]).map(b=>b.time_slot);
+  const booked=bookedFor(bookedAll,bCourt.id,bDate),blocked=(bl||[]).map(b=>b.time_slot);
   const grid=document.getElementById('slotsGrid');if(!grid)return;
   grid.innerHTML='';
   SLOTS.forEach(s=>{const d=document.createElement('div');const iT=booked.includes(s),iB=blocked.includes(s);d.className='tslot'+(iT?' taken':iB?' blocked':'');d.textContent=s;if(!iT&&!iB)d.onclick=()=>selSlot(d,s);grid.appendChild(d)});
@@ -2851,6 +2894,20 @@ async function processPayment(){
   if(!first||!email){toast('Please fill in your details','err');return}
   const payBtn=document.getElementById('payBtn');
   payBtn.disabled=true;payBtn.textContent='Confirming…';
+  // Re-check availability right before booking
+  const wanted=expandSlots(bTime);
+  const latest=await fetchBookedSlots([bCourt.id],bDate,bDate);
+  const takenNow=bookedFor(latest,bCourt.id,bDate);
+  const{data:blockedNow}=await sb.from('availability_blocks').select('time_slot').eq('court_id',bCourt.id).eq('block_date',bDate);
+  const blockedList=(blockedNow||[]).map(b=>b.time_slot);
+  if(wanted.some(s=>takenNow.includes(s)||blockedList.includes(s))){
+    payBtn.disabled=false;
+    payBtn.innerHTML='Pay $<span id="payAmt">0</span> →';
+    toast('Sorry, that time has just been taken. Please pick another.','err');
+    selectedTimetableSlots=[];
+    if(window._currentVenue){nav('venue');buildTimetable()}else nav('courts');
+    return;
+  }
 // Check peak pricing for this slot
 let basePrice=parseFloat(bCourt?.price_per_hour||0);
 if(bDate&&bTime&&bCourt?.id){
@@ -4140,7 +4197,12 @@ async function importCSV(){
       const startMins=sh*60+(sm||0);
       const ampm=sh>=12?'PM':'AM';
       const displayH=sh>12?sh-12:sh===0?12:sh;
-      const timeSlot=`${displayH}:${sm===0?'00':sm} ${ampm}`;
+      const fmtT=(hh,mm)=>{const ap=hh>=12?'PM':'AM';const dh=hh>12?hh-12:hh===0?12:hh;return dh+':'+String(mm||0).padStart(2,'0')+' '+ap};
+      const endTime=row['End Time (HH:MM)']?.trim();
+      const[eh,em]=endTime?endTime.split(':').map(Number):[null,null];
+      const timeSlot=(eh!==null&&!isNaN(eh)&&(eh*60+(em||0))>(sh*60+(sm||0)))
+        ? fmtT(sh,sm)+' – '+fmtT(eh,em)
+        : fmtT(sh,sm);
       const amount=parseFloat(row['Amount Paid'])||0;
       const booking={
         id:'BK'+Date.now()+Math.random().toString(36).slice(2,6),
