@@ -518,7 +518,7 @@ body.owner-mode .player-only{display:none!important}
       <div class="hero-eyebrow">● Book. Play. Review.</div>
       <h1>Your court,<br/><em>your schedule.</em></h1>
       <p class="hero-sub">Find and book tennis, basketball, badminton, pickleball courts and more — confirmed instantly, paid securely.</p>
-<div class="hero-search player only" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+<div class="hero-search player-only" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
   <div class="hs-field">
     <label>Where</label>
     <div style="display:flex;align-items:center;gap:6px">
@@ -2992,7 +2992,7 @@ if(creditApplied>0&&CU){
           .eq('id',CU.id);
         CU.booking_credit=newCredit;
         await loadProfile(CU.id);
-        toast(`Booking credit of £${rewardAmt.toFixed(2)} added to your account!`,'ok');
+        toast(`Booking credit of $${rewardAmt.toFixed(2)} added to your account!`,'ok');
       }
     }
   }
