@@ -2674,11 +2674,6 @@ async function build7DayCal(courtId){
     if(dStr===calDetailDate)showCalSlots(courtId,dStr,bookedSlots,blockedSlots);
   });
 }
-  // auto show today
-  const{data:bk}=await sb.from('bookings').select('time_slot').eq('court_id',courtId).eq('booking_date',calDetailDate).neq('status','cancelled');
-  const{data:bl}=await sb.from('availability_blocks').select('time_slot').eq('court_id',courtId).eq('block_date',calDetailDate);
-  showCalSlots(courtId,calDetailDate,(bk||[]).map(b=>b.time_slot),(bl||[]).map(b=>b.time_slot));
-}
 
 function showCalSlots(courtId,date,bookedSlots,blockedSlots){
   const slotWrap=document.getElementById('calSlots');const grid=document.getElementById('calSlotsGrid');
