@@ -1490,7 +1490,7 @@ body.owner-mode .player-only{display:none!important}
 <!-- MODALS -->
 <div class="modal-bg" id="aAddModal"><div class="modal"><h3>Add Court (Admin)</h3>
   <div class="fg"><label>Name</label><input type="text" id="aaN"/></div>
-  <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option><option>Cricket</option></select></div>
+  <div class="fg"><label>Sport</label><select id="aaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option></select>></div>
   <div class="fg"><label>Surface</label><input type="text" id="aaSurf"/></div>
   <div class="fg"><label>Price/hr ($)</label><input type="number" id="aaP"/></div>
   <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('aAddModal')">Cancel</button><button class="btn btn-p" onclick="addCourt(false)">Add</button></div>
@@ -1498,7 +1498,7 @@ body.owner-mode .player-only{display:none!important}
 
 <div class="modal-bg" id="oAddModal"><div class="modal"><h3>Add Court</h3>
   <div class="fg"><label>Name</label><input type="text" id="oaN"/></div>
-  <div class="fg"><label>Sport</label><select id="oaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option></select></div>
+  <div class="fg"><label>Sport</label><select id="oaS"><option>Tennis</option><option>Basketball</option><option>Badminton</option><option>Pickleball</option><option>Football</option><option>Volleyball</option><option>Cricket</option></select>
   <div class="fg"><label>Surface</label><input type="text" id="oaSurf"/></div>
   <div class="fg"><label>Price/hr ($)</label><input type="number" id="oaP"/></div>
   <div class="fg"><label>Court Photos (up to 4)</label>
@@ -2930,27 +2930,28 @@ const cf=total-pf;
 const credit=CU?.booking_credit||0;
 const creditApplied=Math.min(credit,total);
 const finalTotal=Math.max(0,total-creditApplied);
-if(creditApplied>0&&CU){
-    const remaining=Math.max(0,(CU.booking_credit||0)-creditApplied);
-    await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
-    CU.booking_credit=remaining;
-  }
+
   // If Stripe key is real, process payment — otherwise save booking directly
   const hasStripe=STRIPE_PUB_KEY&&!STRIPE_PUB_KEY.includes('YOUR_STRIPE');
   let stripePaymentId=null;
-  if(hasStripe){
+  if(hasStripe&&finalTotal>0){
     try{
       const piRes=await fetch(`${EDGE_URL}?action=create-payment-intent`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},body:JSON.stringify({amount:total,booking_meta:{court_name:bCourt.name,booking_date:bDate,time_slot:bTime,player_email:email}})});
       const{client_secret}=await piRes.json();
       const{paymentIntent,error}=await stripeInst.confirmCardPayment(client_secret,{payment_method:{card:cardEl,billing_details:{name:`${first} ${document.getElementById('cLast')?.value.trim()}`,email}}});
-      if(error){toast(error.message,'err');payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;return}
+      if(error){toast(error.message,'err');payBtn.disabled=false;payBtn.textContent=`Pay $${finalTotal.toFixed(2)} →`;return}
       stripePaymentId=paymentIntent.id;
-    }catch(e){toast('Payment failed. Try again.','err');payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;return}
+    }catch(e){toast('Payment failed. Try again.','err');payBtn.disabled=false;payBtn.textContent=`Pay $${finalTotal.toFixed(2)} →`;return}
   }
-  const booking={id:'BK'+Date.now(),user_id:CU?.id||null,court_id:bCourt.id,court_name:bCourt.name,sport:bSport,player_name:`${first} ${document.getElementById('cLast')?.value.trim()||''}`.trim(),player_email:email,player_phone:document.getElementById('cPhone')?.value.trim()||'',booking_date:bDate,time_slot:bTime,court_fee:cf,platform_fee:pf,total,status:'confirmed',paid:hasStripe,stripe_payment_id:stripePaymentId};
+  const booking={id:'BK'+Date.now(),user_id:CU?.id||null,court_id:bCourt.id,court_name:bCourt.name,sport:bSport,player_name:`${first} ${document.getElementById('cLast')?.value.trim()||''}`.trim(),player_email:email,player_phone:document.getElementById('cPhone')?.value.trim()||'',booking_date:bDate,time_slot:bTime,court_fee:cf,platform_fee:Math.round((finalTotal-cf)*100)/100,total:finalTotal,status:'confirmed',paid:hasStripe||finalTotal===0,stripe_payment_id:stripePaymentId};
   const{error}=await sb.from('bookings').insert(booking);
-  payBtn.disabled=false;payBtn.textContent=`Pay $${total.toFixed(2)} →`;
+  payBtn.disabled=false;payBtn.textContent=`Pay $${finalTotal.toFixed(2)} →`;
   if(error){toast('Booking failed. Please try again.','err');return}
+    if(creditApplied>0&&CU){
+    const remaining=Math.max(0,Math.round(((CU.booking_credit||0)-creditApplied)*100)/100);
+    await sb.from('profiles').update({booking_credit:remaining}).eq('id',CU.id);
+    CU.booking_credit=remaining;
+  }
   if(bCourt.owner_id){
   const{data:ownerProf}=await sb.from('profiles')
     .select('referral_code')
@@ -3144,7 +3145,7 @@ async function initProfile(){
   const pph=document.getElementById('pPhone');if(pph)pph.value=CU.phone||'';
   // sport picker
   document.querySelectorAll('.sport-pick-btn').forEach(btn=>{
-    const sports=['Tennis','Basketball','Badminton','Pickleball','Football','Volleyball'];
+    const sports=['Tennis','Basketball','Badminton','Pickleball','Football','Volleyball','Cricket'];
     sports.forEach(s=>{if(btn.textContent.includes(s))btn.classList.toggle('sel',profileSports.includes(s))});
   });
   renderProfileSports();
@@ -3459,7 +3460,7 @@ async function initOwner(){
     sb.from('bookings').select('court_fee,platform_fee,paid').in('court_id',courtIds),
     sb.from('reviews').select('stars').in('court_id',courtIds),
   ]);
-  const rev=(bks||[]).filter(b=>b.paid).reduce((s,b)=>s+(Number(b.court_fee)-Number(b.platform_fee)),0);
+  const rev=(bks||[]).filter(b=>b.paid).reduce((s,b)=>s+Number(b.court_fee||0),0);
   const avgR=rvs?.length?(rvs.reduce((s,r)=>s+r.stars,0)/rvs.length).toFixed(1):'—';
   const s1=document.getElementById('oS1');if(s1)s1.textContent=courtIds.length;
   const s2=document.getElementById('oS2');if(s2)s2.textContent=bks?.length||0;
@@ -4534,7 +4535,9 @@ async function renderPayouts(){
     sb.from('bookings').select('court_fee,platform_fee').in('court_id',courtIds).eq('paid',true).eq('status','confirmed'),
     sb.from('payouts').select('*').eq('owner_id',CU.id).order('created_at',{ascending:false}),
   ]);
-  const available=(bks||[]).reduce((s,b)=>s+(Number(b.court_fee)-Number(b.platform_fee)),0);
+  const earned=(bks||[]).reduce((s,b)=>s+Number(b.court_fee||0),0);
+  const requested=(pos||[]).filter(p=>p.status!=='rejected').reduce((s,p)=>s+Number(p.amount||0),0);
+  const available=Math.max(0,earned-requested);
   el.innerHTML=`<div class="payout-card"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px"><div><div style="font-size:.78rem;color:var(--grey);margin-bottom:4px">Available balance (after platform fee)</div><div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green)">$${available.toFixed(2)}</div></div><button class="btn btn-p" onclick="openModal('payoutModal')">Request Payout →</button></div><h3 style="margin-bottom:12px;font-size:.95rem">Payout History</h3>${pos?.length?pos.map(p=>`<div class="payout-row"><span>${new Date(p.created_at).toLocaleDateString('en-GB')}</span><span>$${Number(p.amount).toFixed(2)}</span><span>${p.bank_name} ····${p.account_last4}</span><span class="payout-status ${p.status}">${p.status}</span></div>`).join(''):'<p style="color:var(--grey);font-size:.84rem">No payout requests yet.</p>'}</div>`;
 }
 async function submitPayout(){
