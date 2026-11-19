@@ -1465,6 +1465,7 @@ body.owner-mode .player-only{display:none!important}
       <button class="tab" onclick="showAdminTab('fe',this)">Featured</button>
       <button class="tab" onclick="showAdminTab('po',this)">Payouts <span id="payBadge" style="background:var(--gold);color:#fff;border-radius:10px;padding:1px 7px;font-size:.66rem;margin-left:3px;display:none">0</span></button>
       <button class="tab" onclick="showAdminTab('rf',this)">Referrals</button>
+      <button class="tab" onclick="showAdminTab('sp',this)">Sports</button>
     </div>
     <div class="tpane active" id="tp-bk"><div class="toolbar"><input type="text" placeholder="Search…" oninput="searchBk(this.value)"/><button class="btn btn-g btn-sm" onclick="exportBk()">Export CSV</button></div><div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Court Fee</th><th>Platform Fee</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bkBody"></tbody></table></div></div>
     <div class="tpane" id="tp-ct"><div class="toolbar"><button class="btn btn-p btn-sm" onclick="openModal('aAddModal')">+ Add Court</button></div><div class="twrap"><table><thead><tr><th>Court</th><th>Sport</th><th>Owner</th><th>Price</th><th>Rating</th><th>Featured</th><th>Actions</th></tr></thead><tbody id="ctBody"></tbody></table></div></div>
@@ -1482,6 +1483,15 @@ body.owner-mode .player-only{display:none!important}
   <div class="divider"></div>
   <h3 style="margin:18px 0 14px;font-size:1rem">All Earnings</h3>
   <div class="twrap"><table><thead><tr><th>Code</th><th>Court</th><th>Date</th><th>Court Fee</th><th>Reward</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody id="rfBody"></tbody></table></div>
+</div>
+  <div class="tpane" id="tp-sp">
+  <div class="info-banner">Sports you add here appear everywhere in Courtly: filters, search, booking and Add Court dropdowns.</div>
+  <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+    <div class="fg" style="margin:0;flex:1;min-width:160px"><label>Sport name</label><input type="text" id="spName" placeholder="e.g. Squash" maxlength="30"/></div>
+    <div class="fg" style="margin:0;width:110px"><label>Emoji icon</label><input type="text" id="spIcon" placeholder="🎯" maxlength="4"/></div>
+    <button class="btn btn-p" onclick="addSport()">+ Add sport</button>
+  </div>
+  <div class="twrap"><table><thead><tr><th>Icon</th><th>Sport</th><th>Courts</th><th>Status</th><th>Actions</th></tr></thead><tbody id="spBody"></tbody></table></div>
 </div>
   </div>
   <footer class="footer"><div class="footer-inner"><div class="footer-bottom"><span>© 2026 Courtly.</span></div></div></footer>
@@ -1664,6 +1674,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 const SLOTS=['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM','9:30 PM'];
 const ICONS={Tennis:'🎾',Basketball:'🏀',Badminton:'🏸',Pickleball:'🏓',Football:'⚽',Cricket:'🏏',Volleyball:'🏐'};
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let SPORT_LIST=['Tennis','Basketball','Badminton','Pickleball','Football','Volleyball','Cricket'];
 
 // ============================================================
 // STATE
@@ -1694,6 +1705,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   SESSION=session;
   if(session?.user)await loadProfile(session.user.id);
   await loadFee();
+  await loadSports();
   updateNav();
   await initHome();
   // Set date mins
@@ -1824,9 +1836,7 @@ function heroSearch(){
     setTimeout(()=>{
       const cs=document.getElementById('csearch');
       if(cs&&location)cs.value=location;
-      if(sport)document.querySelectorAll('.sfbtn').forEach(b=>{
-        if(b.textContent.includes(sport)||(sport===''&&b.textContent.trim()==='All Sports'))b.click();
-      });
+if(sport)document.querySelectorAll('.sfbtn').forEach(b=>{if(b.dataset.sport===sport)b.click()});
       renderVenues();
     },200);
   }
@@ -1865,7 +1875,7 @@ function setSF(sport,btn){
   sportFilter=sport;
   document.querySelectorAll('.sfbtn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderCourts();
+  renderVenues();
 }
 // ============================================================
 // VENUES
@@ -2707,7 +2717,7 @@ async function quickFav(id,btn){
 }
 function goBookFromDetail(){
   const c=window._currentCourt;if(!c)return;bCourt=c;bSport=c.sport;nav('book');
-  setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.textContent.includes(c.sport)){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
+  setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.dataset.sport===c.sport){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
 }
 async function joinWaitlist(){
   if(!CU){toast('Log in to join the waitlist','err');return}
@@ -3077,7 +3087,7 @@ async function doCancel(){
 async function reBook(courtId){
   const{data:c}=await sb.from('courts').select('*').eq('id',courtId).single();
   if(!c)return;bCourt=c;bSport=c.sport;nav('book');
-  setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.textContent.includes(c.sport)){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
+  setTimeout(()=>{document.querySelectorAll('.sopt').forEach(o=>{if(o.dataset.sport===c.sport){selSport(o,c.sport);setTimeout(()=>{const sel=document.getElementById('courtDrop');if(sel){sel.value=c.id;bCourt=c;chk1();}},120);}});},120);
 }
 async function showCheckinQR(id){
   const{data:bk}=await sb.from('bookings').select('id,court_name,booking_date,time_slot').eq('id',id).single();
@@ -3143,11 +3153,7 @@ async function initProfile(){
   const pl=document.getElementById('pLast');if(pl)pl.value=parts.slice(1).join(' ')||'';
   const pem=document.getElementById('pEmail');if(pem)pem.value=CU.email||'';
   const pph=document.getElementById('pPhone');if(pph)pph.value=CU.phone||'';
-  // sport picker
-  document.querySelectorAll('.sport-pick-btn').forEach(btn=>{
-    const sports=['Tennis','Basketball','Badminton','Pickleball','Football','Volleyball','Cricket'];
-    sports.forEach(s=>{if(btn.textContent.includes(s))btn.classList.toggle('sel',profileSports.includes(s))});
-  });
+  document.querySelectorAll('.sport-pick-btn').forEach(btn=>{btn.classList.toggle('sel',profileSports.includes(btn.dataset.sport))});
   renderProfileSports();
 }
 function renderProfileSports(){
@@ -4549,6 +4555,72 @@ async function submitPayout(){
 }
 
 // ============================================================
+// SPORTS (managed from the Admin panel)
+// ============================================================
+async function loadSports(){
+  const{data,error}=await sb.from('sports').select('name,icon').eq('is_active',true).order('sort_order').order('name');
+  if(!error&&data?.length){
+    SPORT_LIST=data.map(s=>s.name);
+    data.forEach(s=>{ICONS[s.name]=s.icon||'🏟️'});
+  }
+  applySports();
+}
+
+function applySports(){
+  const opts=SPORT_LIST.map(s=>'<option>'+s+'</option>').join('');
+  const anyOpts='<option value="">Any sport</option>'+opts;
+  const hs=document.getElementById('hsSport');if(hs)hs.innerHTML=anyOpts;
+  const fs=document.getElementById('finderSport');if(fs)fs.innerHTML=anyOpts;
+  ['aaS','oaS','ecS'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
+  const sf=document.querySelector('.sport-filter-row');
+  if(sf)sf.innerHTML='<button class="sfbtn'+(sportFilter===''?' active':'')+'" data-sport="" onclick="setSF(\'\',this)">All Sports</button>'+
+    SPORT_LIST.map(s=>'<button class="sfbtn'+(sportFilter===s?' active':'')+'" data-sport="'+s+'" onclick="setSF(\''+s+'\',this)">'+(ICONS[s]||'')+' '+s+'</button>').join('');
+  const sg=document.querySelector('.sport-grid');
+  if(sg)sg.innerHTML=SPORT_LIST.map(s=>'<div class="sopt'+(bSport===s?' sel':'')+'" data-sport="'+s+'" onclick="selSport(this,\''+s+'\')">'+(ICONS[s]||'')+'<br/>'+s+'</div>').join('');
+  const sp=document.getElementById('sportPicker');
+  if(sp)sp.innerHTML=SPORT_LIST.map(s=>'<button class="sport-pick-btn'+(profileSports.includes(s)?' sel':'')+'" data-sport="'+s+'" onclick="toggleSport(this,\''+s+'\')">'+(ICONS[s]||'')+' '+s+'</button>').join('');
+}
+
+async function renderSportsTbl(){
+  const tb=document.getElementById('spBody');if(!tb)return;
+  const[{data:sports},{data:courts}]=await Promise.all([
+    sb.from('sports').select('*').order('sort_order').order('name'),
+    sb.from('courts').select('sport'),
+  ]);
+  const counts={};(courts||[]).forEach(c=>{counts[c.sport]=(counts[c.sport]||0)+1});
+  if(!sports?.length){tb.innerHTML='<tr><td colspan="5"><div class="empty-state"><div>🏅</div>No sports yet.</div></td></tr>';return}
+  tb.innerHTML=sports.map(s=>
+    '<tr><td style="font-size:1.3rem">'+escHtml(s.icon||'')+'</td><td>'+escHtml(s.name)+'</td><td>'+(counts[s.name]||0)+'</td>'+
+    '<td><span class="sb '+(s.is_active?'sb-g':'sb-r')+'">'+(s.is_active?'Active':'Hidden')+'</span></td>'+
+    '<td><button class="ab '+(s.is_active?'d':'ok')+'" onclick="toggleSportActive('+s.id+',\''+escHtml(s.name)+'\','+s.is_active+')">'+(s.is_active?'Hide':'Show')+'</button></td></tr>'
+  ).join('');
+}
+
+async function addSport(){
+  const name=document.getElementById('spName')?.value.trim();
+  const icon=document.getElementById('spIcon')?.value.trim()||'🏟️';
+  if(!name){toast('Enter a sport name','err');return}
+  if(!/^[A-Za-z0-9][A-Za-z0-9 &-]{0,29}$/.test(name)){toast('Use letters, numbers, spaces, & or - only','err');return}
+  const{error}=await sb.from('sports').insert({name,icon,sort_order:100});
+  if(error){toast(error.code==='23505'?'That sport already exists (it may be hidden)':'Could not add sport','err');return}
+  document.getElementById('spName').value='';
+  document.getElementById('spIcon').value='';
+  toast('Sport added!','ok');
+  await loadSports();
+  renderSportsTbl();
+}
+
+async function toggleSportActive(id,name,isActive){
+  if(isActive){
+    const{count}=await sb.from('courts').select('*',{count:'exact',head:true}).eq('sport',name);
+    if(count>0){toast(count+' court'+(count!==1?'s use ':' uses ')+name+'. Move or remove '+(count!==1?'them':'it')+' first.','err');return}
+  }
+  const{error}=await sb.from('sports').update({is_active:!isActive}).eq('id',id);
+  if(error){toast('Could not update','err');return}
+  await loadSports();
+  renderSportsTbl();
+}
+// ============================================================
 // ADMIN
 // ============================================================
 async function initAdmin(){
@@ -4569,7 +4641,7 @@ async function initAdmin(){
   const payb=document.getElementById('payBadge');if(payb){payb.textContent=payPend?.length||0;payb.style.display=payPend?.length?'inline':'none'}
   const fp=document.getElementById('feePct');if(fp)fp.value=PLATFORM_FEE;
   const feeNoteEl=document.getElementById('feeNote');if(feeNoteEl)feeNoteEl.textContent=`Currently: ${PLATFORM_FEE}% on every booking`;
-await renderBkTbl();await renderCtTbl();await renderUsTbl();await renderOwTbl();await renderRvTbl();await renderDsTbl();await renderFeTbl();await renderPoTbl();await renderRefTab();
+await renderBkTbl();await renderCtTbl();await renderUsTbl();await renderOwTbl();await renderRvTbl();await renderDsTbl();await renderFeTbl();await renderPoTbl();await renderRefTab();await renderSportsTbl();
 }
 async function saveFee(){
   const v=parseFloat(document.getElementById('feePct')?.value);if(isNaN(v)||v<0||v>30){toast('Enter 0–30%','err');return}
