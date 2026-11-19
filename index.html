@@ -1327,7 +1327,7 @@ body.owner-mode .player-only{display:none!important}
       <h3 id="todayLabel" style="font-size:1.1rem"></h3>
       <div id="todaySummary" style="font-size:.82rem;color:var(--grey);margin-top:2px"></div>
     </div>
-    <button class="btn btn-g btn-sm" onclick="loadToday()">↻ Refresh</button>
+    <div style="display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="openManualBooking()">+ Add booking</button><button class="btn btn-g btn-sm" onclick="loadToday()">↻ Refresh</button></div>
   </div>
   <div id="todayList"></div>
 </div>
@@ -1346,7 +1346,8 @@ body.owner-mode .player-only{display:none!important}
 </div>
       
 <div class="tpane" id="ot-bookings">
-        <div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Paid</th><th>Status</th><th></th></tr></thead><tbody id="ownerBkBody"></tbody></table></div>
+<div class="toolbar"><button class="btn btn-p btn-sm" onclick="openManualBooking()">+ Add booking</button></div>
+        <div class="twrap"><table><thead><tr><th>ID</th><th>Player</th><th>Court</th><th>Date</th><th>Time</th><th>Source</th><th>Payment</th><th>Status</th><th></th></tr></thead><tbody id="ownerBkBody"></tbody></table></div>
       </div>
       <div class="tpane" id="ot-calendar">
         <div class="bk-cal">
@@ -1636,6 +1637,54 @@ body.owner-mode .player-only{display:none!important}
   <div id="qrBox" style="display:flex;justify-content:center;margin:16px 0"></div>
   <p style="font-size:.76rem;color:var(--grey)">Show this to venue staff when you arrive.</p>
   <div class="modal-btns" style="justify-content:center"><button class="btn btn-g" onclick="closeModal('qrModal')">Close</button></div>
+</div></div>
+
+<div class="modal-bg" id="manualBkModal"><div class="modal">
+  <h3>Add booking</h3>
+  <div class="fg"><label>Court</label><select id="mbCourt" onchange="mbUpdatePrice()"></select></div>
+  <div class="form-row">
+    <div class="fg"><label>Date</label><input type="date" id="mbDate"/></div>
+    <div class="fg"><label>Start time</label><input type="time" id="mbStart" value="09:00" step="1800"/></div>
+  </div>
+  <div class="form-row">
+    <div class="fg"><label>Duration</label>
+      <select id="mbDur" onchange="mbUpdatePrice()">
+        <option value="30">30 min</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option>
+        <option value="120">2 hours</option><option value="150">2.5 hours</option><option value="180">3 hours</option>
+        <option value="210">3.5 hours</option><option value="240">4 hours</option>
+      </select>
+    </div>
+    <div class="fg"><label>Booked via</label>
+      <select id="mbSource"><option value="phone">Phone</option><option value="walk_in">Walk-in</option><option value="other">Other</option></select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="fg"><label>Customer name</label><input type="text" id="mbName"/></div>
+    <div class="fg"><label>Phone (optional)</label><input type="tel" id="mbPhone"/></div>
+  </div>
+  <div class="fg"><label>Email (optional)</label><input type="email" id="mbEmail"/></div>
+  <div class="form-row">
+    <div class="fg"><label>Amount ($)</label><input type="number" id="mbAmount" min="0" step="0.5"/></div>
+    <div class="fg"><label>Payment</label>
+      <select id="mbPay">
+        <option value="cash">Paid in store: cash</option>
+        <option value="eftpos">Paid in store: card</option>
+        <option value="bank_transfer">Paid: bank transfer</option>
+        <option value="unpaid">Not paid yet</option>
+      </select>
+    </div>
+  </div>
+  <div id="mbMsg" style="font-size:.82rem;margin-top:6px;display:none"></div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('manualBkModal')">Cancel</button><button class="btn btn-p" id="mbSaveBtn" onclick="saveManualBooking()">Save booking</button></div>
+</div></div>
+
+<div class="modal-bg" id="markPaidModal"><div class="modal" style="max-width:380px">
+  <h3>Mark as paid</h3>
+  <input type="hidden" id="mpId"/>
+  <div class="fg"><label>How was it paid?</label>
+    <select id="mpMethod"><option value="cash">Cash</option><option value="eftpos">Card in store</option><option value="bank_transfer">Bank transfer</option></select>
+  </div>
+  <div class="modal-btns"><button class="btn btn-g" onclick="closeModal('markPaidModal')">Cancel</button><button class="btn btn-p" onclick="confirmMarkPaid()">Confirm</button></div>
 </div></div>
   
 <!-- Lightbox -->
@@ -3463,10 +3512,10 @@ async function initOwner(){
   const{data:myCourts}=await sb.from('courts').select('id').eq('owner_id',CU.id);
   const courtIds=(myCourts||[]).map(c=>c.id);
   const[{data:bks},{data:rvs}]=await Promise.all([
-    sb.from('bookings').select('court_fee,platform_fee,paid').in('court_id',courtIds),
+    sb.from('bookings').select('court_fee,platform_fee,paid,source').in('court_id',courtIds),
     sb.from('reviews').select('stars').in('court_id',courtIds),
   ]);
-  const rev=(bks||[]).filter(b=>b.paid).reduce((s,b)=>s+Number(b.court_fee||0),0);
+  const rev=(bks||[]).filter(b=>b.paid&&b.source==='online').reduce((s,b)=>s+Number(b.court_fee||0),0);
   const avgR=rvs?.length?(rvs.reduce((s,r)=>s+r.stars,0)/rvs.length).toFixed(1):'—';
   const s1=document.getElementById('oS1');if(s1)s1.textContent=courtIds.length;
   const s2=document.getElementById('oS2');if(s2)s2.textContent=bks?.length||0;
@@ -3487,11 +3536,106 @@ async function renderOwnerCourts(){
   if(!courts?.length){el.innerHTML='<div class="empty-state"><div>🏟️</div>No courts yet. Add your first court.</div>';return}
   el.innerHTML=courts.map(c=>`<div class="cmcard"><div class="cmcard-hdr"><div><h4 style="margin-bottom:4px">${c.icon} ${c.name} <span class="court-sport-tag">${c.sport}</span></h4><p style="font-size:.78rem;color:var(--grey)">${c.surface} · $${c.price_per_hour}/hr</p>${c.photo_urls?.length?`<div class="photo-thumbs" style="margin-top:8px">${c.photo_urls.slice(0,3).map(p=>`<div class="photo-thumb"><img src="${getPhotoUrl('court-photos',p)}" onclick="openLightbox('${getPhotoUrl('court-photos',p)}')"/></div>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="openEditCourt(${c.id})">Edit</button><button class="btn btn-r btn-sm" onclick="delCt(${c.id},true)">Remove</button></div></div></div>`).join('');
 }
+// ============================================================
+// MANUAL BOOKINGS (phone and walk-in)
+// ============================================================
 async function renderOwnerBk(courtIds){
   const{data:bks}=await sb.from('bookings').select('*').in('court_id',courtIds||[]).order('created_at',{ascending:false}).limit(50);
   const tb=document.getElementById('ownerBkBody');if(!tb)return;
-  if(!bks?.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-state"><div>📋</div>No bookings yet.</div></td></tr>';return}
-  tb.innerHTML=bks.map(b=>`<tr><td>${b.id}</td><td>${b.player_name}</td><td>${b.court_name}</td><td>${fmtDate(b.booking_date)}</td><td>${b.time_slot}</td><td>${b.paid?`<span class="sb sb-g">$${Number(b.total||b.court_fee).toFixed(2)}</span>`:'Unpaid'}</td><td><span class="sb ${b.status==='confirmed'?'sb-g':'sb-r'}">${b.status}</span></td><td>${b.status!=='cancelled'?`<button class="ab d" onclick="adminCancelBk('${b.id}')">Cancel</button>`:''}</td></tr>`).join('');
+  if(!bks?.length){tb.innerHTML='<tr><td colspan="9"><div class="empty-state"><div>📋</div>No bookings yet.</div></td></tr>';return}
+  const src={online:'Online',phone:'Phone',walk_in:'Walk-in',import:'Imported',other:'Other'};
+  const pm={cash:'Cash',eftpos:'Card in store',bank_transfer:'Bank transfer',card:'Card (online)'};
+  tb.innerHTML=bks.map(b=>{
+    const id=escHtml(b.id);
+    const pay=b.paid
+      ?'<span class="sb sb-g">'+escHtml(pm[b.payment_method]||'Paid')+' · $'+Number(b.total||b.court_fee||0).toFixed(2)+'</span>'
+      :'<span class="sb sb-gold">Unpaid</span>';
+    const actions=(b.status!=='cancelled'?'<button class="ab d" onclick="adminCancelBk(\''+id+'\')">Cancel</button>':'')+
+      (!b.paid&&b.status!=='cancelled'?'<button class="ab ok" onclick="openMarkPaid(\''+id+'\')">Mark paid</button>':'');
+    return '<tr><td>'+id+'</td><td>'+escHtml(b.player_name)+'</td><td>'+escHtml(b.court_name)+'</td><td>'+fmtDate(b.booking_date)+'</td><td>'+escHtml(b.time_slot)+'</td><td>'+(src[b.source]||'Online')+'</td><td>'+pay+'</td><td><span class="sb '+(b.status==='confirmed'?'sb-g':'sb-r')+'">'+escHtml(b.status)+'</span></td><td>'+actions+'</td></tr>';
+  }).join('');
+}
+
+async function openManualBooking(){
+  const{data:courts}=await sb.from('courts').select('id,name,sport,price_per_hour').eq('owner_id',CU.id);
+  if(!courts?.length){toast('Add a court first','err');return}
+  window._mbCourts=courts;
+  const sel=document.getElementById('mbCourt');
+  sel.innerHTML=courts.map(c=>'<option value="'+c.id+'">'+escHtml(c.name)+' — '+escHtml(c.sport)+'</option>').join('');
+  const d=document.getElementById('mbDate');if(d&&!d.value)d.value=new Date().toLocaleDateString('en-CA');
+  const m=document.getElementById('mbMsg');if(m)m.style.display='none';
+  mbUpdatePrice();
+  openModal('manualBkModal');
+}
+
+function mbUpdatePrice(){
+  const c=(window._mbCourts||[]).find(x=>String(x.id)===document.getElementById('mbCourt')?.value);
+  const dur=parseInt(document.getElementById('mbDur')?.value)||60;
+  const a=document.getElementById('mbAmount');
+  if(c&&a)a.value=(Number(c.price_per_hour)*dur/60).toFixed(2);
+}
+
+async function saveManualBooking(){
+  const courtId=parseInt(document.getElementById('mbCourt')?.value);
+  const court=(window._mbCourts||[]).find(c=>c.id===courtId);
+  const date=document.getElementById('mbDate')?.value;
+  const startVal=document.getElementById('mbStart')?.value;
+  const dur=parseInt(document.getElementById('mbDur')?.value)||60;
+  const name=document.getElementById('mbName')?.value.trim();
+  const amount=parseFloat(document.getElementById('mbAmount')?.value);
+  const pay=document.getElementById('mbPay')?.value;
+  const msg=document.getElementById('mbMsg');
+  const fail=t=>{if(msg){msg.style.display='block';msg.style.color='var(--red)';msg.textContent=t}};
+  if(!court||!date||!startVal){fail('Choose a court, date and start time.');return}
+  if(!name){fail('Enter the customer name.');return}
+  if(isNaN(amount)||amount<0){fail('Enter the amount (use 0 for a free booking).');return}
+  const[h,m]=startVal.split(':').map(Number);
+  const start=Math.round((h*60+m)/30)*30;
+  const needed=[];
+  for(let t=start;t<start+dur;t+=30)needed.push(minutesToSlot(t));
+  if(!needed.every(s=>SLOTS.includes(s))){fail('That time falls outside 7:00 AM to 10:00 PM.');return}
+  const btn=document.getElementById('mbSaveBtn');if(btn)btn.disabled=true;
+  const booked=await fetchBookedSlots([court.id],date,date);
+  const taken=bookedFor(booked,court.id,date);
+  const{data:bl}=await sb.from('availability_blocks').select('time_slot').eq('court_id',court.id).eq('block_date',date);
+  const blocked=(bl||[]).map(b=>b.time_slot);
+  const clash=needed.filter(s=>taken.includes(s)||blocked.includes(s));
+  if(clash.length){if(btn)btn.disabled=false;fail('Already booked or blocked at: '+clash.join(', '));return}
+  const timeSlot=dur>30?minutesToSlot(start)+' – '+minutesToSlot(start+dur):minutesToSlot(start);
+  const{error}=await sb.from('bookings').insert({
+    id:'BK'+Date.now()+Math.random().toString(36).slice(2,5),
+    user_id:null,court_id:court.id,court_name:court.name,sport:court.sport,
+    player_name:name,
+    player_email:document.getElementById('mbEmail')?.value.trim()||'',
+    player_phone:document.getElementById('mbPhone')?.value.trim()||'',
+    booking_date:date,time_slot:timeSlot,
+    court_fee:amount,platform_fee:0,total:amount,
+    status:'confirmed',paid:pay!=='unpaid',
+    source:document.getElementById('mbSource')?.value||'phone',
+    payment_method:pay
+  });
+  if(btn)btn.disabled=false;
+  if(error){fail('Could not save the booking. Please try again.');return}
+  closeModal('manualBkModal');
+  ['mbName','mbPhone','mbEmail'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  toast('Booking added','ok');
+  const{data:mine}=await sb.from('courts').select('id').eq('owner_id',CU.id);
+  renderOwnerBk((mine||[]).map(c=>c.id));
+  if(document.getElementById('ot-today')?.classList.contains('active'))loadToday();
+}
+
+function openMarkPaid(id){document.getElementById('mpId').value=id;openModal('markPaidModal')}
+
+async function confirmMarkPaid(){
+  const id=document.getElementById('mpId')?.value;
+  const method=document.getElementById('mpMethod')?.value||'cash';
+  const{error}=await sb.from('bookings').update({paid:true,payment_method:method}).eq('id',id);
+  if(error){toast('Could not update. Try again.','err');return}
+  closeModal('markPaidModal');
+  toast('Marked as paid','ok');
+  const{data:mine}=await sb.from('courts').select('id').eq('owner_id',CU.id);
+  renderOwnerBk((mine||[]).map(c=>c.id));
+  if(document.getElementById('ot-today')?.classList.contains('active'))loadToday();
 }
 async function populatePeakCourtSelect(){
   const{data:courts}=await sb.from('courts').select('id,name,sport').eq('owner_id',CU.id);
@@ -4223,6 +4367,7 @@ async function importCSV(){
         status:'confirmed',
         paid:true,
         is_imported:true,
+        source:'import',
         import_notes:row['Notes']?.trim()||''
       };
       const{error}=await sb.from('bookings').insert(booking);
@@ -4463,7 +4608,10 @@ async function loadToday(){
         badge=started?'<span class="sb sb-gold">Not arrived</span>':'<span class="sb sb-b">Upcoming</span>';
         actions='<button class="ab ok" onclick="manualCheckin(\''+id+'\')">Check in</button>'+(started?'<button class="ab rej" onclick="markNoShow(\''+id+'\')">No-show</button>':'');
       }
-      return '<tr><td>'+escHtml(b.time_slot)+'</td><td>'+escHtml(b.court_name)+'</td><td>'+escHtml(b.player_name)+'</td><td>'+badge+'</td><td>'+actions+'</td></tr>';
+      const unpaid=!b.paid;
+      const payBadge=unpaid?' <span class="sb sb-gold">Unpaid</span>':'';
+      const payBtn=unpaid?'<button class="ab ok" onclick="openMarkPaid(\''+id+'\')">Mark paid</button>':'';
+      return '<tr><td>'+escHtml(b.time_slot)+'</td><td>'+escHtml(b.court_name)+'</td><td>'+escHtml(b.player_name)+payBadge+'</td><td>'+badge+'</td><td>'+actions+payBtn+'</td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 
@@ -4538,7 +4686,7 @@ async function renderPayouts(){
   const{data:courts}=await sb.from('courts').select('id').eq('owner_id',CU.id);
   const courtIds=(courts||[]).map(c=>c.id);
   const[{data:bks},{data:pos}]=await Promise.all([
-    sb.from('bookings').select('court_fee,platform_fee').in('court_id',courtIds).eq('paid',true).eq('status','confirmed'),
+    sb.from('bookings').select('court_fee,platform_fee').in('court_id',courtIds).eq('paid',true).eq('status','confirmed').eq('source','online'),
     sb.from('payouts').select('*').eq('owner_id',CU.id).order('created_at',{ascending:false}),
   ]);
   const earned=(bks||[]).reduce((s,b)=>s+Number(b.court_fee||0),0);
@@ -4693,7 +4841,18 @@ async function renderPoTbl(){
 async function approveOwner(id){await sb.from('profiles').update({approval_status:'approved'}).eq('id',id);toast('Owner approved!','ok');renderOwTbl();initAdmin()}
 async function rejectOwner(id){await sb.from('profiles').update({approval_status:'rejected'}).eq('id',id);toast('Rejected.');renderOwTbl()}
 async function toggleFeatured(id){const{data:c}=await sb.from('courts').select('featured').eq('id',id).single();await sb.from('courts').update({featured:!c.featured}).eq('id',id);toast(c.featured?'Unfeatured':'Featured! ⭐','ok');renderCtTbl();renderFeTbl()}
-async function adminCancelBk(id){await sb.from('bookings').update({status:'cancelled'}).eq('id',id);renderBkTbl();renderOwnerBk([])}
+async function adminCancelBk(id){
+  if(!confirm('Cancel this booking?'))return;
+  const{error}=await sb.from('bookings').update({status:'cancelled'}).eq('id',id);
+  if(error){toast('Could not cancel. Try again.','err');return}
+  toast('Booking cancelled');
+  if(CU?.role==='admin')renderBkTbl();
+  if(CU?.role==='owner'){
+    const{data:c}=await sb.from('courts').select('id').eq('owner_id',CU.id);
+    renderOwnerBk((c||[]).map(x=>x.id));
+    if(document.getElementById('ot-today')?.classList.contains('active'))loadToday();
+  }
+}
 async function delBk(id){if(!confirm('Delete?'))return;await sb.from('bookings').delete().eq('id',id);renderBkTbl()}
 async function delCt(id){if(!confirm('Remove court?'))return;await sb.from('courts').delete().eq('id',id);renderCtTbl();renderOwnerCourts&&renderOwnerCourts()}
 async function delUs(id){if(!confirm('Remove user?'))return;await sb.from('profiles').delete().eq('id',id);renderUsTbl()}
